@@ -1,0 +1,35 @@
+{
+  "name": "drupal/rdf_entity",
+  "description": "RDF Entity allows to store and retrieve content directly from RDF data stores over SPARQL end points.",
+  "type": "drupal-module",
+  "homepage": "https://drupal.org/project/rdf_entity",
+  "authors": [
+    {
+      "name": "Sander Van Dooren (sandervd)",
+      "homepage": "https://www.drupal.org/u/sandervd",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Ilias Dimopoulos (dimilias)",
+      "homepage": "https://www.drupal.org/u/dimilias",
+      "role": "Co-maintainer"
+    },
+    {
+      "name": "Marian Catalin Motatu (dublutz)",
+      "homepage": "https://www.drupal.org/u/dublutz",
+      "role": "Co-maintainer"
+    },
+    {
+      "name": "Pieter Frenssen (pfrenssen)",
+      "homepage": "https://www.drupal.org/u/pfrenssen",
+      "role": "Co-maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://drupal.org/project/issues/rdf_entity",
+    "irc": "irc://irc.freenode.org/drupal-contribute",
+    "source": "https://cgit.drupalcode.org/rdf_entity"
+  },
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev"
+}
