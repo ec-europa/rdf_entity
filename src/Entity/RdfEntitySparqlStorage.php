@@ -241,8 +241,14 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase {
    *
    * @param string $graph
    *   The graph to use.
+   *
+   * @deprecated
+   *   This will be replaced with an event listener before the 1.0 release.
+   *
+   * @see https://www.drupal.org/node/2901490
    */
   public function setSaveGraph($graph) {
+    trigger_error(__METHOD__ . ' will be removed before the 1.0 release.', E_USER_DEPRECATED);
     $this->getGraphHandler()->setTargetGraph($graph);
   }
 

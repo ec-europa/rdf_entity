@@ -80,6 +80,11 @@ class RdfGraphHandler {
    * Holds the graphs that the entity is going to be saved in.
    *
    * @var string|null
+   *
+   * @deprecated
+   *   This will be replaced with an event listener before the 1.0 release.
+   *
+   * @see https://www.drupal.org/node/2901490
    */
   protected $targetGraph = NULL;
 
@@ -307,6 +312,11 @@ class RdfGraphHandler {
    *
    * @return string
    *   The target graph to save to.
+   *
+   * @deprecated
+   *   This will be replaced with an event listener before the 1.0 release.
+   *
+   * @see https://www.drupal.org/node/2901490
    */
   public function getTargetGraph() {
     return $this->targetGraph;
@@ -319,8 +329,14 @@ class RdfGraphHandler {
    *
    * @param string $target_graph
    *   The target graph machine name.
+   *
+   * @deprecated
+   *   This will be replaced with an event listener before the 1.0 release.
+   *
+   * @see https://www.drupal.org/node/2901490
    */
   public function setTargetGraph($target_graph) {
+    trigger_error(__METHOD__ . ' will be removed before the 1.0 release.', E_USER_DEPRECATED);
     $this->targetGraph = $target_graph;
   }
 
