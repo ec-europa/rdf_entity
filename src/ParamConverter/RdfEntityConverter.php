@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\ParamConverter\EntityConverter;
 use Drupal\Core\TypedData\TranslatableInterface;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Event\RdfEntityEvents;
 use Drupal\rdf_entity\UriEncoder;
 use Symfony\Component\Routing\Route;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
@@ -53,7 +54,7 @@ class RdfEntityConverter extends EntityConverter {
       $dispatcher = \Drupal::getContainer()->get('event_dispatcher');
       $event = new ActiveGraphEvent($value, $definition, $name, $defaults);
       // Determine the graph by emitting an event.
-      $graph = $dispatcher->dispatch('rdf_graph.entity_convert', $event);
+      $graph = $dispatcher->dispatch(RdfEntityEvents::GRAPH_ENTITY_CONVERT, $event);
       if ($graph_type = $graph->getGraph()) {
         $storage->setRequestGraphs($value, [$graph_type]);
       }
