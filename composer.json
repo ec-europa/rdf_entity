@@ -1,0 +1,11 @@
+{
+    "name": "drupal/rdf_entity",
+    "description": "This module allows you to leverage the semantic web by storing and retrieving content directly from an RDF data store using the SPARQL RDF query language.",
+    "type": "drupal-module",
+    "homepage": "https://drupal.org/project/rdf_entity",
+    "support": {
+        "issues": "https://drupal.org/project/issues/rdf_entity",
+        "source": "https://cgit.drupalcode.org/rdf_entity"
+    },
+    "require": {}
+}
