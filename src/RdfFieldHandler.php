@@ -72,7 +72,7 @@ class RdfFieldHandler {
    *    Thrown when a bundle does not have the bundle mapped.
    */
   protected function buildEntityTypeProperties($entity_type_id) {
-    if (empty($mapping[$entity_type_id]) && empty($mapping[$entity_type_id])) {
+    if (empty($this->outboundMap[$entity_type_id]) && empty($this->inboundMap[$entity_type_id])) {
       $storage = $this->entityTypeManager->getStorage($entity_type_id);
       $bundle_type = $storage->getEntityType()->getBundleEntityType();
       $bundle_storage = $this->entityTypeManager->getStorage($bundle_type);
