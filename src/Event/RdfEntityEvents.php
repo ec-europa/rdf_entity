@@ -3,7 +3,7 @@
 namespace Drupal\rdf_entity\Event;
 
 /**
- * Contains all events thrown by the rdf_entity module..
+ * Contains all events thrown by the rdf_entity module.
  */
 final class RdfEntityEvents {
 
@@ -17,6 +17,17 @@ final class RdfEntityEvents {
    * @var string
    */
   const GRAPH_ENTITY_CONVERT = 'rdf_graph.entity_convert';
+
+  /**
+   * The name of the event triggered when an inbound value is being processed.
+   *
+   * @Event
+   *
+   * @see \Drupal\rdf_entity\RdfFieldHandler::getInboundValue()
+   *
+   * @var string
+   */
+  const INBOUND_VALUE = 'rdf_entity.inbound_value';
 
   /**
    * The name of the event triggered when an outbound value is being processed.
