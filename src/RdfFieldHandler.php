@@ -6,7 +6,10 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Event\OutboundValueEvent;
+use Drupal\rdf_entity\Event\RdfEntityEvents;
 use EasyRdf\Literal;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Contains helper methods that help with the uri mappings of Drupal elements.
@@ -50,16 +53,26 @@ class RdfFieldHandler {
   protected $entityFieldManager;
 
   /**
+   * The event dispatcher service.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Constructs a QueryFactory object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EventDispatcherInterface $event_dispatcher) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -488,6 +501,14 @@ class RdfFieldHandler {
     $outbound_map = $this->getOutboundMap($entity_type_id);
     $format = $this->getFieldFormat($entity_type_id, $field, $column, $bundle);
     $format = reset($format);
+
+    $field_mapping_info = $this->getFieldInfoFromMapping($outbound_map, $field, $column, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new OutboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::OUTBOUND_VALUE, $event);
+    $value = $event->getValue();
+
     $serialize = $this->isFieldSerializable($entity_type_id, $field, $column);
     if ($serialize) {
       $value = serialize($value);
@@ -559,6 +580,42 @@ class RdfFieldHandler {
     }
 
     return $outbound_map['bundles'][$bundle];
+  }
+
+  /**
+   * Retrieves information about the mapping of a certain field.
+   *
+   * @param array $mapping
+   *   The mapping from where to extract the field information. Can be an
+   *   inbound or outbound mapping array.
+   * @param string $field
+   *   The field name.
+   * @param string|null $column
+   *   The column name. If empty, defaults to the field main property.
+   * @param string|null $bundle
+   *   The entity bundle. Defaults to empty.
+   *
+   * @return array
+   *   An associative array with the information about the field mappings.
+   *   When no bundle is specified, an array of arrays is returned, where the
+   *   first level keys are all the bundles with that field.
+   *
+   * @throws \Exception
+   *   Thrown when the field is not found.
+   */
+  public function getFieldInfoFromMapping(array $mapping, $field, $column = NULL, $bundle = NULL) {
+    if (!isset($mapping['fields'][$field])) {
+      throw new \Exception("You are requesting the mapping info for a non mapped field: $field.");
+    }
+
+    $field_mapping = $mapping['fields'][$field];
+    $column = $column ?: $field_mapping['main_property'];
+
+    if (!empty($bundle)) {
+      return [$field_mapping['columns'][$column][$bundle]];
+    }
+
+    return array_values($field_mapping['columns'][$column]);
   }
 
   /**

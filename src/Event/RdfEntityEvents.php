@@ -18,4 +18,15 @@ final class RdfEntityEvents {
    */
   const GRAPH_ENTITY_CONVERT = 'rdf_graph.entity_convert';
 
+  /**
+   * The name of the event triggered when an outbound value is being processed.
+   *
+   * @Event
+   *
+   * @see \Drupal\rdf_entity\RdfFieldHandler::getOutboundValue()
+   *
+   * @var string
+   */
+  const OUTBOUND_VALUE = 'rdf_entity.outbound_value';
+
 }
