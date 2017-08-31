@@ -123,10 +123,14 @@ class RdfFieldHandler {
               $serialize = TRUE;
             }
 
+            // Retrieve the property definition primitive data type.
+            $data_type = $storage_definition->getPropertyDefinition($column)->getDataType();
+
             $this->outboundMap[$entity_type_id]['fields'][$id]['columns'][$column][$rdf_bundle_entity->id()] = [
               'predicate' => $column_info['predicate'],
               'format' => $column_info['format'],
               'serialize' => $serialize,
+              'data_type' => $data_type,
             ];
 
             $this->inboundMap[$entity_type_id]['fields'][$column_info['predicate']][$rdf_bundle_entity->id()] = [
@@ -134,6 +138,7 @@ class RdfFieldHandler {
               'column' => $column,
               'serialize' => $serialize,
               'type' => $storage_definition->getType(),
+              'data_type' => $data_type,
             ];
           }
         }
