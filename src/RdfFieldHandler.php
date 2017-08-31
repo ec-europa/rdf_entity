@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Event\InboundValueEvent;
 use Drupal\rdf_entity\Event\OutboundValueEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
 use EasyRdf\Literal;
@@ -502,7 +503,7 @@ class RdfFieldHandler {
     $format = $this->getFieldFormat($entity_type_id, $field, $column, $bundle);
     $format = reset($format);
 
-    $field_mapping_info = $this->getFieldInfoFromMapping($outbound_map, $field, $column, $bundle);
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
     $field_mapping_info = reset($field_mapping_info);
 
     $event = new OutboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
@@ -574,20 +575,61 @@ class RdfFieldHandler {
    *    Thrown when the bundle is not found.
    */
   public function getInboundBundleValue($entity_type_id, $bundle) {
-    $outbound_map = $this->getInboundMap($entity_type_id);
-    if (empty($outbound_map['bundles'][$bundle])) {
+    $inbound_map = $this->getInboundMap($entity_type_id);
+    if (empty($inbound_map['bundles'][$bundle])) {
       throw new \Exception("A bundle mapped to <$bundle> was not found.");
     }
 
-    return $outbound_map['bundles'][$bundle];
+    return $inbound_map['bundles'][$bundle];
+  }
+
+  /**
+   * Returns the inbound value for the given field.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $field
+   *   The field name.
+   * @param string $value
+   *   The value to convert.
+   * @param string $lang
+   *   Optional. Pass the language if one exists. This should be null if the
+   *   format is not t_literal.
+   * @param string $column
+   *   The column for which to calculate the value. If null, the field's main
+   *   column will be used.
+   * @param string $bundle
+   *   (optional) The same field of an entity type might use different value
+   *   formats, depending on how is mapped on each bundle. Pass the bundle, when
+   *   is available, for a better determination of the value format.
+   *
+   * @return mixed
+   *   The calculated value.
+   */
+  public function getInboundValue($entity_type_id, $field, $value, $lang = NULL, $column = NULL, $bundle = NULL) {
+    // The outbound map contains the same information as the inbound map: the
+    // only difference is how the data is structured. It's safe to retrieve the
+    // field information from the outbound map.
+    // @see self::buildEntityTypeProperties()
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new InboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::INBOUND_VALUE, $event);
+    $value = $event->getValue();
+
+    if ($this->isFieldSerializable($entity_type_id, $field, $column)) {
+      $value = unserialize($value);
+    }
+
+    return $value;
   }
 
   /**
    * Retrieves information about the mapping of a certain field.
    *
-   * @param array $mapping
-   *   The mapping from where to extract the field information. Can be an
-   *   inbound or outbound mapping array.
+   * @param string $entity_type_id
+   *   The entity type id.
    * @param string $field
    *   The field name.
    * @param string|null $column
@@ -603,7 +645,9 @@ class RdfFieldHandler {
    * @throws \Exception
    *   Thrown when the field is not found.
    */
-  public function getFieldInfoFromMapping(array $mapping, $field, $column = NULL, $bundle = NULL) {
+  public function getFieldInfoFromOutboundMap($entity_type_id, $field, $column = NULL, $bundle = NULL) {
+    $mapping = $this->getOutboundMap($entity_type_id);
+
     if (!isset($mapping['fields'][$field])) {
       throw new \Exception("You are requesting the mapping info for a non mapped field: $field.");
     }
