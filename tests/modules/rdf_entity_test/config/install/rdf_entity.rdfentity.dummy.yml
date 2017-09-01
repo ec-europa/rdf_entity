@@ -29,6 +29,14 @@ third_party_settings:
         value:
           predicate: ''
           format: ''
+      created:
+        value:
+          predicate: 'http://purl.org/dc/terms/issued'
+          format: 'xsd:dateTime'
+      changed:
+        value:
+          predicate: 'http://example.com/modified'
+          format: 'xsd:integer'
     graph:
       default: 'http://example.com/dummy/published'
       draft: 'http://example.com/dummy/draft'
