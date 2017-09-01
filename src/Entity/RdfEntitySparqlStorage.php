@@ -1037,6 +1037,7 @@ QUERY;
           break;
 
         // Strip timezone part in dates.
+        // @todo Move in InboundOutboundValueSubscriber::massageInboundValue()
         case 'datetime':
           $time_stamp = strtotime($value['value']);
           $date = date('o-m-d', $time_stamp) . "T" . date('H:i:s', $time_stamp);
