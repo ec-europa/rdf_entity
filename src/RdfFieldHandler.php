@@ -9,6 +9,7 @@ use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Event\InboundValueEvent;
 use Drupal\rdf_entity\Event\OutboundValueEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
+use Drupal\rdf_entity\Exception\NonExistingFieldPropertyException;
 use EasyRdf\Literal;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -138,7 +139,11 @@ class RdfFieldHandler {
             }
 
             // Retrieve the property definition primitive data type.
-            $data_type = $storage_definition->getPropertyDefinition($column)->getDataType();
+            $property_definition = $storage_definition->getPropertyDefinition($column);
+            if (empty($property_definition)) {
+              throw new NonExistingFieldPropertyException("Field $id of type {$storage_definition->getType()} has no property $column.");
+            }
+            $data_type = $property_definition->getDataType();
 
             $this->outboundMap[$entity_type_id]['fields'][$id]['columns'][$column][$rdf_bundle_entity->id()] = [
               'predicate' => $column_info['predicate'],
