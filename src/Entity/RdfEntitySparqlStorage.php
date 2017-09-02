@@ -556,6 +556,47 @@ QUERY;
   }
 
   /**
+   * Loads an entity from specific graphs in the given priority.
+   *
+   * @param string $id
+   *   The entity id.
+   * @param array $graphs
+   *   An array of graphs. The graphs should be passed in a priority sequence.
+   *   This means that if more than one graph is passed, only the first
+   *   available occurrence will be returned.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The returned entity.
+   */
+  public function loadFromGraphs($id, $graphs = ['default']) {
+    $entities = $this->loadMultipleFromGraphs([$id], $graphs);
+    return array_shift($entities);
+  }
+
+  /**
+   * Loads an array of entities from the passed graphs in the given priority.
+   *
+   * @param array|NULL $ids
+   *   An array of ids.
+   * @param array $graphs
+   *   An array of graphs. The graphs should be passed in a priority sequence.
+   *   This means that if more than one graph is passed, only the first
+   *   available occurrence will be returned.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]|null
+   *   The returned entities.
+   */
+  public function loadMultipleFromGraphs(array $ids = NULL, $graphs = ['default']) {
+    if (is_array($ids)) {
+      foreach ($ids as $id) {
+        $this->setRequestGraphs($id, $graphs);
+      }
+    }
+
+    return $this->loadMultiple($ids);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function loadRevision($revision_id) {
