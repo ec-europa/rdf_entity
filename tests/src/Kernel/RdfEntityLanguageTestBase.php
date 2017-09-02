@@ -52,8 +52,6 @@ abstract class RdfEntityLanguageTestBase extends RdfKernelTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->installEntitySchema('user');
-    $this->installConfig(['rdf_entity_test']);
     $this->languageManager = $this->container->get('language_manager');
     $this->installConfig(['language']);
     // Enable translations for the rdf entity.
