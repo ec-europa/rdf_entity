@@ -17,14 +17,19 @@ class RdfDateFieldsTest extends JoinupKernelTestBase {
    * Tests handling of timestamp field properties.
    */
   public function testTimestampFieldProperties() {
-    $created = strtotime('2017-09-01T18:09:22+02:00');
-    $changed = strtotime('2017-09-02T18:09:22+02:00');
+    // Drupal tests explicitly set the time zone to Australia/Sydney.
+    // @see web/core/tests/bootstrap.php:157
+    // @see web/core/lib/Drupal/Core/Test/FunctionalTestSetupTrait.php:348
+    $created_iso = '2017-09-01T18:09:22+10:00';
+    $changed_iso = '2017-09-02T18:09:22+10:00';
+    $created_unix = strtotime($created_iso);
+    $changed_unix = strtotime($changed_iso);
 
     $entity = Rdf::create([
       'rid' => 'dummy',
       'label' => $this->randomMachineName(),
-      'created' => $created,
-      'changed' => $changed,
+      'created' => $created_unix,
+      'changed' => $changed_unix,
     ]);
     $entity->save();
 
@@ -34,14 +39,13 @@ class RdfDateFieldsTest extends JoinupKernelTestBase {
     $this->assertTripleDataType($loaded->id(), 'http://example.com/modified', 'http://www.w3.org/2001/XMLSchema#integer');
 
     // Verify that the retrieved values are presented as timestamp.
-    $this->assertEquals($created, $loaded->getCreatedTime());
-    $this->assertEquals($changed, $loaded->getChangedTime());
+    $this->assertEquals($created_unix, $loaded->getCreatedTime());
+    $this->assertEquals($changed_unix, $loaded->getChangedTime());
 
     // Assert that timestamp properties mapped as integer are stored as such.
-    $this->assertTripleValue($loaded->id(), 'http://example.com/modified', $changed);
+    $this->assertTripleValue($loaded->id(), 'http://example.com/modified', $changed_unix);
     // Assert the stored value of timestamps mapped as xsd:dateTime.
-    $this->assertTripleValue($loaded->id(), 'http://purl.org/dc/terms/issued', '2017-09-01T18:09:22+02:00');
-
+    $this->assertTripleValue($loaded->id(), 'http://purl.org/dc/terms/issued', $created_iso);
   }
 
   /**
