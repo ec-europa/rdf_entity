@@ -7,5 +7,11 @@
         "issues": "https://drupal.org/project/issues/rdf_entity",
         "source": "https://cgit.drupalcode.org/rdf_entity"
     },
-    "require": {}
+    "license": "GPL-2.0+",
+    "require": {
+        "easyrdf/easyrdf": "0.10.0-alpha1 as 0.9.2"
+    },
+    "require-dev": {
+        "minimaxir/big-list-of-naughty-strings": "dev-master"
+    }
 }
