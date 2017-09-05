@@ -80,7 +80,7 @@ class Connection {
     }
     catch (EasyRdfException $e) {
       // Re-throw the exception, but with the query as message.
-      throw new SparqlQueryException('Execution of query failed: ' . $query);
+      throw new SparqlQueryException('Execution of query failed: ' . $query . "\nReason: " . $e->getMessage());
     }
     catch (\Exception $e) {
       throw $e;
