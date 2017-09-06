@@ -837,7 +837,7 @@ QUERY;
    * @return array
    *   The array of values including the translations.
    */
-  public function toLangArray(ContentEntityInterface $entity) {
+  protected function toLangArray(ContentEntityInterface $entity) {
     $values = [];
     $languages = array_keys(array_filter($entity->getTranslationLanguages(), function (LanguageInterface $language) {
       return !$language->isLocked();
@@ -849,7 +849,10 @@ QUERY;
     $current_langcode = $entity->language()->getId();
     if ($entity->isDefaultTranslation()) {
       foreach ($entity->getFields() as $name => $property) {
-        $values[$name][$current_langcode] = $entity->get($name)->getValue();
+        $item_list = $entity->get($name);
+        if (!$item_list->isEmpty()) {
+          $values[$name][$current_langcode] = $item_list->getValue();
+        }
       }
       $processed = [$entity->language()->getId()];
     }
@@ -884,7 +887,10 @@ QUERY;
       }
       $translation = $entity->getTranslation($langcode);
       foreach ($translatable_fields as $name) {
-        $values[$name][$langcode] = $translation->get($name)->getValue();
+        $item_list = $translation->get($name);
+        if (!$item_list->isEmpty()) {
+          $values[$name][$langcode] = $item_list->getValue();
+        }
       }
     }
     return $values;
