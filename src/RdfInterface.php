@@ -3,6 +3,7 @@
 namespace Drupal\rdf_entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\user\EntityOwnerInterface;
 
@@ -13,7 +14,7 @@ use Drupal\user\EntityOwnerInterface;
  *
  * @ingroup rdf_entity
  */
-interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface, EntityOwnerInterface {
+interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface, EntityOwnerInterface, EntityChangedInterface {
 
   /**
    * Gets the name of the rdf entity.
@@ -54,5 +55,23 @@ interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface,
    *   TRUE if this entity has the specified graph.
    */
   public function hasGraph($graph);
+
+  /**
+   * Gets the entity creation timestamp.
+   *
+   * @return int
+   *   Creation timestamp of the entity.
+   */
+  public function getCreatedTime();
+
+  /**
+   * Sets the entity creation timestamp.
+   *
+   * @param int $timestamp
+   *   The entity creation timestamp.
+   *
+   * @return $this
+   */
+  public function setCreatedTime($timestamp);
 
 }

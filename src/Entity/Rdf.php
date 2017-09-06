@@ -138,6 +138,7 @@ use Drupal\user\UserInterface;
  * timestamps of save operations.
  */
 class Rdf extends ContentEntityBase implements RdfInterface {
+
   use EntityChangedTrait;
 
   /**
@@ -171,25 +172,36 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function getCreatedTime() {
-    return $this->get('created')->value;
+    return $this->hasFieldMapping('created') ? $this->get('created')->value : NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setChangedTime($timestamp) {
-    // @todo Implement :-)
+  public function setCreatedTime($timestamp) {
+    if ($this->hasFieldMapping('created')) {
+      $this->set('created', $timestamp);
+    }
+
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getChangedTime() {
-    // @todo Find out if all rdf entities have a changed date.
-    // If so, we need to define this as a 'base field'.
-    // For now, this date is a workaround.
-    return '2014-05-19T17:03:00';
-    // @todo Change return $this->get('changed')->value;
+    return $this->hasFieldMapping('changed') ? $this->get('changed')->value : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setChangedTime($timestamp) {
+    if ($this->hasFieldMapping('changed')) {
+      $this->set('changed', $timestamp);
+    }
+
+    return $this;
   }
 
   /**
@@ -242,6 +254,20 @@ class Rdf extends ContentEntityBase implements RdfInterface {
         'weight' => -5,
       ])
       ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Authored on'))
+      ->setDescription(t('The time that the entity was created.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The time that the entity was last edited.'))
+      ->setRevisionable(TRUE)
+      ->setTranslatable(TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     // The UUID field is provided just to allow core or modules to retrieve RDF
@@ -388,12 +414,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    *   Whether the entity bundle has a value for the uid key mapping.
    */
   protected function hasUidMapping() {
-    if (empty($this->bundle())) {
-      return NULL;
-    }
-    $bundle = $this->entityTypeManager()->getStorage('rdf_type')->load($this->bundle());
-    $mapping = rdf_entity_get_third_party_property($bundle, 'mapping', 'uid');
-    return !empty($mapping['target_id']['predicate']);
+    return $this->hasFieldMapping('uid', 'target_id');
   }
 
   /**
@@ -432,6 +453,23 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    */
   public function hasGraph($graph) {
     return $this->entityTypeManager()->getStorage($this->getEntityTypeId())->hasGraph($this, $graph);
+  }
+
+  /**
+   * Returns whether the entity bundle has mapping for a certain field column.
+   *
+   * @param string $field
+   *   The field name.
+   * @param string $column
+   *   The field column. Defaults to 'value'.
+   *
+   * @return bool
+   *   True if the mapping is set, false otherwise.
+   */
+  protected function hasFieldMapping($field, $column = 'value') {
+    $bundle = $this->get($this->getEntityType()->getKey('bundle'))->entity;
+    $mapping = rdf_entity_get_third_party_property($bundle, 'mapping', $field);
+    return !empty($mapping[$column]['predicate']);
   }
 
 }

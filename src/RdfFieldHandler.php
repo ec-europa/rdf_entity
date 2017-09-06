@@ -6,7 +6,12 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Event\InboundValueEvent;
+use Drupal\rdf_entity\Event\OutboundValueEvent;
+use Drupal\rdf_entity\Event\RdfEntityEvents;
+use Drupal\rdf_entity\Exception\NonExistingFieldPropertyException;
 use EasyRdf\Literal;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Contains helper methods that help with the uri mappings of Drupal elements.
@@ -50,16 +55,26 @@ class RdfFieldHandler {
   protected $entityFieldManager;
 
   /**
+   * The event dispatcher service.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Constructs a QueryFactory object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EventDispatcherInterface $event_dispatcher) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -72,7 +87,7 @@ class RdfFieldHandler {
    *    Thrown when a bundle does not have the bundle mapped.
    */
   protected function buildEntityTypeProperties($entity_type_id) {
-    if (empty($mapping[$entity_type_id]) && empty($mapping[$entity_type_id])) {
+    if (empty($this->outboundMap[$entity_type_id]) && empty($this->inboundMap[$entity_type_id])) {
       $storage = $this->entityTypeManager->getStorage($entity_type_id);
       $bundle_type = $storage->getEntityType()->getBundleEntityType();
       $bundle_storage = $this->entityTypeManager->getStorage($bundle_type);
@@ -123,10 +138,18 @@ class RdfFieldHandler {
               $serialize = TRUE;
             }
 
+            // Retrieve the property definition primitive data type.
+            $property_definition = $storage_definition->getPropertyDefinition($column);
+            if (empty($property_definition)) {
+              throw new NonExistingFieldPropertyException("Field $id of type {$storage_definition->getType()} has no property $column.");
+            }
+            $data_type = $property_definition->getDataType();
+
             $this->outboundMap[$entity_type_id]['fields'][$id]['columns'][$column][$rdf_bundle_entity->id()] = [
               'predicate' => $column_info['predicate'],
               'format' => $column_info['format'],
               'serialize' => $serialize,
+              'data_type' => $data_type,
             ];
 
             $this->inboundMap[$entity_type_id]['fields'][$column_info['predicate']][$rdf_bundle_entity->id()] = [
@@ -134,6 +157,7 @@ class RdfFieldHandler {
               'column' => $column,
               'serialize' => $serialize,
               'type' => $storage_definition->getType(),
+              'data_type' => $data_type,
             ];
           }
         }
@@ -483,6 +507,14 @@ class RdfFieldHandler {
     $outbound_map = $this->getOutboundMap($entity_type_id);
     $format = $this->getFieldFormat($entity_type_id, $field, $column, $bundle);
     $format = reset($format);
+
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new OutboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::OUTBOUND_VALUE, $event);
+    $value = $event->getValue();
+
     $serialize = $this->isFieldSerializable($entity_type_id, $field, $column);
     if ($serialize) {
       $value = serialize($value);
@@ -548,12 +580,91 @@ class RdfFieldHandler {
    *    Thrown when the bundle is not found.
    */
   public function getInboundBundleValue($entity_type_id, $bundle) {
-    $outbound_map = $this->getInboundMap($entity_type_id);
-    if (empty($outbound_map['bundles'][$bundle])) {
+    $inbound_map = $this->getInboundMap($entity_type_id);
+    if (empty($inbound_map['bundles'][$bundle])) {
       throw new \Exception("A bundle mapped to <$bundle> was not found.");
     }
 
-    return $outbound_map['bundles'][$bundle];
+    return $inbound_map['bundles'][$bundle];
+  }
+
+  /**
+   * Returns the inbound value for the given field.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $field
+   *   The field name.
+   * @param string $value
+   *   The value to convert.
+   * @param string $lang
+   *   Optional. Pass the language if one exists. This should be null if the
+   *   format is not t_literal.
+   * @param string $column
+   *   The column for which to calculate the value. If null, the field's main
+   *   column will be used.
+   * @param string $bundle
+   *   (optional) The same field of an entity type might use different value
+   *   formats, depending on how is mapped on each bundle. Pass the bundle, when
+   *   is available, for a better determination of the value format.
+   *
+   * @return mixed
+   *   The calculated value.
+   */
+  public function getInboundValue($entity_type_id, $field, $value, $lang = NULL, $column = NULL, $bundle = NULL) {
+    // The outbound map contains the same information as the inbound map: the
+    // only difference is how the data is structured. It's safe to retrieve the
+    // field information from the outbound map.
+    // @see self::buildEntityTypeProperties()
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new InboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::INBOUND_VALUE, $event);
+    $value = $event->getValue();
+
+    if ($this->isFieldSerializable($entity_type_id, $field, $column)) {
+      $value = unserialize($value);
+    }
+
+    return $value;
+  }
+
+  /**
+   * Retrieves information about the mapping of a certain field.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $field
+   *   The field name.
+   * @param string|null $column
+   *   The column name. If empty, defaults to the field main property.
+   * @param string|null $bundle
+   *   The entity bundle. Defaults to empty.
+   *
+   * @return array
+   *   An associative array with the information about the field mappings.
+   *   When no bundle is specified, an array of arrays is returned, where the
+   *   first level keys are all the bundles with that field.
+   *
+   * @throws \Exception
+   *   Thrown when the field is not found.
+   */
+  public function getFieldInfoFromOutboundMap($entity_type_id, $field, $column = NULL, $bundle = NULL) {
+    $mapping = $this->getOutboundMap($entity_type_id);
+
+    if (!isset($mapping['fields'][$field])) {
+      throw new \Exception("You are requesting the mapping info for a non mapped field: $field.");
+    }
+
+    $field_mapping = $mapping['fields'][$field];
+    $column = $column ?: $field_mapping['main_property'];
+
+    if (!empty($bundle)) {
+      return [$field_mapping['columns'][$column][$bundle]];
+    }
+
+    return array_values($field_mapping['columns'][$column]);
   }
 
   /**

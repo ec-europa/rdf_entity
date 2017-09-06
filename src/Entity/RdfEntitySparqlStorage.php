@@ -431,9 +431,8 @@ QUERY;
             foreach ($field as $lang => $items) {
               $langcode_key = ($lang === $default_language) ? LanguageInterface::LANGCODE_DEFAULT : $lang;
               foreach ($items as $item) {
-                if ($this->fieldHandler->isFieldSerializable($this->getEntityTypeId(), $field_name, $column)) {
-                  $item = unserialize($item);
-                }
+                $item = $this->fieldHandler->getInboundValue($this->getEntityTypeId(), $field_name, $item, $langcode_key, $column, $bundle);
+
                 if (!isset($return[$entity_id][$field_name][$langcode_key]) || !is_string($return[$entity_id][$field_name][$langcode_key])) {
                   $return[$entity_id][$field_name][$langcode_key][][$column] = $item;
                 }
@@ -1038,6 +1037,7 @@ QUERY;
           break;
 
         // Strip timezone part in dates.
+        // @todo Move in InboundOutboundValueSubscriber::massageInboundValue()
         case 'datetime':
           $time_stamp = strtotime($value['value']);
           $date = date('o-m-d', $time_stamp) . "T" . date('H:i:s', $time_stamp);
