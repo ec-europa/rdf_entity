@@ -255,6 +255,16 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
         $field_name_parts = explode('.', $field);
         $field = $field_name_parts[0];
         $column = isset($field_name_parts[1]) ? $field_name_parts[1] : $this->fieldHandler->getFieldMainProperty($this->query->getEntityTypeId(), $field);
+
+        // @todo: This should maybe throw an exception instead. That blocks the
+        // creation of new fields though because the field storage config class
+        // validated the form by checking counting the values in the database.
+        // For now, return without adding the condition in this case.
+        // @see: \Drupal\field_ui\Form\FieldStorageConfigEditForm::validateCardinality
+        if (!$this->fieldHandler->hasFieldPredicate($this->query->getEntityTypeId(), $field, $column, $this->entityBundle)) {
+          return $this;
+        }
+
         $this->conditions[] = [
           'field' => $field,
           'value' => $value,
