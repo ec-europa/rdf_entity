@@ -261,7 +261,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
         // validated the form by checking counting the values in the database.
         // For now, return without adding the condition in this case.
         // @see: \Drupal\field_ui\Form\FieldStorageConfigEditForm::validateCardinality
-        if (!$this->fieldHandler->hasFieldPredicate($this->query->getEntityTypeId(), $field, $column, $this->entityBundle)) {
+        if (empty($this->fieldHandler->getFieldPredicates($this->query->getEntityTypeId(), $field, $column))) {
           return $this;
         }
 
