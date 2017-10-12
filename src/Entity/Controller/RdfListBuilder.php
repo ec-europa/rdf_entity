@@ -57,45 +57,6 @@ class RdfListBuilder extends EntityListBuilder {
 
   /**
    * {@inheritdoc}
-   */
-  protected function getEntityIds() {
-    $request = \Drupal::request();
-    $rdf_storage = $this->getStorage();
-    /** @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info */
-    $bundle_info = \Drupal::service('entity_type.bundle.info');
-    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
-    $query = $rdf_storage->getQuery();
-
-    // If a graph type is set in the url, validate it, and use it in the query.
-    $graph = $request->get('graph');
-    if (!empty($graph)) {
-      $definitions = $rdf_storage->getGraphDefinitions();
-      if (isset($definitions[$graph])) {
-        // Use the graph to build the list.
-        $query->setGraphType([$graph]);
-      }
-    }
-    else {
-      $query->setGraphType($rdf_storage->getGraphHandler()->getEntityTypeEnabledGraphs());
-    }
-
-    if ($rid = $request->get('rid') ?: NULL) {
-      $rid = in_array($rid, array_keys($bundle_info->getBundleInfo('rdf_entity'))) ? [$rid] : NULL;
-    }
-    $query->condition('rid', $rid, 'IN');
-
-    // Only add the pager if a limit is specified.
-    if ($this->limit) {
-      $query->pager($this->limit);
-    }
-    $header = $this->buildHeader();
-    $query->tableSort($header);
-
-    return $query->execute();
-  }
-
-  /**
-   * {@inheritdoc}
    *
    * We override ::render() so that we can add our own content above the table.
    * parent::render() is where EntityListBuilder creates the table using our
