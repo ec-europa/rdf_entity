@@ -237,6 +237,16 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase {
   }
 
   /**
+   * Resets the requested graphs for the passed entities.
+   *
+   * @param array $entity_ids
+   *    The entity ids. If empty, all graph settings will be reset.
+   */
+  public function resetGraphs($entity_ids = []) {
+    $this->getGraphHandler()->resetRequestGraphs($entity_ids);
+  }
+
+  /**
    * Set the save graph.
    *
    * @param string $graph
@@ -273,11 +283,16 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase {
    * {@inheritdoc}
    */
   public function doLoadMultiple(array $ids = NULL) {
+    // Keep the original set of ids as it might be that entities have been
+    // deleted, not found but the entry is a leftover.
+    $ids_to_reset = is_array($ids) ? $ids : [];
     // Attempt to load entities from the persistent cache. This will remove IDs
     // that were loaded from $ids.
     $entities_from_cache = $this->getFromPersistentCache($ids);
     // Load any remaining entities from the database.
     $entities_from_storage = $this->getFromStorage($ids);
+    // Reset all graphs related to the passed ids.
+    $this->resetGraphs($ids_to_reset);
 
     return $entities_from_cache + $entities_from_storage;
   }
@@ -537,6 +552,47 @@ QUERY;
       $rdf_entity->set($uuid_key, $rdf_entity->id());
     });
     return $entities;
+  }
+
+  /**
+   * Loads an entity from specific graphs in the given priority.
+   *
+   * @param string $id
+   *   The entity id.
+   * @param array $graphs
+   *   An array of graphs. The graphs should be passed in a priority sequence.
+   *   This means that if more than one graph is passed, only the first
+   *   available occurrence will be returned.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The returned entity.
+   */
+  public function loadFromGraphs($id, $graphs = ['default']) {
+    $entities = $this->loadMultipleFromGraphs([$id], $graphs);
+    return array_shift($entities);
+  }
+
+  /**
+   * Loads an array of entities from the passed graphs in the given priority.
+   *
+   * @param array|NULL $ids
+   *   An array of ids.
+   * @param array $graphs
+   *   An array of graphs. The graphs should be passed in a priority sequence.
+   *   This means that if more than one graph is passed, only the first
+   *   available occurrence will be returned.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]|null
+   *   The returned entities.
+   */
+  public function loadMultipleFromGraphs(array $ids = NULL, $graphs = ['default']) {
+    if (is_array($ids)) {
+      foreach ($ids as $id) {
+        $this->setRequestGraphs($id, $graphs);
+      }
+    }
+
+    return $this->loadMultiple($ids);
   }
 
   /**
@@ -804,6 +860,7 @@ QUERY;
     }
     try {
       $this->insert($graph, $graph_uri);
+      $this->resetGraphs([$entity->id()]);
       return $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
     }
     catch (\Exception $e) {
