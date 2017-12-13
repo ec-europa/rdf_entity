@@ -3,6 +3,7 @@
 namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Config\Entity\EntityBundleWithPluralLabelsTrait;
 use Drupal\rdf_entity\RdfEntityTypeInterface;
 
 /**
@@ -41,6 +42,9 @@ use Drupal\rdf_entity\RdfEntityTypeInterface;
  * )
  */
 class RdfEntityType extends ConfigEntityBundleBase implements RdfEntityTypeInterface {
+
+  use EntityBundleWithPluralLabelsTrait;
+
   /**
    * The bundle type of RDF entity.
    *
