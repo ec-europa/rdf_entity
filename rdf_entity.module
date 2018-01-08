@@ -491,3 +491,14 @@ QUERY;
 
   return $requirements;
 }
+
+/**
+ * Implements hook_pathauto_alias_types_alter().
+ */
+function rdf_entity_pathauto_alias_types_alter(array &$definitions) {
+  // Remove the automatically generated Pathauto alias type, we offer our own
+  // alias type.
+  // @see \Drupal\pathauto\Plugin\Deriver\EntityAliasTypeDeriver::getDerivativeDefinitions()
+  // @see \Drupal\rdf_entity\Plugin\pathauto\AliasType\RdfEntityAliasType
+  unset($definitions['canonical_entities:rdf_entity']);
+}
