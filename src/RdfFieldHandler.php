@@ -107,13 +107,14 @@ class RdfFieldHandler {
         $this->outboundMap[$entity_type_id]['bundles'][$rdf_bundle_entity->id()] = $bundle_mapping;
         // More than one drupal bundle can share the same mapped uri.
         $this->inboundMap[$entity_type_id]['bundles'][$bundle_mapping][] = $rdf_bundle_entity->id();
+        $base_fields_mapping = $mapping->get('base_fields_mapping');
         foreach ($storage_definitions as $id => $storage_definition) {
           if (!in_array($id, $bundle_definitions_ids)) {
             continue;
           }
 
           if ($storage_definition instanceof BaseFieldDefinition) {
-            $field_data = $mapping->get('base_fields_mapping')[$id];
+            $field_data = $base_fields_mapping[$id] ?? FALSE;
             $main_property = $storage_definition->getFieldStorageDefinition()->getMainPropertyName();
           }
           else {

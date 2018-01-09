@@ -388,7 +388,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    */
   protected function hasFieldMapping($field_name, $column = 'value') {
     $mapping = RdfEntityMapping::loadByName($this->getEntityTypeId(), $this->bundle());
-    return !empty($mapping->get('base_fields_mapping')[$field_name][$column]['predicate']);
+    return $mapping && !empty($mapping->get('base_fields_mapping')[$field_name][$column]['predicate']);
   }
 
 }
