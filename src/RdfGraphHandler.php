@@ -62,17 +62,17 @@ class RdfGraphHandler {
    * @var array
    *
    * @code
-   * $requestGraphs = [
-   *    $entity_id => [
-   *      graph1,
-   *      graph2
-   *    ]
-   *    $entity_id2 => [
-   *      graph1,
-   *      graph2,
-   *    ]
-   *  ]
-   * @code
+   * $requestGraphs => [
+   *   $entity_id => [
+   *     graph1,
+   *     graph2
+   *   ],
+   *   $entity_id2 => [
+   *     graph1,
+   *     graph2,
+   *   ],
+   * ]
+   * @endcode
    */
   protected $requestGraphs;
 
