@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 
 /**
  * Contains helper methods for managing the Rdf graphs.
@@ -462,7 +463,7 @@ class RdfGraphHandler {
   /**
    * Retrieves the uri of a bundle's graph from the settings.
    *
-   * @param string $bundle_type_key
+   * @param string $bundle_entity_type_id
    *   The bundle type key. E.g. 'node_type'.
    * @param string $bundle_id
    *   The bundle machine name.
@@ -475,22 +476,22 @@ class RdfGraphHandler {
    * @throws \Exception
    *    Thrown if the graph is not found.
    */
-  protected function getBundleGraphUriFromSettings($bundle_type_key, $bundle_id, $graph_name) {
-    if (!isset($this->bundleGraphUris[$bundle_type_key][$bundle_id][$graph_name])) {
-      /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $bundle */
-      $bundle = $this->entityTypeManager->getStorage($bundle_type_key)->load($bundle_id);
-      $graph_uri = rdf_entity_get_third_party_property($bundle, 'graph', $graph_name, FALSE);
+  protected function getBundleGraphUriFromSettings($bundle_entity_type_id, $bundle_id, $graph_name) {
+    if (!isset($this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name])) {
+      $bundle_entity_type = $this->entityTypeManager->getDefinition($bundle_entity_type_id);
+      $entity_type_id = $bundle_entity_type->getBundleOf();
+      $mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_id);
+      $graph_uri = $mapping->get('graph')[$graph_name] ?? NULL;
       if (!$graph_uri) {
         throw new \Exception(format_string('Unable to determine graph %graph for bundle %bundle', [
           '%graph' => $graph_name,
-          '%bundle' => $bundle->id(),
+          '%bundle' => $bundle_id,
         ]));
       }
-
-      $this->bundleGraphUris[$bundle_type_key][$bundle_id][$graph_name] = $graph_uri;
+      $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name] = $graph_uri;
     }
 
-    return $this->bundleGraphUris[$bundle_type_key][$bundle_id][$graph_name];
+    return $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name];
   }
 
 }

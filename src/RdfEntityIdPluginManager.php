@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\rdf_entity\Annotation\RdfEntityId;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 
 /**
  * Plugin manager for entity ID generator plugins.
@@ -71,14 +72,9 @@ class RdfEntityIdPluginManager extends DefaultPluginManager implements FallbackP
 
     if (!isset($this->instances[$entity_type_id][$bundle_id])) {
       $options = ['plugin_id' => NULL];
-      if ($bundle_entity_type_id = $entity->getEntityType()->getBundleEntityType()) {
-        if ($bundle_storage = $this->entityTypeManager->getStorage($bundle_entity_type_id)) {
-          /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $bundle */
-          if ($bundle = $bundle_storage->load($bundle_id)) {
-            if ($plugin_id = $bundle->getThirdPartySetting('rdf_entity', 'entity_id_plugin')) {
-              $options['plugin_id'] = $plugin_id;
-            }
-          }
+      if ($mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_id)) {
+        if ($plugin_id = $mapping->get('entity_id_plugin')) {
+          $options['plugin_id'] = $plugin_id;
         }
       }
       $this->instances[$entity_type_id][$bundle_id] = $this->getInstance($options);

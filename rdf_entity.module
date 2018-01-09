@@ -5,6 +5,8 @@
  * Main functions and hook implementations of the RDF Entity module.
  */
 
+declare(strict_types = 1);
+
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Database\Database;
@@ -16,6 +18,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldStorageConfigInterface;
+use Drupal\rdf_entity\Entity\RdfEntityGraph;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
@@ -109,12 +114,27 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
 
 /**
  * Retrieve nested third party settings from object.
+ *
+ * The object may be either a bundle entity or a field storage config entity.
+ *
+ * @todo Move this to a service (or to RDF storage?)
  */
 function rdf_entity_get_third_party_property(ConfigEntityInterface $object, $property, $column, $default = NULL) {
-  $property_value = $object->getThirdPartySetting('rdf_entity', $property, FALSE);
+  // Mapping data requested for a configurable field.
+  if ($object instanceof \Drupal\field\FieldStorageConfigInterface) {
+    $property_value = $object->getThirdPartySetting('rdf_entity', $property, FALSE);
+  }
+  // Mapping data requested for a bundle entity.
+  else {
+    $entity_type_id = $object->getEntityType()->getBundleOf();
+    $bundle = $object->id();
+    $mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle);
+    $property_value = $mapping->get($property) ?: FALSE;
+  }
   if (!is_array($property_value) || !isset($property_value[$column])) {
     return $default;
   }
+
   return $property_value[$column];
 }
 
@@ -174,6 +194,21 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#description' => t('RDF entity configurations.'),
     '#open' => TRUE,
     '#weight' => 99,
+    '#tree' => TRUE,
+  ];
+
+  if (!$mapping = RdfEntityMapping::loadByName($entity_name, $entity->id())) {
+    $mapping = RdfEntityMapping::create([
+      'entity_type_id' => $entity_name,
+      'bundle' => $entity->id(),
+    ]);
+  }
+  $form_state->set('rdf_entity_mapping', $mapping);
+
+  $form['rdf_entity']['rdf_type'] = [
+    '#type' => 'textfield',
+    '#title' => t('RDF type mapping'),
+    '#default_value' => $mapping->get('rdf_type'),
   ];
 
   /** @var \Drupal\rdf_entity\RdfEntityIdPluginManager $id_plugin_manager */
@@ -187,102 +222,103 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#title' => t('Entity ID generator'),
     '#description' => t("The generator used to create IDs for new entities."),
     '#options' => $plugins,
-    '#default_value' => $entity->getThirdPartySetting('rdf_entity', 'entity_id_plugin') ?: $id_plugin_manager->getFallbackPluginId(NULL),
+    '#default_value' => $mapping->get('entity_id_plugin') ?: $id_plugin_manager->getFallbackPluginId(NULL),
   ];
 
-  $form['rdf_entity']['rdf_graph'] = [
+  $form['rdf_entity']['graph'] = [
     '#type' => 'details',
     '#title' => t('Graphs'),
     '#description' => t('Graph URI mapping'),
   ];
-  foreach ($storage->getGraphDefinitions() as $definedGraphName => $definedGraph) {
-    $default_value = rdf_entity_get_third_party_property($entity, 'graph', $definedGraphName, FALSE);
-    $form['rdf_entity']['rdf_graph']['graph_' . $definedGraphName] = [
+
+  foreach ($storage->getGraphDefinitions() as $graph_id => $graph) {
+    $form['rdf_entity']['graph'][$graph_id] = [
       '#type' => 'url',
-      '#title' => $definedGraph['title'],
-      '#description' => $definedGraph['description'],
-      '#default_value' => $default_value,
-      '#required' => TRUE,
+      '#title' => t('@title (@id)', ['@title' => $graph['title'], '@id' => $graph_id]),
+      '#description' => $graph['description'],
+      '#default_value' => $mapping->get('graph')[$graph_id] ?? NULL,
+      '#required' => $graph_id === RdfEntityGraph::DEFAULT,
     ];
   }
 
-  $form['rdf_entity']['rdf_mapping'] = [
+  $form['rdf_entity']['base_fields_mapping'] = [
     '#type' => 'details',
     '#title' => t('Field mapping'),
     '#description' => t('This entity type uses a Sparql backend. Please map the bundle base fields to their corresponding RDF properties.'),
   ];
 
+  $base_fields_mapping = $mapping->get('base_fields_mapping');
   /** @var \Drupal\Core\Field\BaseFieldDefinition $base_field */
-  foreach ($base_fields as $id => $base_field) {
-    $columns = $base_field->getColumns();
-    // The entity id doesn't need a mapping,
-    // as this is the subject of the triple.
-    if ($id == $idKey) {
+  foreach ($base_fields as $field_name => $base_field) {
+    // The entity id doesn't need a mapping as it's the subject of the triple.
+    if ($field_name === $idKey) {
       continue;
     }
+    $columns = $base_field->getColumns();
     foreach ($columns as $column_name => $column) {
-      $settings = rdf_entity_get_third_party_property($entity, 'mapping', $id, FALSE);
       $title = $base_field->getLabel();
       if (count($columns) > 1) {
         $title .= ' (' . $column_name . ')';
       }
 
-      $form['rdf_entity']['rdf_mapping'][$id] = [
+      $form['rdf_entity']['base_fields_mapping'][$field_name] = [
         '#type' => 'details',
         '#title' => $title,
         '#description' => $base_field->getDescription(),
       ];
 
-      $form['rdf_entity']['rdf_mapping'][$id]['predicate_' . $id . '_' . $column_name] = [
+      $form['rdf_entity']['base_fields_mapping'][$field_name][$column_name]['predicate'] = [
         '#type' => 'url',
         '#title' => t('Mapping'),
         '#description' => t('The rdf predicate.'),
         '#weight' => 150,
-        '#default_value' => isset($settings[$column_name]['predicate']) ? $settings[$column_name]['predicate'] : NULL,
+        '#default_value' => $base_fields_mapping[$field_name][$column_name]['predicate'] ?? NULL,
       ];
 
-      $form['rdf_entity']['rdf_mapping'][$id]['format_' . $id . '_' . $column_name] = [
+      $form['rdf_entity']['base_fields_mapping'][$field_name][$column_name]['format'] = [
         '#type' => 'select',
         '#title' => t('Value format'),
         '#description' => t('The rdf format. Required if format is filled.'),
         '#options' => RdfFieldHandler::getSupportedDatatypes(),
         '#empty_value' => '',
         '#weight' => 151,
-        '#default_value' => isset($settings[$column_name]['format']) ? $settings[$column_name]['format'] : NULL,
+        '#default_value' => $base_fields_mapping[$field_name][$column_name]['format'] ?? NULL,
       ];
     }
   }
-  $form['#entity_builders'][] = 'rdf_entity_bundle_config';
+  $form['#entity_builders'][] = 'rdf_entity_save_mapping';
 }
 
 /**
- * Store the mapping of fields and rdf properties.
+ * Stores the mapping of base fields and RDF properties.
+ *
+ * @param string $entity_type_id
+ *   The entity type ID.
+ * @param ConfigEntityInterface $bundle_entity
+ *   The bundle entity being built.
+ * @param array $form
+ *   The form API form render array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state object.
+ *
+ * @see rdf_entity_form_alter()
  */
-function rdf_entity_bundle_config($entity_type, ConfigEntityInterface $entity, array &$form, FormStateInterface $form_state) {
-  $entity_name = $entity->getEntityType()->getBundleOf();
-  $base_fields = \Drupal::entityManager()->getBaseFieldDefinitions($entity_name);
-  $storage = \Drupal::entityManager()->getStorage($entity_name);
-  $idKey = $storage->getEntityType()->getKey('id');
-  $entity->setThirdPartySetting('rdf_entity', 'entity_id_plugin', $form_state->getValue('entity_id_plugin'));
-  $third_party_settings = [];
-  /** @var \Drupal\Core\Field\BaseFieldDefinition $base_field */
-  foreach ($base_fields as $id => $base_field) {
-    if ($id == $idKey) {
-      continue;
-    }
-    $columns = $base_field->getColumns();
-    foreach ($columns as $column_name => $column) {
-      $third_party_settings[$id][$column_name]['predicate'] = $form_state->getValue('predicate_' . $id . '_' . $column_name);
-      $third_party_settings[$id][$column_name]['format'] = $form_state->getValue('format_' . $id . '_' . $column_name);
-    }
+function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $bundle_entity, array $form, FormStateInterface $form_state): void {
+  /** @var \Drupal\rdf_entity\RdfEntityMappingInterface $mapping */
+  $mapping = $form_state->get('rdf_entity_mapping');
+  $values = $form_state->getValue('rdf_entity');
+
+  try {
+    $mapping
+      ->set('rdf_type', $values['rdf_type'])
+      ->set('entity_id_plugin', $values['entity_id_plugin'])
+      ->set('graph', $values['graph'])
+      ->set('base_fields_mapping', $values['base_fields_mapping'])
+      ->save();
   }
-  $entity->setThirdPartySetting('rdf_entity', 'mapping', $third_party_settings);
-  $third_party_settings = [];
-  foreach ($storage->getGraphDefinitions() as $definedGraphName => $definedGraph) {
-    $graph_uri = $form_state->getValue('graph_' . $definedGraphName);
-    $third_party_settings[$definedGraphName] = $graph_uri;
+  catch (\Exception $exception) {
+    \Drupal::logger('rdf_entity')->critical(t('Could not save RDF entity mapping'), ['exception' => $exception]);
   }
-  $entity->setThirdPartySetting('rdf_entity', 'graph', $third_party_settings);
 }
 
 /**

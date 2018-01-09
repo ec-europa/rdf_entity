@@ -3,6 +3,7 @@
 namespace Drupal\rdf_taxonomy;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\taxonomy\TermStorageInterface;
 use EasyRdf\Graph;
@@ -238,9 +239,8 @@ QUERY;
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
       if (empty($this->treeChildren[$vid])) {
-        /** @var \Drupal\taxonomy\Entity\Vocabulary $voc */
-        $voc = entity_load('taxonomy_vocabulary', $vid);
-        $concept_schema = $voc->getThirdPartySetting('rdf_entity', 'rdf_type');
+        $mapping = RdfEntityMapping::loadByName('taxonomy_term', $vid);
+        $concept_schema = $mapping->get('rdf_type');
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];

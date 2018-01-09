@@ -378,18 +378,17 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * Returns whether the entity bundle has mapping for a certain field column.
    *
-   * @param string $field
+   * @param string $field_name
    *   The field name.
    * @param string $column
    *   The field column. Defaults to 'value'.
    *
    * @return bool
-   *   True if the mapping is set, false otherwise.
+   *   TRUE if the mapping is set, FALSE otherwise.
    */
-  protected function hasFieldMapping($field, $column = 'value') {
-    $bundle = $this->get($this->getEntityType()->getKey('bundle'))->entity;
-    $mapping = rdf_entity_get_third_party_property($bundle, 'mapping', $field);
-    return !empty($mapping[$column]['predicate']);
+  protected function hasFieldMapping($field_name, $column = 'value') {
+    $mapping = RdfEntityMapping::loadByName($this->getEntityTypeId(), $this->bundle());
+    return !empty($mapping->get('base_fields_mapping')[$field_name][$column]['predicate']);
   }
 
 }
