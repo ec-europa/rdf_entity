@@ -74,6 +74,15 @@ rdf_entity.mapping.*:
   type: config_entity
   label: 'Stores the mapping between Drupal bundle settings and RDF representation'
   mapping:
+    id:
+      type: string
+      label: ID
+    entity_type_id:
+      type: string
+      label: 'Referred entity type'
+    bundle:
+      type: string
+      label: 'Referred bundle'
     rdf_type:
       type: string
       label: 'RDF type mapping'
@@ -84,7 +93,7 @@ rdf_entity.mapping.*:
         label: 'The mapping of a graph definition to a graph URI.'
     base_fields_mapping:
       type: sequence
-      label: 'Property'
+      label: 'The base fields mapping'
       sequence:
         type: sequence
         label: 'Column'
