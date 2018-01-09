@@ -1,0 +1,53 @@
+langcode: en
+status: true
+dependencies: {  }
+third_party_settings: {  }
+id: taxonomy_term.taxonomy_test
+entity_type_id: taxonomy_term
+bundle: taxonomy_test
+rdf_type: 'http://example.com/rdf_taxonomy/test'
+graph:
+  default: 'http://example.com/rdf_taxonomy/published'
+  draft: 'http://example.com/rdf_taxonomy/draft'
+base_fields_mapping:
+  uuid:
+    value:
+      predicate: ''
+      format: ''
+  vid:
+    target_id:
+      predicate: 'http://www.w3.org/2004/02/skos/core#inScheme'
+      format: resource
+  langcode:
+    value:
+      predicate: ''
+      format: ''
+  name:
+    value:
+      predicate: 'http://www.w3.org/2004/02/skos/core#prefLabel'
+      format: t_literal
+  description:
+    value:
+      predicate: 'http://www.w3.org/2004/02/skos/core#definition'
+      format: t_literal
+  format:
+    value:
+      predicate: ''
+      format: ''
+  weight:
+    value:
+      predicate: ''
+      format: ''
+  parent:
+    target_id:
+      predicate: 'http://www.w3.org/2004/02/skos/core#broader'
+      format: resource
+  changed:
+    value:
+      predicate: ''
+      format: ''
+  default_langcode:
+    value:
+      predicate: ''
+      format: ''
+  path: {  }
