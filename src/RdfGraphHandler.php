@@ -90,6 +90,13 @@ class RdfGraphHandler {
   protected $targetGraph = NULL;
 
   /**
+   * The RDF entity graph config entity storage.
+   *
+   * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
+   */
+  protected $rdfEntityGraphStorage;
+
+  /**
    * Constructs a RDF graph handler object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -139,18 +146,25 @@ class RdfGraphHandler {
    *
    * @return array
    *   A structured array of graph definitions containing a title and a
-   *    description. The array keys are the machine names of the graphs.
+   *   description. The array keys are the machine names of the graphs.
    */
   public function getGraphDefinitions($entity_type_id) {
-    $graphs_definition = [];
-    $graphs_definition['default'] = [
-      'title' => $this->t('Default'),
-      'description' => $this->t('The default graph used to store entities of this type.'),
-    ];
-    // @todo Consider turning this into an event. Advantages?
+    $query = $this->getRdfEntityGraphStorage()->getQuery();
+    $ids = $query->condition($query->orConditionGroup()
+      // An empty value, such as NULL or [], means "all entity types".
+      ->notExists('entity_types')
+      ->condition('entity_types', [])
+      ->condition('entity_types.*', $entity_type_id)
+    )->condition('status', TRUE)
+      ->execute();
+    $graphs = $this->getRdfEntityGraphStorage()->loadMultiple($ids);
 
-    $this->moduleHandler->alter('rdf_graph_definition', $entity_type_id, $graphs_definition);
-    return $graphs_definition;
+    return array_map(function (RdfEntityGraphInterface $graph): array {
+      return [
+        'title' => $graph->label(),
+        'description' => $graph->getDescription(),
+      ];
+    }, $graphs);
   }
 
   /**
@@ -490,6 +504,19 @@ class RdfGraphHandler {
     }
 
     return $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name];
+  }
+
+  /**
+   * Returns the RDF entity graph config entity storage service.
+   *
+   * @return \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
+   *   The RDF entity graph config entity storage service.
+   */
+  protected function getRdfEntityGraphStorage() {
+    if (!isset($this->rdfEntityGraphStorage)) {
+      $this->rdfEntityGraphStorage = $this->entityTypeManager->getStorage('rdf_entity_graph');
+    }
+    return $this->rdfEntityGraphStorage;
   }
 
 }
