@@ -482,12 +482,8 @@ class RdfGraphHandler {
       $entity_type_id = $bundle_entity_type->getBundleOf();
       $graph_uri = NULL;
       if ($mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_id)) {
-        $graph_uri = $mapping->get('graph')[$graph_name] ?? NULL;
-        if (!$graph_uri) {
-          throw new \Exception(format_string('Unable to determine graph %graph for bundle %bundle', [
-            '%graph' => $graph_name,
-            '%bundle' => $bundle_id,
-          ]));
+        if (!$graph_uri = $mapping->getGraphUri($graph_name)) {
+          throw new \Exception("Unable to determine graph $graph_name for bundle $bundle_id");
         }
       }
       $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name] = $graph_uri;

@@ -207,7 +207,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
   $form['rdf_entity']['rdf_type'] = [
     '#type' => 'textfield',
     '#title' => t('RDF type mapping'),
-    '#default_value' => $mapping->get('rdf_type'),
+    '#default_value' => $mapping->getRdfType(),
   ];
 
   /** @var \Drupal\rdf_entity\RdfEntityIdPluginManager $id_plugin_manager */
@@ -221,7 +221,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#title' => t('Entity ID generator'),
     '#description' => t("The generator used to create IDs for new entities."),
     '#options' => $plugins,
-    '#default_value' => $mapping->get('entity_id_plugin') ?: $id_plugin_manager->getFallbackPluginId(NULL),
+    '#default_value' => $mapping->getEntityIdPlugin() ?: $id_plugin_manager->getFallbackPluginId(NULL),
   ];
 
   $form['rdf_entity']['graph'] = [
@@ -235,7 +235,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
       '#type' => 'url',
       '#title' => t('@title (@id)', ['@title' => $graph['title'], '@id' => $graph_id]),
       '#description' => $graph['description'],
-      '#default_value' => $mapping->get('graph')[$graph_id] ?? NULL,
+      '#default_value' => $mapping->getGraph($graph_id),
       '#required' => $graph_id === RdfEntityGraphInterface::DEFAULT,
     ];
   }
@@ -246,7 +246,6 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#description' => t('This entity type uses a Sparql backend. Please map the bundle base fields to their corresponding RDF properties.'),
   ];
 
-  $base_fields_mapping = $mapping->get('base_fields_mapping');
   /** @var \Drupal\Core\Field\BaseFieldDefinition $base_field */
   foreach ($base_fields as $field_name => $base_field) {
     // The entity id doesn't need a mapping as it's the subject of the triple.
@@ -271,7 +270,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
         '#title' => t('Mapping'),
         '#description' => t('The rdf predicate.'),
         '#weight' => 150,
-        '#default_value' => $base_fields_mapping[$field_name][$column_name]['predicate'] ?? NULL,
+        '#default_value' => $mapping->getMapping($field_name, $column_name)['predicate'] ?? NULL,
       ];
 
       $form['rdf_entity']['base_fields_mapping'][$field_name][$column_name]['format'] = [
@@ -281,7 +280,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
         '#options' => RdfFieldHandler::getSupportedDatatypes(),
         '#empty_value' => '',
         '#weight' => 151,
-        '#default_value' => $base_fields_mapping[$field_name][$column_name]['format'] ?? NULL,
+        '#default_value' => $mapping->getMapping($field_name, $column_name)['format'] ?? NULL,
       ];
     }
   }
@@ -309,10 +308,11 @@ function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $
 
   try {
     $mapping
-      ->set('rdf_type', $values['rdf_type'])
-      ->set('entity_id_plugin', $values['entity_id_plugin'])
-      ->set('graph', $values['graph'])
-      ->set('base_fields_mapping', $values['base_fields_mapping'])
+      ->setRdfType($values['rdf_type'])
+      ->setEntityIdPlugin($values['entity_id_plugin'])
+      // Add only non-empty values.
+      ->setGraphs(array_filter($values['graph']))
+      ->setMappings($values['base_fields_mapping'])
       ->save();
   }
   catch (\Exception $exception) {

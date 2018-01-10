@@ -240,7 +240,7 @@ QUERY;
       // children, too.
       if (empty($this->treeChildren[$vid])) {
         $mapping = RdfEntityMapping::loadByName('taxonomy_term', $vid);
-        $concept_schema = $mapping->get('rdf_type');
+        $concept_schema = $mapping->getRdfType();
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];

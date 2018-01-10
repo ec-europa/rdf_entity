@@ -4,10 +4,11 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_entity\Entity;
 
-use Drupal\rdf_entity\RdfEntityGraphInterface;
-use Drupal\rdf_entity\RdfEntityMappingInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Annotation\ConfigEntityType;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\rdf_entity\RdfEntityMappingInterface;
 
 /**
  * Defines the RDF entity mapping config entity.
@@ -124,6 +125,136 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
    */
   public function id() {
     return "{$this->entity_type_id}.{$this->bundle}";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTargetEntityTypeId(): string {
+    return $this->entity_type_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTargetEntityType(): ?ContentEntityTypeInterface {
+    return $this->entityTypeManager()->getDefinition($this->entity_type_id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTargetBundle(): string {
+    return $this->bundle;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setRdfType(string $rdf_type): RdfEntityMappingInterface {
+    $this->rdf_type = $rdf_type;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRdfType(): ?string {
+    return $this->rdf_type;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEntityIdPlugin(string $entity_id_plugin): RdfEntityMappingInterface {
+    $this->entity_id_plugin = $entity_id_plugin;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityIdPlugin(): ?string {
+    return $this->entity_id_plugin;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addGraphs(array $graphs): RdfEntityMappingInterface {
+    $this->graph = $graphs + $this->graph;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setGraphs(array $graphs): RdfEntityMappingInterface {
+    if (!isset($graphs[RdfEntityGraphInterface::DEFAULT])) {
+      throw new \InvalidArgumentException("Passed graphs should include the '" . RdfEntityGraphInterface::DEFAULT . "' graph.");
+    }
+    $this->graph = $graphs;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getGraphs(): array {
+    return $this->graph;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getGraphUri(string $graph): ?string {
+    return $this->graph[$graph] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetGraphs(array $graphs): RdfEntityMappingInterface {
+    $this->graph = array_diff_key($this->graph, array_flip($graphs));
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addMappings(array $mappings): RdfEntityMappingInterface {
+    $this->base_fields_mapping = $mappings + $this->base_fields_mapping;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMappings(array $mappings): RdfEntityMappingInterface {
+    $this->base_fields_mapping = $mappings;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMappings(): array {
+    return $this->base_fields_mapping;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMapping(string $field_name, string $column_name = 'value'): array {
+    return $this->base_fields_mapping[$field_name][$column_name] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetMappings(array $field_names): RdfEntityMappingInterface {
+    $this->base_fields_mapping = array_diff_key($this->base_fields_mapping, array_flip($field_names));
+    return $this;
   }
 
   /**

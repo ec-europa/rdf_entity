@@ -101,13 +101,13 @@ class RdfFieldHandler {
         $bundle_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $rdf_bundle_entity->id());
         $bundle_definitions_ids = array_keys($bundle_definitions);
         $mapping = RdfEntityMapping::loadByName($entity_type_id, $rdf_bundle_entity->id());
-        if (!$bundle_mapping = $mapping->get('rdf_type')) {
+        if (!$bundle_mapping = $mapping->getRdfType()) {
           throw new \Exception("The {$rdf_bundle_entity->label()} rdf entity does not have an rdf_type set.");
         }
         $this->outboundMap[$entity_type_id]['bundles'][$rdf_bundle_entity->id()] = $bundle_mapping;
         // More than one drupal bundle can share the same mapped uri.
         $this->inboundMap[$entity_type_id]['bundles'][$bundle_mapping][] = $rdf_bundle_entity->id();
-        $base_fields_mapping = $mapping->get('base_fields_mapping');
+        $base_fields_mapping = $mapping->getMappings();
         foreach ($storage_definitions as $id => $storage_definition) {
           if (!in_array($id, $bundle_definitions_ids)) {
             continue;

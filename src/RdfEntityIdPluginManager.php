@@ -73,7 +73,7 @@ class RdfEntityIdPluginManager extends DefaultPluginManager implements FallbackP
     if (!isset($this->instances[$entity_type_id][$bundle_id])) {
       $options = ['plugin_id' => NULL];
       if ($mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_id)) {
-        if ($plugin_id = $mapping->get('entity_id_plugin')) {
+        if ($plugin_id = $mapping->getEntityIdPlugin()) {
           $options['plugin_id'] = $plugin_id;
         }
       }
