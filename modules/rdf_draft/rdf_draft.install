@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Includes installation functions for the rdf_draft module.
+ */
+
+use Drupal\rdf_entity\Entity\RdfEntityGraph;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
+
+/**
+ * Implements hook_install().
+ */
+function rdf_draft_install() {
+  // Change the label of the 'default' graph to 'Published'.
+  if ($default = RdfEntityGraph::load(RdfEntityGraphInterface::DEFAULT)) {
+    $default->setName('Published')->save();
+  }
+}
