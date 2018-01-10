@@ -69,6 +69,13 @@ rdf_entity.graph.*:
     description:
       type: text
       label: Description
+    entity_types:
+      type: sequence
+      nullable: true
+      label: 'Entity types'
+      sequence:
+        type: string
+        label: 'Entity type'
 
 rdf_entity.mapping.*:
   type: config_entity
