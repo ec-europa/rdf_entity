@@ -245,7 +245,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
   /**
    * {@inheritdoc}
    */
-  public function getMapping(string $field_name, string $column_name = 'value'): array {
+  public function getMapping(string $field_name, string $column_name = 'value'): ?array {
     return $this->base_fields_mapping[$field_name][$column_name] ?? NULL;
   }
 
