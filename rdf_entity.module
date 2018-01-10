@@ -169,22 +169,22 @@ function rdf_entity_entity_create(EntityInterface $entity) {
  * Configurations for the RDF entity bundle.
  */
 function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
-  $form_obj = $form_state->getFormObject();
-  if (!$form_obj instanceof BundleEntityFormBase) {
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof BundleEntityFormBase) {
     return;
   }
-  /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $entity */
-  $entity = $form_obj->getEntity();
-  if (!$entity instanceof ConfigEntityBundleBase) {
+  /** @var \Drupal\Core\Config\Entity\ConfigEntityBundleBase $bundle_entity */
+  $bundle_entity = $form_object->getEntity();
+  if (!$bundle_entity instanceof ConfigEntityBundleBase) {
     return;
   }
-  $entity_name = $entity->getEntityType()->getBundleOf();
+  $entity_type_id = $bundle_entity->getEntityType()->getBundleOf();
   /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
-  $storage = \Drupal::entityManager()->getStorage($entity_name);
+  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
   if (!$storage instanceof RdfEntitySparqlStorage) {
     return;
   }
-  $base_fields = \Drupal::entityManager()->getBaseFieldDefinitions($entity_name);
+  $base_fields = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type_id);
   $idKey = $storage->getEntityType()->getKey('id');
 
   $form['rdf_entity'] = [
@@ -196,10 +196,10 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#tree' => TRUE,
   ];
 
-  if (!$mapping = RdfEntityMapping::loadByName($entity_name, $entity->id())) {
+  if (!$mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_entity->id())) {
     $mapping = RdfEntityMapping::create([
-      'entity_type_id' => $entity_name,
-      'bundle' => $entity->id(),
+      'entity_type_id' => $entity_type_id,
+      'bundle' => $bundle_entity->id(),
     ]);
   }
   $form_state->set('rdf_entity_mapping', $mapping);
@@ -235,7 +235,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
       '#type' => 'url',
       '#title' => t('@title (@id)', ['@title' => $graph['title'], '@id' => $graph_id]),
       '#description' => $graph['description'],
-      '#default_value' => $mapping->getGraph($graph_id),
+      '#default_value' => $mapping->getGraphUri($graph_id),
       '#required' => $graph_id === RdfEntityGraphInterface::DEFAULT,
     ];
   }
