@@ -16,6 +16,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * Gets the referred entity type ID.
    *
    * @return string
+   *   The referred entity type ID.
    */
   public function getTargetEntityTypeId(): string;
 
@@ -31,6 +32,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * Gets the referred bundle ID.
    *
    * @return string
+   *   The referred bundle ID.
    */
   public function getTargetBundle(): string;
 
@@ -113,7 +115,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * Gets the URI value given a specific graph ID.
    *
    * @param string $graph
-   *  The graph ID.
+   *   The graph ID.
    *
    * @return string|null
    *   The graph URI or NULL if doesn't exist.
@@ -137,8 +139,9 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * already exists will be overridden with the new passed value.
    *
    * @param array $mappings
-   *   A structured associative array having the next structure:
-   *   @code
+   *   A structured associative array having the next structure:.
+   *
+   * @code
    *   [
    *     'field1' => [
    *       'column1' => [
@@ -154,7 +157,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    *       ...
    *     ],
    *   ]
-   *   @endcode
+   * @endcode
    *   - The first level are field names,
    *   - The second level are field columns, such as 'value', 'target_id'.
    *   - The values are arrays with two keys: 'predicate', 'format'.
@@ -171,7 +174,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    *
    * @param array $mappings
    *   A structured associative array with the same structure as the parameter
-   *  from ::addMappings().
+   *   from ::addMappings().
    *
    * @return $this
    *
@@ -186,6 +189,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * Returns all base fields mappings.
    *
    * @return array
+   *   All base fields mappings.
    */
   public function getMappings(): array;
 
@@ -218,7 +222,7 @@ interface RdfEntityMappingInterface extends ConfigEntityInterface {
    * @param string $entity_type_id
    *   The entity type ID.
    * @param string $bundle
-   *  The bundle.
+   *   The bundle.
    *
    * @return static|null
    *   The rdf_entity_mapping entity of NULL on failure.

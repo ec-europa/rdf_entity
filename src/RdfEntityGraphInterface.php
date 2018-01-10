@@ -19,6 +19,28 @@ interface RdfEntityGraphInterface extends ConfigEntityInterface {
   const DEFAULT = 'default';
 
   /**
+   * Sets the RDF entity graph weight.
+   *
+   * The weight value is used to define the order in the list of graphs.
+   *
+   * @param int $weight
+   *   The weight as integer.
+   *
+   * @return $this
+   */
+  public function setWeight(int $weight): self;
+
+  /**
+   * Gets the weight of this RDF entity graph.
+   *
+   * The weight value is used to define the order in the list of graphs.
+   *
+   * @return int
+   *   The weight of this RDF entity graph.
+   */
+  public function getWeight(): int;
+
+  /**
    * Set the graph name.
    *
    * @param string $name
@@ -42,8 +64,9 @@ interface RdfEntityGraphInterface extends ConfigEntityInterface {
    * Gets the graph description.
    *
    * @return string
+   *   The graph description.
    */
-  public function getDescription(): string;
+  public function getDescription(): ?string;
 
   /**
    * Gets the entity types supporting this graph.

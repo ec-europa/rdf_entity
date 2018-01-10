@@ -5,8 +5,8 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\Annotation\ConfigEntityType;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfEntityMappingInterface;
 
@@ -262,6 +262,73 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
    */
   public static function loadByName(string $entity_type_id, string $bundle): ?RdfEntityMappingInterface {
     return static::load("$entity_type_id.$bundle");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    parent::calculateDependencies();
+
+    /** @var \Drupal\rdf_entity\RdfEntityGraphInterface $graph */
+    foreach (RdfEntityGraph::loadMultiple(array_keys($this->get('graph'))) as $graph) {
+      // Add dependency to graph.
+      $this->addDependency($graph->getConfigDependencyKey(), $graph->getConfigDependencyName());
+    }
+
+    // Add dependency to the paired bundle entity.
+    if ($entity_type = $this->getTargetEntityType()) {
+      if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
+        if ($bundle_storage = $this->entityTypeManager()->getStorage($bundle_entity_type_id)) {
+          if ($bundle_entity = $bundle_storage->load($this->getTargetBundle())) {
+            $this->addDependency($bundle_entity->getConfigDependencyKey(), $bundle_entity->getConfigDependencyName());
+          }
+        }
+      }
+    }
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onDependencyRemoval(array $dependencies) {
+    $changed = parent::onDependencyRemoval($dependencies);
+
+    /** @var \Drupal\rdf_entity\RdfEntityGraphInterface $graph */
+    foreach ($dependencies['config'] as $graph) {
+      if ($graph->getEntityTypeId() === 'rdf_entity_graph') {
+        // Normally we shouldn't be notified about 'default' graph deletion
+        // because this could never occur. However, we take this additional
+        // precaution to cover any accidental removal.
+        if ($graph->id() !== RdfEntityGraphInterface::DEFAULT) {
+          // Remove the reference to the deleted graph and flag this mapping
+          // entity to be re-saved.
+          unset($this->graph[$graph->id()]);
+          $changed = TRUE;
+        }
+      }
+      // Don't react on paired bundle entity deletion (AKA remove this entity).
+    }
+
+    return $changed;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    \Drupal::service('sparql.graph_handler')->clearCache();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+    \Drupal::service('sparql.graph_handler')->clearCache();
   }
 
 }

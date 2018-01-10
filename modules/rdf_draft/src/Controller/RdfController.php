@@ -66,10 +66,10 @@ class RdfController extends ControllerBase {
     $parameter_name = $route_match->getRouteObject()->getOption('entity_type_id');
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $route_match->getParameter($parameter_name);
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
     $storage = $this->entityManager->getStorage($entity->getEntityTypeId());
     $graph_name = $route_match->getRouteObject()->getOption('graph_name');
-    $storage->setRequestGraphs($entity->id(), [$graph_name]);
-    $draft_entity = $storage->load($entity->id());
+    $draft_entity = $storage->load($entity->id(), [$graph_name]);
     if (!$draft_entity) {
       // Should not occur: RdfGraphAccessCheck validates that the entity exists.
       throw new \Exception('Entity not loaded from graph');

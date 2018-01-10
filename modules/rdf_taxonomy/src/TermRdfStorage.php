@@ -97,7 +97,7 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
   /**
    * {@inheritdoc}
    */
-  protected function alterGraph(Graph &$graph, EntityInterface $entity) {
+  protected function alterGraph(Graph &$graph, EntityInterface $entity): void {
     parent::alterGraph($graph, $entity);
     // @todo Document this. I have no idea what this is for, I only know that
     //   taxonomy terms require this.

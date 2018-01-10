@@ -63,6 +63,9 @@ rdf_entity.graph.*:
     id:
       type: string
       label: ID
+    weight:
+      type: integer
+      label: Weight
     name:
       type: label
       label: Name

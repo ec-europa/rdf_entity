@@ -57,11 +57,11 @@ class Query extends QueryBase implements QueryInterface {
   protected $results = NULL;
 
   /**
-   * Entity storage.
+   * The SPARQL entity storage.
    *
-   * @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage
+   * @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface
    */
-  protected $entityStorage = NULL;
+  protected $entityStorage;
 
   /**
    * The entity type manager service.
@@ -196,28 +196,23 @@ class Query extends QueryBase implements QueryInterface {
   }
 
   /**
-   * Set the graph types for the query.
+   * Sets the graph types for the query.
    *
-   * This allows the filtering of graphs on the query level. There are two ways
-   * to filter the results:
-   * - Set the graph types in this method.
-   * - Set the request graphs in the storage level.
-   * The query graph filter that is set below is filtering the graphs
-   * that the query will run on, so this makes this filter a runtime filter.
-   * After the results are retrieved, the storage will further filter the
-   * results based on the request graphs set for the entities.
+   * This allows the filtering of graphs on the query level. Set the graph IDs
+   * to restrict the entities to the list of graphs. If the parameter is not
+   * passed, the default, topmost graph is used.
    *
-   * @param array $graph_types
-   *   An array of graphs ids to be passed into the query.
+   * @param string[]|null $graph_ids
+   *   (optional) An array of graphs ids to be passed into the query.
    *
    * @todo: When a condition is set on the bundle, this graphs should be
    * filtered accordingly.
    *
-   * @see \Drupal\rdf_entity\RdfGraphHandler::setRequestGraphs()
    * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::processGraphResults()
    */
-  public function setGraphType(array $graph_types = ['default']) {
-    $this->graphs = $this->entityStorage->getGraphHandler()->getEntityTypeGraphUrisList($this->entityType->getBundleEntityType(), $graph_types);
+  public function setGraphType(array $graph_ids = NULL) {
+    $graph_ids = $graph_ids ?: $this->getGraphHandler()->getDefaultGraphId($this->getEntityTypeId());
+    $this->graphs = $this->entityStorage->getGraphHandler()->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $graph_ids);
   }
 
   /**

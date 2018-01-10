@@ -5,6 +5,7 @@
  * Includes installation functions for the rdf_draft module.
  */
 
+use Drupal\Core\Serialization\Yaml;
 use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 
@@ -16,4 +17,16 @@ function rdf_draft_install() {
   if ($default = RdfEntityGraph::load(RdfEntityGraphInterface::DEFAULT)) {
     $default->setName('Published')->save();
   }
+}
+
+/**
+ * Install the 'draft' config entity.
+ */
+function rdf_draft_update_8001() {
+  // Update or post-update scripts might need this config entity available when
+  // they run. We don't wait on configuration synchronization, because that runs
+  // usually after the database update, so we make this entity available in an
+  // early stage of updates.
+  $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/rdf_entity.graph.draft.yml'));
+  RdfEntityGraph::create($values)->save();
 }

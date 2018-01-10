@@ -1,27 +1,25 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity;
 
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 
 /**
- * Contains helper methods for managing the Rdf graphs.
+ * Contains helper methods for managing the RDF entity graphs.
  */
-class RdfGraphHandler {
-
-  use StringTranslationTrait;
+class RdfGraphHandler implements RdfGraphHandlerInterface {
 
   /**
-   * Static cache of bundle entity graph URIs.
+   * Static cache.
    *
    * @var array
    */
-  protected $bundleGraphUris = [];
+  protected $cache = self::EMPTY_CACHE;
 
   /**
    * The entity type manager service.
@@ -29,65 +27,6 @@ class RdfGraphHandler {
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The active graphs for the entity.
-   *
-   * These graphs will be used to interact with the database.
-   *
-   * @var array
-   */
-  protected $enabledGraphs = ['default'];
-
-  /**
-   * Static cache of entity type graph URIs.
-   *
-   * @var array
-   */
-  protected $entityTypeGraphUris = [];
-
-  /**
-   * The request graphs are the graphs that will be used for the request.
-   *
-   * This can differ from the enabled graphs as the enabled graphs hold all
-   * available graphs of the entity type, while the request graphs only hold the
-   * graphs for the storage operations.
-   *
-   * @var array
-   *
-   * @code
-   * $requestGraphs => [
-   *   $entity_id => [
-   *     graph1,
-   *     graph2
-   *   ],
-   *   $entity_id2 => [
-   *     graph1,
-   *     graph2,
-   *   ],
-   * ]
-   * @endcode
-   */
-  protected $requestGraphs;
-
-  /**
-   * Holds the graphs that the entity is going to be saved in.
-   *
-   * @var string|null
-   *
-   * @deprecated
-   *   This will be replaced with an event listener before the 1.0 release.
-   *
-   * @see https://www.drupal.org/node/2901490
-   */
-  protected $targetGraph = NULL;
 
   /**
    * The RDF entity graph config entity storage.
@@ -101,409 +40,142 @@ class RdfGraphHandler {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
-
-    // Allow altering the default active graph.
-    $graph = $this->enabledGraphs;
-    $this->moduleHandler->alter('rdf_default_active_graph', $entity_type, $graph);
-    $this->enabledGraphs = $graph;
-
-    // By default, all graphs are available.
-    $this->resetRequestGraphs();
   }
 
   /**
-   * Reset the mapping of entity - graphs.
-   *
-   * @param array $entity_ids
-   *   An array of entity ids that the request graphs are going to be reset
-   *   for. If an empty array is passed, all graphs will be reset.
+   * {@inheritdoc}
    */
-  public function resetRequestGraphs(array $entity_ids = []) {
-    if (empty($entity_ids)) {
-      $this->requestGraphs = ['default' => $this->enabledGraphs];
-    }
-    else {
-      foreach ($entity_ids as $entity_id) {
-        unset($this->requestGraphs[SparqlArg::uri($entity_id)]);
-      }
-    }
-  }
+  public function getGraphDefinitions(string $entity_type_id): array {
+    if (!isset($this->cache['definition'][$entity_type_id])) {
+      $query = $this->getRdfEntityGraphStorage()->getQuery();
+      $ids = $query->condition($query->orConditionGroup()
+        ->condition('entity_types.*', $entity_type_id)
+        // A NULL value means "all entity types".
+        ->notExists('entity_types')
+      )->condition('status', TRUE)
+        // A determined order is a key feature.
+        ->sort('weight', 'ASC')
+        ->execute();
 
-  /**
-   * Get the defined graph types for this entity type.
-   *
-   * A default graph is provided here already because there has to exist at
-   * least one available graph for the entities to be saved in.
-   *
-   * @param string $entity_type_id
-   *   The entity type machine name.
-   *
-   * @return array
-   *   A structured array of graph definitions containing a title and a
-   *   description. The array keys are the machine names of the graphs.
-   */
-  public function getGraphDefinitions($entity_type_id) {
-    $query = $this->getRdfEntityGraphStorage()->getQuery();
-    $ids = $query->condition($query->orConditionGroup()
-      // An empty value, such as NULL or [], means "all entity types".
-      ->notExists('entity_types')
-      ->condition('entity_types', [])
-      ->condition('entity_types.*', $entity_type_id)
-    )->condition('status', TRUE)
-      ->execute();
-    $graphs = $this->getRdfEntityGraphStorage()->loadMultiple($ids);
-
-    return array_map(function (RdfEntityGraphInterface $graph): array {
-      return [
-        'title' => $graph->label(),
-        'description' => $graph->getDescription(),
-      ];
-    }, $graphs);
-  }
-
-  /**
-   * Returns the active graphs as an array.
-   *
-   * @return array
-   *   An array of graph machine names.
-   */
-  public function getEntityTypeEnabledGraphs() {
-    return $this->enabledGraphs;
-  }
-
-  /**
-   * Returns the graph uri for the passed bundle of the passed entity type.
-   *
-   * @param string $entity_type_bundle_key
-   *   The bundle entity id of an entity type e.g. 'node_type'.
-   * @param string $bundle
-   *   The bundle machine name.
-   * @param string $graph_name
-   *   The graph type. Defaults to 'default'.
-   *
-   * @return string
-   *   The uri of the requested graph.
-   *
-   * @throws \Exception
-   *    Thrown when the passed graph cannot be determined.
-   */
-  public function getBundleGraphUri($entity_type_bundle_key, $bundle, $graph_name) {
-    return $this->getBundleGraphUriFromSettings($entity_type_bundle_key, $bundle, $graph_name);
-  }
-
-  /**
-   * Returns the graph uris for bundles of the passed entity type.
-   *
-   * @param string $entity_type_bundle_key
-   *   The bundle entity id of an entity type e.g. 'node_type'.
-   * @param array $graph_names
-   *   The graph type. Defaults to 'default'.
-   *
-   * @return array
-   *   An array of graphs uris mapped by bundle id and graph id.
-   *
-   * @throws \Exception
-   *    Thrown when the passed graph cannot be determined.
-   */
-  public function getEntityTypeGraphUris($entity_type_bundle_key, array $graph_names = []) {
-    if (empty($graph_names)) {
-      $graph_names = $this->getEntityTypeEnabledGraphs();
-    }
-
-    sort($graph_names);
-    $cache_key = implode(':', $graph_names);
-    if (!isset($this->entityTypeGraphUris[$entity_type_bundle_key][$cache_key])) {
-      $bundle_entities = $this->entityTypeManager->getStorage($entity_type_bundle_key)->loadMultiple();
-      $graphs = [];
-      foreach ($bundle_entities as $bundle_entity) {
-        foreach ($graph_names as $graph_name) {
-          $graph = $this->getBundleGraphUriFromSettings($entity_type_bundle_key, $bundle_entity->id(), $graph_name);
-          $graphs[$bundle_entity->id()][$graph_name] = $graph;
-        }
+      if (!$ids) {
+        // Do not cache an empty set, it may occur because this runs before any
+        // configuration has been imported, so the entities are not yet in.
+        return [];
       }
 
-      $this->entityTypeGraphUris[$entity_type_bundle_key][$cache_key] = $graphs;
-    }
+      $graphs = $this->getRdfEntityGraphStorage()->loadMultiple($ids);
 
-    return $this->entityTypeGraphUris[$entity_type_bundle_key][$cache_key];
+      $this->cache['definition'][$entity_type_id] = array_map(function (RdfEntityGraphInterface $graph): array {
+        return [
+          'title' => $graph->label(),
+          'description' => $graph->getDescription(),
+        ];
+      }, $graphs);
+    }
+    return $this->cache['definition'][$entity_type_id];
   }
 
   /**
-   * Returns a plain list of graphs related to the passed entity type.
-   *
-   * @param string $entity_type_bundle_key
-   *   The entity type bundle key e.g. 'node_type'.
-   * @param array $graph_names
-   *   Optionally filter the graphs to be returned.
-   *
-   * @todo: Need to pass only the entity type id here.
-   *
-   * @return array
-   *   A plain list of graph uris.
+   * {@inheritdoc}
    */
-  public function getEntityTypeGraphUrisList($entity_type_bundle_key, array $graph_names = []) {
-    if (empty($graph_names)) {
-      $graph_names = $this->getEntityTypeEnabledGraphs();
+  public function getEntityTypeGraphIds(string $entity_type_id, array $limit_to_graph_ids = NULL): array {
+    $graph_ids = array_keys($this->getGraphDefinitions($entity_type_id));
+    if ($limit_to_graph_ids) {
+      $graph_ids = array_intersect($graph_ids, $limit_to_graph_ids);
     }
-    $graph_list = [];
-    $entity_graphs = $this->getEntityTypeGraphUris($entity_type_bundle_key, $graph_names);
-    foreach ($entity_graphs as $bundle_id => $bundle_graphs) {
-      foreach ($graph_names as $graph_name) {
-        $graph_list[] = $entity_graphs[$bundle_id][$graph_name];
-      }
-    }
-
-    return $graph_list;
+    return $graph_ids;
   }
 
   /**
-   * Returns the request graphs stored in the service.
-   *
-   * @param string $entity_id
-   *   The entity id associated with the requested graphs.
-   *
-   * @return array
-   *   The request graphs.
+   * {@inheritdoc}
    */
-  public function getRequestGraphs($entity_id) {
-    $entity_id = SparqlArg::uri($entity_id);
-    if (empty($entity_id)) {
-      return $this->requestGraphs['default'];
-    }
-    if (!isset($this->requestGraphs[$entity_id])) {
-      $this->requestGraphs[$entity_id] = $this->getEntityTypeEnabledGraphs();
-    }
-    return $this->requestGraphs[$entity_id];
+  public function getDefaultGraphId(string $entity_type_id): string {
+    $graph_ids = $this->getEntityTypeGraphIds($entity_type_id);
+    return reset($graph_ids);
   }
 
   /**
-   * Set the graph type to use when interacting with entities.
-   *
-   * @param string $entity_id
-   *   The entity id associated with the requested graphs.
-   * @param string $entity_type_id
-   *   The entity type machine name.
-   * @param array $graph_names
-   *   An array of graph machine names.
-   *
-   * @todo: This occurs in almost every method. Can we inject the entity type?
-   *
-   * @todo: Need to check whether a new instance is created when multiple types
-   * are being loaded e.g. when an entity with entity references are loaded.
-   * In this case, each entity might have a different graph definition from
-   * where it needs to be loaded.
-   *
-   * @throws \Exception
-   *    Thrown if there is an invalid graph in the argument array or if the
-   *    final array is empty as there must be at least one active graph.
+   * {@inheritdoc}
    */
-  public function setRequestGraphs($entity_id, $entity_type_id, array $graph_names) {
-    $definitions = $this->getGraphDefinitions($entity_type_id);
-    $graphs_array = [];
-    foreach ($graph_names as $graph_name) {
-      if (!isset($definitions[$graph_name])) {
-        throw new \Exception('Unknown graph type ' . $graph_name);
-      }
-      $graphs_array[] = $graph_name;
-    }
-
-    // @todo: Should we have the default one set if the result set is empty?
-    if (empty($graphs_array)) {
-      throw new \Exception("There must be at least one active graph.");
-    }
-
-    // Remove duplicates as there might be occurrences after the loop above.
-    $this->requestGraphs[SparqlArg::uri($entity_id)] = array_unique($graphs_array);
+  public function getBundleGraphUri(string $entity_type_id, string $bundle, string $graph_id): ?string {
+    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+    $bundle_key = ($entity_type->hasKey('bundle') && $entity_type->getBundleEntityType()) ? $bundle : $entity_type_id;
+    return $this->getEntityTypeGraphUris($entity_type_id)[$bundle_key][$graph_id] ?? NULL;
   }
 
   /**
-   * Returns the stored target graph.
-   *
-   * @return string
-   *   The target graph to save to.
-   *
-   * @deprecated
-   *   This will be replaced with an event listener before the 1.0 release.
-   *
-   * @see https://www.drupal.org/node/2901490
+   * {@inheritdoc}
    */
-  public function getTargetGraph() {
-    return $this->targetGraph;
-  }
-
-  /**
-   * Sets the target graph.
-   *
-   * The target graph is the graph that the entity is going to be saved in.
-   *
-   * @param string $target_graph
-   *   The target graph machine name.
-   *
-   * @deprecated
-   *   This will be replaced with an event listener before the 1.0 release.
-   *
-   * @see https://www.drupal.org/node/2901490
-   */
-  public function setTargetGraph($target_graph) {
-    trigger_error(__METHOD__ . ' will be removed before the 1.0 release.', E_USER_DEPRECATED);
-    $this->targetGraph = $target_graph;
-  }
-
-  /**
-   * Returns the save graph for the entity.
-   *
-   * The priority of the graphs is:
-   *  - If there is only one graph enabled for the requested entity type, return
-   * this graph.
-   *  - If there is a target graph set, this is used. This allows other modules
-   * to interact with the graphs.
-   *  - The graph from where the entity is loaded.
-   *  - The default graph from the enabled.
-   *  - The first available graph.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to determine the save graph for.
-   *
-   * @return string
-   *   The graph id.
-   */
-  public function getTargetGraphFromEntity(EntityInterface $entity) {
-    if (!empty($this->getTargetGraph())) {
-      return $this->getTargetGraph();
-    }
-    elseif ($graph = $this->getGraphIdFromEntity($entity)) {
-      return $graph;
-    }
-    else {
-      $enabled_graphs = $this->getEntityTypeEnabledGraphs();
-      if (in_array('default', $enabled_graphs)) {
-        return 'default';
+  public function getEntityTypeGraphUris(string $entity_type_id, array $limit_to_graph_ids = NULL): array {
+    if (!isset($this->cache['structure'][$entity_type_id])) {
+      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+      if ($entity_type->hasKey('bundle') && ($bundle_entity_id = $entity_type->getBundleEntityType())) {
+        $bundle_keys = array_values($this->entityTypeManager->getStorage($bundle_entity_id)->getQuery()->execute());
       }
       else {
-        return reset($enabled_graphs);
+        $bundle_keys = [$entity_type_id];
+      }
+
+      foreach ($bundle_keys as $bundle_key) {
+        $graphs = ($mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_key)) ? $mapping->getGraphs() : [];
+        $this->cache['structure'][$entity_type_id][$bundle_key] = $graphs;
       }
     }
-  }
 
-  /**
-   * Sets the target graph to the entity's graph field.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to determine the save graph for.
-   * @param string $graph
-   *   The graph id.
-   */
-  public function setTargetGraphToEntity(EntityInterface $entity, $graph) {
-    $entity->set('graph', $graph);
-  }
-
-  /**
-   * Returns the graph id from the graph entity field.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity object.
-   *
-   * @return string|null
-   *   Returns the graph id or null if none is found.
-   *
-   * @todo: Maybe an exception should be thrown if no graph is found here.
-   */
-  public function getGraphIdFromEntity(EntityInterface $entity) {
-    if ($entity->get('graph') && !empty($entity->get('graph')->first()->getValue())) {
-      return $entity->get('graph')->first()->getValue()['value'];
-    }
-    return NULL;
-  }
-
-  /**
-   * Returns the graph uri according to the graph id in the graph entity field.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity object.
-   *
-   * @return string
-   *   The graph id. If no graph is found in the entity, the default graph uri
-   *   is returned.
-   */
-  public function getGraphUriFromEntity(EntityInterface $entity) {
-    if ($graph_id = $this->getGraphIdFromEntity($entity)) {
-      return $this->getBundleGraphUri($entity->getEntityType()->getBundleEntityType(), $entity->bundle(), $graph_id);
+    // Limit the results.
+    if ($limit_to_graph_ids) {
+      return array_map(function (array $graphs) use ($limit_to_graph_ids): array {
+        return array_intersect_key($graphs, array_flip($limit_to_graph_ids));
+      }, $this->cache['structure'][$entity_type_id]);
     }
 
-    return $this->getBundleGraphUri($entity->getEntityType()->getBundleEntityType(), $entity->bundle(), $graph_id);
+    return $this->cache['structure'][$entity_type_id];
   }
 
   /**
-   * Returns the graph machine name, given the graph uri.
-   *
-   * This is basically a reverse search to get the id of the graph.
-   *
-   * @param string $entity_type_bundle_key
-   *   The entity type bundle key e.g. 'node_type'.
-   * @param string $bundle_id
-   *   The for which we are searching a graph. This is mandatory as multiple
-   *   bundles can use the same graph.
-   * @param string $graph_uri
-   *   The uri of the graph.
-   *
-   * @return string
-   *   The id of the graph.
+   * {@inheritdoc}
    */
-  public function getBundleGraphId($entity_type_bundle_key, $bundle_id, $graph_uri) {
-    $graphs = $this->getEntityTypeGraphUris($entity_type_bundle_key);
-    return array_search($graph_uri, $graphs[$bundle_id]);
+  public function bundleHasGraph(string $entity_type_id, string $bundle, string $graph_id): bool {
+    $entity_type_graphs = $this->getEntityTypeGraphUris($entity_type_id);
+    return !empty($entity_type_graphs[$bundle][$graph_id]);
   }
 
   /**
-   * Clears the entity type graph URIs static cache.
+   * {@inheritdoc}
    */
-  public function clearEntityTypeGraphUrisCache() {
-    $this->entityTypeGraphUris = [];
+  public function getEntityTypeGraphUrisFlatList(string $entity_type_id, array $limit_to_graph_ids = NULL): array {
+    $graphs = $this->getEntityTypeGraphUris($entity_type_id, $limit_to_graph_ids);
+    return array_reduce($graphs, function (array $uris, array $bundle_graphs): array {
+      return array_merge($uris, array_values($bundle_graphs));
+    }, []);
   }
 
   /**
-   * Clears the bundle graph URIs static cache.
+   * {@inheritdoc}
    */
-  public function clearBundleGraphUrisCache() {
-    $this->bundleGraphUris = [];
+  public function getBundleGraphId(string $entity_type_id, string $bundle, string $graph_uri): ?string {
+    $graphs = $this->getEntityTypeGraphUris($entity_type_id);
+    $search = array_search($graph_uri, $graphs[$bundle]);
+    return $search !== FALSE ? $search : NULL;
   }
 
   /**
-   * Retrieves the uri of a bundle's graph from the settings.
-   *
-   * @param string $bundle_entity_type_id
-   *   The bundle type key. E.g. 'node_type'.
-   * @param string $bundle_id
-   *   The bundle machine name.
-   * @param string $graph_name
-   *   The graph name.
-   *
-   * @return string
-   *   The graph uri.
-   *
-   * @throws \Exception
-   *    Thrown if the graph is not found.
+   * {@inheritdoc}
    */
-  protected function getBundleGraphUriFromSettings($bundle_entity_type_id, $bundle_id, $graph_name) {
-    if (!isset($this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name])) {
-      $bundle_entity_type = $this->entityTypeManager->getDefinition($bundle_entity_type_id);
-      $entity_type_id = $bundle_entity_type->getBundleOf();
-      $graph_uri = NULL;
-      if ($mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_id)) {
-        if (!$graph_uri = $mapping->getGraphUri($graph_name)) {
-          throw new \Exception("Unable to determine graph $graph_name for bundle $bundle_id");
-        }
-      }
-      $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name] = $graph_uri;
+  public function clearCache(array $path = NULL): void {
+    if (empty($path)) {
+      $this->cache = static::EMPTY_CACHE;
+      return;
     }
+    NestedArray::unsetValue($this->cache, $path);
 
-    return $this->bundleGraphUris[$bundle_entity_type_id][$bundle_id][$graph_name];
+    // If the path was a top-level cache category, restore its "empty version".
+    if (count($path) === 1 && array_key_exists($path[0], static::EMPTY_CACHE)) {
+      $this->cache[$path[0]] = static::EMPTY_CACHE[$path[0]];
+    }
   }
 
   /**
@@ -511,8 +183,11 @@ class RdfGraphHandler {
    *
    * @return \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
    *   The RDF entity graph config entity storage service.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   *   If the RDF entity type is not found.
    */
-  protected function getRdfEntityGraphStorage() {
+  protected function getRdfEntityGraphStorage(): ConfigEntityStorageInterface {
     if (!isset($this->rdfEntityGraphStorage)) {
       $this->rdfEntityGraphStorage = $this->entityTypeManager->getStorage('rdf_entity_graph');
     }

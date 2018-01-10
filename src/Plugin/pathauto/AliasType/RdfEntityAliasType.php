@@ -93,7 +93,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
     $updates = $this->bulkUpdate($ids);
     $context['sandbox']['count'] += count($ids);
     $context['results']['updates'] += $updates;
-    $context['message'] = $this->t('Updated alias for Rdf entity @id.', array('@id' => end($ids)));
+    $context['message'] = $this->t('Updated alias for Rdf entity @id.', ['@id' => end($ids)]);
 
     if ($context['sandbox']['count'] != $context['sandbox']['total']) {
       $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
@@ -130,7 +130,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
     $storage = $this->entityTypeManager->getStorage('rdf_entity');
     /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
     $query = $storage->getQuery();
-    $query->setGraphType($storage->getGraphHandler()->getEntityTypeEnabledGraphs());
+    $query->setGraphType($storage->getGraphHandler()->getEntityTypeGraphIds('rdf_entity'));
 
     return $query;
   }

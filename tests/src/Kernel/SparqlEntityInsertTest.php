@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\KernelTests\Core\Entity;
+namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\Component\Utility\Random;
 use Drupal\rdf_entity\Entity\Rdf;

@@ -15,3 +15,9 @@ entity.rdf_type.add_form:
   title: 'Add RDF bundle'
   appears_on:
     - entity.rdf_type.collection
+
+rdf_entity_graph.add:
+  route_name: rdf_entity_graph.add
+  title: 'Add graph'
+  appears_on:
+    - entity.rdf_entity_graph.collection

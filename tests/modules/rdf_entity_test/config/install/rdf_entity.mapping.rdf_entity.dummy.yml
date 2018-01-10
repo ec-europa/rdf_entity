@@ -1,6 +1,10 @@
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  config:
+    - rdf_entity.graph.default
+    - rdf_entity.graph.draft
+    - rdf_entity.rdfentity.dummy
 third_party_settings: {  }
 id: rdf_entity.dummy
 entity_type_id: rdf_entity
@@ -10,7 +14,7 @@ base_fields_mapping:
   rid:
     target_id:
       predicate: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-      format: 'resource'
+      format: resource
   uid:
     target_id:
       predicate: ''

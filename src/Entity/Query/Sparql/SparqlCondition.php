@@ -193,7 +193,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
     parent::__construct($conjunction, $query, $namespaces);
     $this->graphHandler = $rdf_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
-    $this->typePredicate = $query->getEntityStorage()->bundlePredicate();
+    $this->typePredicate = $query->getEntityStorage()->getBundlePredicates();
     $this->bundleKey = $query->getEntityType()->getKey('bundle');
     $this->idKey = $query->getEntityType()->getKey('id');
     $this->labelKey = $query->getEntityType()->getKey('label');

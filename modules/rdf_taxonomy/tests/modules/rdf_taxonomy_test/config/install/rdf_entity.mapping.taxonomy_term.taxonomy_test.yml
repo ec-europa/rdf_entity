@@ -1,6 +1,9 @@
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  config:
+    - rdf_entity.graph.default
+    - taxonomy.vocabulary.taxonomy_test
 third_party_settings: {  }
 id: taxonomy_term.taxonomy_test
 entity_type_id: taxonomy_term
@@ -8,7 +11,6 @@ bundle: taxonomy_test
 rdf_type: 'http://example.com/rdf_taxonomy/test'
 graph:
   default: 'http://example.com/rdf_taxonomy/published'
-  draft: 'http://example.com/rdf_taxonomy/draft'
 base_fields_mapping:
   uuid:
     value:

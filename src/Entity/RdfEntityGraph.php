@@ -3,9 +3,6 @@
 namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\Annotation\ConfigEntityType;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 
@@ -21,14 +18,33 @@ use Drupal\rdf_entity\RdfEntityGraphInterface;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "name",
- *     "status" = "status"
+ *     "status" = "status",
+ *     "weight" = "weight",
  *   },
  *   config_export = {
  *     "id",
+ *     "weight",
  *     "name",
  *     "description",
  *     "entity_types",
  *   },
+ *   handlers = {
+ *     "access" = "Drupal\rdf_entity\RdfEntityGraphAccessControlHandler",
+ *     "form" = {
+ *       "add" = "Drupal\rdf_entity\Form\RdfEntityGraphForm",
+ *       "edit" = "Drupal\rdf_entity\Form\RdfEntityGraphForm",
+ *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
+ *     },
+ *     "list_builder" = "Drupal\rdf_entity\RdfEntityGraphListBuilder",
+ *   },
+ *   links = {
+ *     "edit-form" = "/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}",
+ *     "delete-form" = "/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/delete",
+ *     "collection" = "/admin/config/rdf_entity/graph",
+ *     "enable" = "/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/enable",
+ *     "disable" = "/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/disable",
+ *   },
+ *   admin_permission = "administer rdf entity",
  * )
  */
 class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface {
@@ -39,6 +55,13 @@ class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface
    * @var string
    */
   protected $id;
+
+  /**
+   * The weight value is used to define the order in the list of graphs.
+   *
+   * @var int
+   */
+  protected $weight = 0;
 
   /**
    * The label of the RDF entity graph.
@@ -74,6 +97,21 @@ class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface
   /**
    * {@inheritdoc}
    */
+  public function setWeight(int $weight): RdfEntityGraphInterface {
+    $this->weight = $weight;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getWeight(): int {
+    return $this->weight;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setDescription(string $description): RdfEntityGraphInterface {
     $this->description = $description;
     return $this;
@@ -82,7 +120,7 @@ class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface
   /**
    * {@inheritdoc}
    */
-  public function getDescription(): string {
+  public function getDescription(): ?string {
     return $this->description;
   }
 
@@ -130,12 +168,37 @@ class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-    parent::preSave($storage);
+    if ($this->entity_types === []) {
+      // Normalize 'entity_types' empty array to NULL.
+      $this->entity_types = NULL;
+    }
+
     if ($this->id() === static::DEFAULT) {
       if (!$this->status()) {
         throw new \RuntimeException("The '" . static::DEFAULT . "' graph cannot be disabled.");
       }
+      if ($this->getEntityTypeIds()) {
+        throw new \RuntimeException("The '" . static::DEFAULT . "' graph cannot be limited to certain entity types.");
+      }
     }
+    parent::preSave($storage);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    // Wipe out the static cache of the RDF entity graph handler.
+    \Drupal::service('sparql.graph_handler')->clearCache();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+    \Drupal::service('sparql.graph_handler')->clearCache();
   }
 
 }

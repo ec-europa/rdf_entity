@@ -11,6 +11,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\BundleEntityFormBase;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -18,9 +19,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldStorageConfigInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
 use EasyRdf\Http;
@@ -33,6 +36,8 @@ function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $
     return;
   }
 
+  // @todo Now that graphs are entities, transform this field into an entity
+  // reference field.
   $fields['graph'] = BaseFieldDefinition::create('uri')
     ->setLabel(t('The graph where the entity is stored.'))
     ->setTargetEntityTypeId('rdf_entity')
@@ -120,7 +125,7 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
  */
 function rdf_entity_get_third_party_property(ConfigEntityInterface $object, $property, $column, $default = NULL) {
   // Mapping data requested for a configurable field.
-  if ($object instanceof \Drupal\field\FieldStorageConfigInterface) {
+  if ($object instanceof FieldStorageConfigInterface) {
     $property_value = $object->getThirdPartySetting('rdf_entity', $property, FALSE);
   }
   // Mapping data requested for a bundle entity.
@@ -155,11 +160,13 @@ function rdf_entity_form_alter_builder($entity_type, FieldStorageConfig $entity,
  * Implements hook_entity_create().
  */
 function rdf_entity_entity_create(EntityInterface $entity) {
-  $entity_type = $entity->getEntityTypeId();
-  $storage = \Drupal::entityManager()->getStorage($entity_type);
+  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
   if ($storage instanceof RdfEntitySparqlStorage) {
-    // The target graph should be the graph of the entity when it's created.
-    $entity->set('graph', $storage->getGraphHandler()->getTargetGraphFromEntity($entity));
+    if ($entity->get('graph')->isEmpty()) {
+      // If no graph has been explicitly set, use the top entry.
+      $entity->set('graph', $storage->getGraphHandler()->getDefaultGraphId($entity->getEntityTypeId()));
+    }
   }
 }
 
@@ -292,7 +299,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
  *
  * @param string $entity_type_id
  *   The entity type ID.
- * @param ConfigEntityInterface $bundle_entity
+ * @param \Drupal\Core\Config\Entity\ConfigEntityInterface $bundle_entity
  *   The bundle entity being built.
  * @param array $form
  *   The form API form render array.
@@ -536,4 +543,31 @@ function rdf_entity_pathauto_alias_types_alter(array &$definitions) {
   // @see \Drupal\pathauto\Plugin\Deriver\EntityAliasTypeDeriver::getDerivativeDefinitions()
   // @see \Drupal\rdf_entity\Plugin\pathauto\AliasType\RdfEntityAliasType
   unset($definitions['canonical_entities:rdf_entity']);
+}
+
+/**
+ * Implements hook_cache_flush().
+ */
+function rdf_entity_cache_flush() {
+  \Drupal::service('sparql.graph_handler')->clearCache();
+}
+
+/**
+ * Implements hook_entity_storage_load().
+ */
+function rdf_entity_entity_storage_load(array $entities, $entity_type_id) {
+  $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+  if ($storage instanceof RdfEntitySparqlStorageInterface) {
+    // Store the graph ID of the loaded entity to be, eventually, used when this
+    // entity gets saved. During the saving process, this value is passed to
+    // RdfEntitySparqlStorage::loadUnchanged() to correctly determine the
+    // original entity graph. This value persists in entity over an entity form
+    // submit, as the entity is stored in the form state, so that the entity
+    // save can rely on it.
+    // @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::doPreSave()
+    // @see \Drupal\Core\Entity\EntityForm
+    array_walk($entities, function (ContentEntityInterface $entity): void {
+      $entity->rdfEntityOriginalGraph = $entity->get('graph')->value;
+    });
+  }
 }

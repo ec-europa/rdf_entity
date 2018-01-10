@@ -5,6 +5,8 @@
  * Includes installation functions for the rdf_entity module.
  */
 
+use Drupal\Core\Serialization\Yaml;
+use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 
@@ -33,8 +35,15 @@ function rdf_entity_requirements($phase) {
 /**
  * Move RDF entity mapping data from bundle entities into dedicated entities.
  */
-function rdf_entity_update_8100() {
+function rdf_entity_update_8001() {
   $entity_type_manager = \Drupal::entityTypeManager();
+
+  // Update or post-update scripts might need this config entity available when
+  // they run. We don't wait on configuration synchronization, because that runs
+  // usually after the database update, so we make this entity available in an
+  // early stage of updates.
+  $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/rdf_entity.graph.default.yml'));
+  RdfEntityGraph::create($values)->save();
 
   // Iterate over all entities that are bundles of content entities with
   // RdfEntitySparqlStorage and move their 3rd party settings belonging to

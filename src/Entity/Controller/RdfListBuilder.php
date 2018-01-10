@@ -60,6 +60,7 @@ class RdfListBuilder extends EntityListBuilder {
    */
   protected function getEntityIds() {
     $request = \Drupal::request();
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $rdf_storage */
     $rdf_storage = $this->getStorage();
     /** @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info */
     $bundle_info = \Drupal::service('entity_type.bundle.info');
@@ -76,7 +77,7 @@ class RdfListBuilder extends EntityListBuilder {
       }
     }
     else {
-      $query->setGraphType($rdf_storage->getGraphHandler()->getEntityTypeEnabledGraphs());
+      $query->setGraphType($rdf_storage->getGraphHandler()->getEntityTypeGraphIds($rdf_storage->getEntityTypeId()));
     }
 
     if ($rid = $request->get('rid') ?: NULL) {
