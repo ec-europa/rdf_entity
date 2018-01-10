@@ -18,10 +18,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\FieldStorageConfigInterface;
-use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
 use EasyRdf\Http;
@@ -237,7 +236,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
       '#title' => t('@title (@id)', ['@title' => $graph['title'], '@id' => $graph_id]),
       '#description' => $graph['description'],
       '#default_value' => $mapping->get('graph')[$graph_id] ?? NULL,
-      '#required' => $graph_id === RdfEntityGraph::DEFAULT,
+      '#required' => $graph_id === RdfEntityGraphInterface::DEFAULT,
     ];
   }
 

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_entity\Entity;
 
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfEntityMappingInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Annotation\ConfigEntityType;
@@ -69,7 +70,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
    * @var array
    */
   protected $graph = [
-    'default' => NULL,
+    RdfEntityGraphInterface::DEFAULT => NULL,
   ];
 
   /**
@@ -106,6 +107,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
       }
     }
     else {
+      // The bundle is the entiy type ID, regardless of the passed value.
       $values['bundle'] = $values['entity_type_id'];
     }
 

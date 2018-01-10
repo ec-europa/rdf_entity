@@ -4,6 +4,7 @@ namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Annotation\ConfigEntityType;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 
 /**
  * Defines the RDF entity graph config entity.
@@ -26,14 +27,7 @@ use Drupal\Core\Entity\Annotation\ConfigEntityType;
  *   },
  * )
  */
-class RdfEntityGraph extends ConfigEntityBase {
-
-  /**
-   * Default graph.
-   *
-   * @var string
-   */
-  const DEFAULT = 'default';
+class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface {
 
   /**
    * The unique ID of this RDF entity graph.
