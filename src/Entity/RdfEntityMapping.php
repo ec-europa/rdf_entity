@@ -9,6 +9,7 @@ use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfEntityMappingInterface;
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 
 /**
  * Defines the RDF entity mapping config entity.
@@ -97,24 +98,28 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
     }
 
     // Valid entity type?
-    if (!$storage = $this->entityTypeManager()->getStorage($values['entity_type_id'])) {
+    try {
+      $storage = $this->entityTypeManager()->getStorage($values['entity_type_id']);
+    }
+    catch (\Exception $exception) {
       throw new \InvalidArgumentException("Invalid entity type: {$values['entity_type_id']}.");
     }
 
-    if ($storage->getEntityType()->hasKey('bundle')) {
-      // If this entity type requires a bundle, the bundle should be passed.
+    // Only entities with RDF storage are eligible.
+    if (!$storage instanceof RdfEntitySparqlStorageInterface) {
+      throw new \InvalidArgumentException("Cannot handle non-RDF entity type: {$values['entity_type_id']}.");
+    }
+
+    if ($storage->getEntityType()->hasKey('bundle') && $storage->getEntityType()->getBundleEntityType()) {
+      // If this entity type supports bundles as config entities, then the
+      // bundle should have been passed.
       if (empty($values['bundle'])) {
         throw new \InvalidArgumentException('Missing required property: bundle.');
       }
     }
     else {
-      // The bundle is the entiy type ID, regardless of the passed value.
+      // The bundle is the entity type ID, regardless of the passed value.
       $values['bundle'] = $values['entity_type_id'];
-    }
-
-    // Only entities with RDF storage are eligible.
-    if (!$storage instanceof RdfEntitySparqlStorage) {
-      throw new \InvalidArgumentException("Cannot handle non-RDF entity type: {$values['entity_type_id']}.");
     }
 
     parent::__construct($values, $entity_type);
@@ -124,7 +129,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
    * {@inheritdoc}
    */
   public function id() {
-    return "{$this->entity_type_id}.{$this->bundle}";
+    return "{$this->getTargetEntityTypeId()}.{$this->getTargetBundle()}";
   }
 
   /**
@@ -271,7 +276,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
     parent::calculateDependencies();
 
     /** @var \Drupal\rdf_entity\RdfEntityGraphInterface $graph */
-    foreach (RdfEntityGraph::loadMultiple(array_keys($this->get('graph'))) as $graph) {
+    foreach (RdfEntityGraph::loadMultiple(array_keys($this->getGraphs())) as $graph) {
       // Add dependency to graph.
       $this->addDependency($graph->getConfigDependencyKey(), $graph->getConfigDependencyName());
     }
@@ -279,10 +284,14 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
     // Add dependency to the paired bundle entity.
     if ($entity_type = $this->getTargetEntityType()) {
       if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
-        if ($bundle_storage = $this->entityTypeManager()->getStorage($bundle_entity_type_id)) {
+        try {
+          $bundle_storage = $this->entityTypeManager()->getStorage($bundle_entity_type_id);
           if ($bundle_entity = $bundle_storage->load($this->getTargetBundle())) {
             $this->addDependency($bundle_entity->getConfigDependencyKey(), $bundle_entity->getConfigDependencyName());
           }
+        }
+        catch (\Exception $exception) {
+          // Fail silently to allow the next graphs to be added.
         }
       }
     }
@@ -305,7 +314,7 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
         if ($graph->id() !== RdfEntityGraphInterface::DEFAULT) {
           // Remove the reference to the deleted graph and flag this mapping
           // entity to be re-saved.
-          unset($this->graph[$graph->id()]);
+          $this->unsetGraphs([$graph->id()]);
           $changed = TRUE;
         }
       }

@@ -43,7 +43,7 @@ class RdfEntityConverter extends EntityConverter {
    * {@inheritdoc}
    */
   public function convert($value, $definition, $name, array $defaults) {
-    // Here the escaped uri is transformed into a valid URI.
+    // Here the escaped URI is transformed into a valid URI.
     if (!SparqlArg::isValidResource($value)) {
       $value = UriEncoder::decodeUrl($value);
     }

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Form;
 
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\rdf_entity\Entity\RdfEntityGraph;
@@ -17,7 +20,7 @@ class RdfEntityGraphForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     /** @var \Drupal\rdf_entity\RdfEntityGraphInterface $graph */
@@ -81,7 +84,7 @@ class RdfEntityGraphForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): EntityInterface {
     // Normalize the entity types array.
     $entity_types = $form_state->getValue('entity_types');
     $form_state->setValue('entity_types', array_values(array_filter($entity_types)));
@@ -91,7 +94,7 @@ class RdfEntityGraphForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): int {
     $form_state->setRedirect('entity.rdf_entity_graph.collection');
     drupal_set_message($this->t("Graph %name (%id) has been saved.", [
       '%name' => $this->getEntity()->label(),

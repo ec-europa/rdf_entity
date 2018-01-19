@@ -176,7 +176,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * {@inheritdoc}
    */
-  public function doLoadMultiple(array $ids = NULL, array $graph_ids = []) {
+  protected function doLoadMultiple(array $ids = NULL, array $graph_ids = []) {
     // Attempt to load entities from the persistent cache. This will remove IDs
     // that were loaded from $ids.
     $entities_from_cache = $this->getFromPersistentCache($ids, $graph_ids);
@@ -474,7 +474,7 @@ QUERY;
     }
 
     // We copy this part from parent::loadMultiple(), otherwise we cannot pass
-    // the $graph_ids to self::getFromStaticCache() and  self::doLoadMultiple().
+    // the $graph_ids to self::getFromStaticCache() and self::doLoadMultiple().
     // START parent::loadMultiple() fork.
     $entities = [];
     $passed_ids = !empty($ids) ? array_flip($ids) : FALSE;
@@ -564,7 +564,7 @@ QUERY;
     }
     // END forking from ContentEntityStorageBase::doPreSave().
     // Finally reset the entity original graph property so that that its updated
-    // value it's available for the rest of this request.
+    // value is available for the rest of this request.
     $entity->rdfEntityOriginalGraph = $entity->graph->value;
 
     return $id;
@@ -631,7 +631,16 @@ QUERY;
   /**
    * {@inheritdoc}
    */
-  public function loadByProperties(array $values = []) {
+  public function loadByProperties(array $values = [], array $graph_ids = NULL): array {
+    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
+    // Filter out unknown graphs and provide sane defaults.
+    $graph_ids = $graph_ids ? array_values(array_intersect($graph_ids, $entity_type_graph_ids)) : $entity_type_graph_ids;
+
+    // If there aro no valid graph candidates, there are no entities.
+    if (!$graph_ids) {
+      return [];
+    }
+
     // If UUID is queried, just swap it with the ID. They are the same but UUID
     // is not stored, while on ID we can rely.
     $uuid_key = $this->entityType->getKey('uuid');
@@ -639,7 +648,15 @@ QUERY;
       $values[$this->entityType->getKey('id')] = $values[$uuid_key];
       unset($values[$uuid_key]);
     }
-    return parent::loadByProperties($values);
+
+    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
+    $query = $this->getQuery();
+    $query->setGraphType($graph_ids);
+    $query->accessCheck(FALSE);
+    $this->buildPropertyQuery($query, $values);
+    $result = $query->execute();
+
+    return $result ? $this->loadMultiple($result, $graph_ids) : [];
   }
 
   /**

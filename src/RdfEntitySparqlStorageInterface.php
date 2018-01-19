@@ -132,4 +132,18 @@ interface RdfEntitySparqlStorageInterface extends ContentEntityStorageInterface 
    */
   public function loadUnchanged($id, array $graph_ids = NULL): ?ContentEntityInterface;
 
+  /**
+   * Load entities by their property values.
+   *
+   * @param array $values
+   *   An associative array where the keys are the property names and the
+   *   values are the values those properties must have.
+   * @param string[]|null $graph_ids
+   *   An ordered list of candidate graph IDs.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]
+   *   An array of entity objects indexed by their ids.
+   */
+  public function loadByProperties(array $values = [], array $graph_ids = NULL): array;
+
 }
