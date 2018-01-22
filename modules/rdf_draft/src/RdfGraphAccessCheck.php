@@ -55,7 +55,6 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
 
     // The active graph is the published graph. It is handled by the default
     // operation handler.
-    // @todo: getActiveGraph is not the default. We should load from settings.
     $default_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), RdfEntityGraphInterface::DEFAULT);
     $requested_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), $graph);
     if ($requested_graph == $default_graph) {
