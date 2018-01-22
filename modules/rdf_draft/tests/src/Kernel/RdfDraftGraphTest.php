@@ -76,19 +76,6 @@ class RdfDraftGraphTest extends KernelTestBase {
     $this->assertTrue($storage->hasGraph($apple, 'default'));
     $this->assertTrue($storage->hasGraph($apple, 'draft'));
 
-    // Try to request the entity from a non-existing graph.
-    $apple = $storage->load($id, ['invalid graph']);
-    $this->assertNull($apple);
-
-    // Check cascading over the graph candidate list.
-    $apple = $storage->load($id, ['invalid graph', 'default', 'draft']);
-    $this->assertEquals('default', $apple->graph->value);
-    $this->assertEquals('Apple', $apple->label());
-
-    $apple = $storage->load($id, ['invalid graph', 'draft', 'default']);
-    $this->assertEquals('draft', $apple->graph->value);
-    $this->assertEquals('Draft of Apple', $apple->label());
-
     // Create a new graph and add it to the mapping.
     RdfEntityGraph::create([
       'id' => 'arbitrary',
@@ -106,6 +93,10 @@ class RdfDraftGraphTest extends KernelTestBase {
     $apple = $storage->load($id, ['arbitrary']);
     $this->assertEquals('arbitrary', $apple->graph->value);
     $this->assertEquals('Apple in arbitrary graph', $apple->label());
+
+    // Try to request the entity from a non-existing graph.
+    $this->setExpectedException(\InvalidArgumentException::class, "Graph 'invalid graph' doesn't exist for entity type 'rdf_entity'.");
+    $apple = $storage->load($id, ['invalid graph', 'default', 'draft']);
 
     // Delete the draft version.
     $storage->deleteFromGraph($apple->id(), 'draft');

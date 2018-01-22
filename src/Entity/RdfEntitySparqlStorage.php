@@ -465,13 +465,7 @@ QUERY;
    * {@inheritdoc}
    */
   public function loadMultiple(array $ids = NULL, array $graph_ids = NULL): array {
-    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
-    $graph_ids = $graph_ids ? array_values(array_intersect($graph_ids, $entity_type_graph_ids)) : $entity_type_graph_ids;
-
-    // If there aro no valid graph candidates, there are no entities.
-    if (!$graph_ids) {
-      return [];
-    }
+    $this->checkGraphs($graph_ids);
 
     // We copy this part from parent::loadMultiple(), otherwise we cannot pass
     // the $graph_ids to self::getFromStaticCache() and self::doLoadMultiple().
@@ -574,10 +568,10 @@ QUERY;
    * {@inheritdoc}
    */
   public function loadUnchanged($id, array $graph_ids = NULL): ?ContentEntityInterface {
+    $this->checkGraphs($graph_ids);
+
     // Code forked from parent::loadUnchanged() and adapted to accept graph
     // candidates.
-    $graph_ids = $graph_ids ?: $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
-
     $ids = [$id];
     parent::resetCache($ids);
     $entities = $this->getFromPersistentCache($ids, $graph_ids);
@@ -632,14 +626,7 @@ QUERY;
    * {@inheritdoc}
    */
   public function loadByProperties(array $values = [], array $graph_ids = NULL): array {
-    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
-    // Filter out unknown graphs and provide sane defaults.
-    $graph_ids = $graph_ids ? array_values(array_intersect($graph_ids, $entity_type_graph_ids)) : $entity_type_graph_ids;
-
-    // If there aro no valid graph candidates, there are no entities.
-    if (!$graph_ids) {
-      return [];
-    }
+    $this->checkGraphs($graph_ids);
 
     // If UUID is queried, just swap it with the ID. They are the same but UUID
     // is not stored, while on ID we can rely.
@@ -1254,6 +1241,32 @@ QUERY;
     }
 
     return $this->sparql->query($query)->isTrue();
+  }
+
+  /**
+   * Validates a list of graphs and provide defaults.
+   *
+   * @param string[]|null $graph_ids
+   *   An ordered list of candidate graph IDs.
+   *
+   * @throws \InvalidArgumentException
+   *   If at least one of passed graphs doesn't exist for this entity type.
+   */
+  protected function checkGraphs(array &$graph_ids = NULL): void {
+    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
+
+    if (!$graph_ids) {
+      // No passed graph means "all graphs for this entity type".
+      $graph_ids = $entity_type_graph_ids;
+      return;
+    }
+
+    // Validate each passed graph.
+    array_walk($graph_ids, function (string $graph_id) use ($entity_type_graph_ids): void {
+      if (!in_array($graph_id, $entity_type_graph_ids)) {
+        throw new \InvalidArgumentException("Graph '$graph_id' doesn't exist for entity type '{$this->getEntityTypeId()}'.");
+      }
+    });
   }
 
 }
