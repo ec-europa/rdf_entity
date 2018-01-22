@@ -4,9 +4,9 @@
 
 ## RDF Graphs
 
-Entities using the SPARQL storage can be stored in different graphs, which are
-actually versions of the same entity, You can use graphs, for example, to store
-a draft version of the entity.
+Entities using the SPARQL storage can be stored in different graphs. Graphs can
+be used to store different versions or states of the same entity. Depending on
+the use case you can use graphs to store a draft version of the entity.
 
 ### RDF graphs storage
 
@@ -16,12 +16,12 @@ offered to handle the graphs.
 
 ### Graphs CRUD
 
-Graphs are config entities of type `rdf_entity_graph` and are supporting the
-whole Drupal API regarding config entities. You can add, edit, delete graphs
-also using the UI, at `/admin/config/rdf_entity/graph`. The `default` graph,
-shipped with `rdf_entity` module cannot be deleted or restricted to specific
-entity types. However, you can still edit its name and description. Only enabled
-graphs are taken into account by the SPARQL backend.
+Graphs are config entities of type `rdf_entity_graph` and are supported by the
+Drupal API. You can add, edit, delete graphs also by using the UI provided at
+`/admin/config/rdf_entity/graph`. The `default` graph, shipped with `rdf_entity`
+module cannot be deleted or restricted to specific entity types. However, you
+can still edit its name and description. Only enabled graphs are taken into
+account by the SPARQL backend.
 
 The order of graph entities is important. You can configure a priority by
 settings the `weight` property. Also this could be done in the UI.
@@ -68,7 +68,8 @@ $entity = $storage->load($id, ['draft']);
 // Load from the first graph where the entity exists. First, the storage will
 // attempt to load the entity from the 'draft' graph. If this entity doesn't
 // exist in the 'draft' graph, will fallback to the next one which is 'sync' and
-// so on. If fails with all, the normal behaviour is in place: will return NULL.
+// so on. If the entity is not found in any of the graphs, normal behaviour is
+// in place: will return NULL.
 $entity = $storage->load($id, ['draft', 'sync', 'obsolete', ...]);
 
 // Load multiple entities using a graph candidate list.
