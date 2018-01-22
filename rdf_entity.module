@@ -317,6 +317,9 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The form state object.
  *
+ * @throws \Exception
+ *   If the mapping fails to save.
+ *
  * @see rdf_entity_form_alter()
  */
 function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $bundle_entity, array $form, FormStateInterface $form_state): void {
@@ -335,6 +338,7 @@ function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $
   }
   catch (\Exception $exception) {
     \Drupal::logger('rdf_entity')->critical(t('Could not save RDF entity mapping'), ['exception' => $exception]);
+    throw $exception;
   }
 }
 
