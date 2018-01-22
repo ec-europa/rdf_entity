@@ -10,7 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 
 /**
- * Toggles a RDf entity graph to enable or disable.
+ * Toggles an RDF entity graph to enabled or disabled.
  */
 class RdfEntityGraphToggle extends ControllerBase {
 
