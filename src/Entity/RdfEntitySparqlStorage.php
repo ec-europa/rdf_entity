@@ -23,7 +23,6 @@ use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Exception\DuplicatedIdException;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
-use Drupal\rdf_entity\RdfGraphHandler;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Graph;
@@ -67,7 +66,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * The rdf graph helper service object.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandler
+   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
    */
   protected $graphHandler;
 
@@ -102,14 +101,14 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The language manager service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @param \Drupal\rdf_entity\RdfGraphHandler $rdf_graph_handler
+   * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
    *   The rdf graph helper service.
    * @param \Drupal\rdf_entity\RdfFieldHandler $rdf_field_handler
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandler $rdf_graph_handler, RdfFieldHandler $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
     parent::__construct($entity_type, $entity_manager, $cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
