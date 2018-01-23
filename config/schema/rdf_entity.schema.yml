@@ -17,37 +17,6 @@ rdf_entity.rdfentity.*:
       type: text
       label: 'Explanation or submission guidelines'
 
-rdf_entity.rdfentity.*.third_party.rdf_entity:
-  type: mapping
-  label: 'Third party settings'
-  mapping:
-    rdf_type:
-      type: string
-      label: 'Rdf type mapping'
-    graph:
-      type: sequence
-      sequence:
-        type: string
-        label: 'The mapping of a graph definition to a graph uri.'
-    mapping:
-      type: sequence
-      label: 'Property'
-      sequence:
-        type: sequence
-        label: 'Column'
-        sequence:
-          type: mapping
-          mapping:
-            predicate:
-              type: string
-              label: 'Predicate'
-            format:
-              type: string
-              label: 'Value format'
-    entity_id_plugin:
-      type: string
-      label: 'The plugin that generates the entity ID'
-
 field.storage.*.*.third_party.rdf_entity:
   type: mapping
   mapping:
@@ -86,3 +55,67 @@ field.formatter.third_party.joinup:
   mapping:
     template_suggestion:
       type: string
+
+rdf_entity.graph.*:
+  type: config_entity
+  label: 'RDF entity graph'
+  mapping:
+    id:
+      type: string
+      label: ID
+    weight:
+      type: integer
+      label: Weight
+    name:
+      type: label
+      label: Name
+    description:
+      type: text
+      label: Description
+    entity_types:
+      type: sequence
+      nullable: true
+      label: 'Entity types'
+      sequence:
+        type: string
+        label: 'Entity type'
+
+rdf_entity.mapping.*:
+  type: config_entity
+  label: 'Stores the mapping between Drupal bundle settings and RDF representation'
+  mapping:
+    id:
+      type: string
+      label: ID
+    entity_type_id:
+      type: string
+      label: 'Referred entity type'
+    bundle:
+      type: string
+      label: 'Referred bundle'
+    rdf_type:
+      type: string
+      label: 'RDF type mapping'
+    graph:
+      type: sequence
+      sequence:
+        type: string
+        label: 'The mapping of a graph definition to a graph URI.'
+    base_fields_mapping:
+      type: sequence
+      label: 'The base fields mapping'
+      sequence:
+        type: sequence
+        label: 'Column'
+        sequence:
+          type: mapping
+          mapping:
+            predicate:
+              type: string
+              label: 'Predicate'
+            format:
+              type: string
+              label: 'Value format'
+    entity_id_plugin:
+      type: string
+      label: 'The plugin that generates the entity ID'

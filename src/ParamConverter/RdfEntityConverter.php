@@ -43,30 +43,25 @@ class RdfEntityConverter extends EntityConverter {
    * {@inheritdoc}
    */
   public function convert($value, $definition, $name, array $defaults) {
-    // Here the escaped uri is transformed into a valid uri.
-    // @see \Drupal\rdf_entity\Entity\Rdf::urlRouteParameters
+    // Here the escaped URI is transformed into a valid URI.
     if (!SparqlArg::isValidResource($value)) {
       $value = UriEncoder::decodeUrl($value);
     }
     $entity_type_id = $this->getEntityTypeFromDefaults($definition, $name, $defaults);
-    if ($storage = $this->entityManager->getStorage($entity_type_id)) {
-      /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
-      $dispatcher = \Drupal::getContainer()->get('event_dispatcher');
-      $event = new ActiveGraphEvent($value, $definition, $name, $defaults);
-      // Determine the graph by emitting an event.
-      $graph = $dispatcher->dispatch(RdfEntityEvents::GRAPH_ENTITY_CONVERT, $event);
-      if ($graph_type = $graph->getGraph()) {
-        $storage->setRequestGraphs($value, [$graph_type]);
-      }
-
-      $entity = $storage->load($value);
-      // If the entity type is translatable, ensure we return the proper
-      // translation object for the current context.
-      if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
-        $entity = $this->entityManager->getTranslationFromContext($entity, NULL, ['operation' => 'entity_upcast']);
-      }
-      return $entity;
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    $storage = $this->entityManager->getStorage($entity_type_id);
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+    $dispatcher = \Drupal::getContainer()->get('event_dispatcher');
+    $event = new ActiveGraphEvent($name, $value, $entity_type_id, $definition, $defaults);
+    // Determine the graph by dispatching an event.
+    $event = $dispatcher->dispatch(RdfEntityEvents::GRAPH_ENTITY_CONVERT, $event);
+    $entity = $storage->load($value, $event->getGraphs());
+    // If the entity type is translatable, ensure we return the proper
+    // translation object for the current context.
+    if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
+      $entity = $this->entityManager->getTranslationFromContext($entity, NULL, ['operation' => 'entity_upcast']);
     }
+    return $entity;
   }
 
 }

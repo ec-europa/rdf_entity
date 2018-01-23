@@ -18,3 +18,9 @@ rdf_entity.admin_index:
   description: 'Administer the suite of RDF modules.'
   position: right
   weight: -5
+
+entity.rdf_entity_graph.collection:
+  title: 'RDF graphs'
+  parent: rdf_entity.admin_index
+  description: 'Create and manage RDF entity graphs.'
+  route_name: entity.rdf_entity_graph.collection

@@ -65,7 +65,7 @@ entity.rdf_type.collection:
     _entity_list: 'rdf_type'
     _title: 'Rdf type'
   requirements:
-    _permission: 'administer rdf_type'
+    _permission: 'administer rdf entity'
 
 entity.rdf_type.add_form:
   path: '/admin/structure/rdf_type/add'
@@ -98,3 +98,53 @@ rdf_entity.admin_index:
     _title: 'Rdf entity'
   requirements:
     _permission: 'administer rdf entity'
+
+entity.rdf_entity_graph.collection:
+  path: '/admin/config/rdf_entity/graph'
+  defaults:
+    _entity_list: 'rdf_entity_graph'
+    _title: 'RDF Graphs'
+  requirements:
+    _permission: 'administer rdf entity'
+
+rdf_entity_graph.add:
+  path: '/admin/config/rdf_entity/graph/add'
+  defaults:
+    _entity_form: 'rdf_entity_graph.add'
+    _title: 'Add graph'
+  requirements:
+    _entity_create_access: rdf_entity_graph
+
+entity.rdf_entity_graph.edit_form:
+  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}'
+  defaults:
+    _entity_form: 'rdf_entity_graph.edit'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+  requirements:
+    _entity_access: rdf_entity_graph.update
+
+entity.rdf_entity_graph.delete_form:
+  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/delete'
+  defaults:
+    _entity_form: 'rdf_entity_graph.delete'
+    _title: 'Delete'
+  requirements:
+    _entity_access: rdf_entity_graph.delete
+
+entity.rdf_entity_graph.enable:
+  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/enable'
+  defaults:
+    _controller: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::toggle'
+    _title: Enable
+    toggle_operation: enable
+  requirements:
+    _custom_access: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::access'
+
+entity.rdf_entity_graph.disable:
+  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/disable'
+  defaults:
+    _controller: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::toggle'
+    _title: Disable
+    toggle_operation: disable
+  requirements:
+    _custom_access: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::access'

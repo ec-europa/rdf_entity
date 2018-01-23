@@ -1,7 +1,7 @@
-name: RDF draft
+name: 'RDF draft'
 type: module
-description: Brings the notion of a draft graph to RDF entities.
+description: 'Brings the notion of a draft graph to RDF entities.'
 core: 8.x
-package: Joinup
+package: Custom
 dependencies:
   - rdf_entity

@@ -6,8 +6,8 @@ use Drupal\Core\Entity\Query\ConditionFundamentals;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\rdf_entity\RdfGraphHandler;
 use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
 /**
@@ -25,7 +25,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * The rdf graph handler service object.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandler
+   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
    */
   protected $graphHandler;
 
@@ -188,12 +188,12 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($conjunction, QueryInterface $query, array $namespaces, RdfGraphHandler $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
+  public function __construct($conjunction, QueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
     $conjunction = strtoupper($conjunction);
     parent::__construct($conjunction, $query, $namespaces);
     $this->graphHandler = $rdf_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
-    $this->typePredicate = $query->getEntityStorage()->bundlePredicate();
+    $this->typePredicate = $query->getEntityStorage()->getBundlePredicates();
     $this->bundleKey = $query->getEntityType()->getKey('bundle');
     $this->idKey = $query->getEntityType()->getKey('id');
     $this->labelKey = $query->getEntityType()->getKey('label');

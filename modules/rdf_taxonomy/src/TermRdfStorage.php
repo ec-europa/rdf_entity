@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_taxonomy;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\taxonomy\TermStorageInterface;
 use EasyRdf\Graph;
@@ -96,7 +99,7 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
   /**
    * {@inheritdoc}
    */
-  protected function alterGraph(Graph &$graph, EntityInterface $entity) {
+  protected function alterGraph(Graph &$graph, EntityInterface $entity): void {
     parent::alterGraph($graph, $entity);
     // @todo Document this. I have no idea what this is for, I only know that
     //   taxonomy terms require this.
@@ -238,9 +241,8 @@ QUERY;
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
       if (empty($this->treeChildren[$vid])) {
-        /** @var \Drupal\taxonomy\Entity\Vocabulary $voc */
-        $voc = entity_load('taxonomy_vocabulary', $vid);
-        $concept_schema = $voc->getThirdPartySetting('rdf_entity', 'rdf_type');
+        $mapping = RdfEntityMapping::loadByName('taxonomy_term', $vid);
+        $concept_schema = $mapping->getRdfType();
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];

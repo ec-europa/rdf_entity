@@ -6,24 +6,8 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
-
-/**
- * Implements hook_rdf_graph_definition_alter().
- */
-function rdf_draft_rdf_graph_definition_alter($entity_type_id, &$definitions) {
-  // @todo Replace this hard-coded setting with a settings form
-  // where you can enable entity types.
-  if (!(\Drupal::entityManager()->getStorage($entity_type_id) instanceof RdfEntitySparqlStorage)) {
-    return;
-  }
-
-  $definitions['default']['title'] = t('Published');
-  $definitions['draft'] = [
-    'title' => t('Draft'),
-    'description' => t('The draft graph used to store entities of this type.'),
-  ];
-}
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 
 /**
  * Implements hook_entity_type_alter().
@@ -35,29 +19,20 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
     return;
   }
 
-  $config = \Drupal::config('rdf_draft.settings');
-  foreach ($entity_types as $entity_type_id => $entity_type) {
-    if (
-      // This entity type is not eligible for RDF Draft.
-      !($bundles = $config->get("revision_bundle_{$entity_type_id}"))
-      // Or doesn't have any 'draft' enabled bundle.
-      || !array_filter($bundles)
-      // Or doesn't have a view builder class.
-      || !$entity_type->hasViewBuilderClass()
-      // Or is missing a canonical link template.
-      || !$entity_type->hasLinkTemplate('canonical')
-    ) {
-      continue;
-    }
+  /** @var \Drupal\rdf_entity\RdfGraphHandlerInterface $graph_handler */
+  $graph_handler = \Drupal::service('sparql.graph_handler');
 
-    $recurse = TRUE;
-    $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-    $recurse = FALSE;
-    $definitions = $storage->getGraphDefinitions();
-    unset($definitions['default']);
-    // Set the link templates for each graph type.
-    foreach ($definitions as $name => $definition) {
-      $entity_type->setLinkTemplate('rdf-draft-' . $name, "/$entity_type_id/{{$entity_type_id}}/graph/$name");
+  /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
+  foreach ($entity_types as $entity_type_id => $entity_type) {
+    if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
+      $recurse = TRUE;
+      $graphs = $graph_handler->getGraphDefinitions($entity_type_id);
+      $recurse = FALSE;
+      foreach ($graphs as $graph_id => $graph) {
+        if ($graph_id !== RdfEntityGraphInterface::DEFAULT) {
+          $entity_type->setLinkTemplate("rdf-draft-$graph_id", "/$entity_type_id/{{$entity_type_id}}/graph/$graph_id");
+        }
+      }
     }
   }
 }
@@ -67,25 +42,21 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
  */
 function rdf_draft_entity_operation(EntityInterface $entity) {
   $operations = [];
-  $storage = \Drupal::service('entity.manager')->getStorage($entity->getEntityTypeId());
-  if ($storage  instanceof RdfEntitySparqlStorage) {
-    $definitions = $storage->getGraphDefinitions();
-    foreach ($definitions as $name => $definition) {
-      if ($entity->hasLinkTemplate('rdf-draft-' . $name) && $entity->hasGraph($name)) {
+
+  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
+
+  if ($storage instanceof RdfEntitySparqlStorageInterface) {
+    foreach ($storage->getGraphDefinitions() as $name => $definition) {
+      $link_template = "rdf-draft-$name";
+      if ($entity->hasLinkTemplate($link_template) && $storage->hasGraph($entity, $name)) {
         $operations[$name] = [
           'title' => t('View @graph', ['@graph' => $name]),
           'weight' => 100,
-          'url' => $entity->toUrl('rdf-draft-' . $name),
+          'url' => $entity->toUrl($link_template),
         ];
       }
     }
   }
   return $operations;
-}
-
-/**
- * Implements hook_rdf_default_active_graph_alter().
- */
-function rdf_draft_rdf_default_active_graph_alter($entity_type, &$graph) {
-  $graph[] = 'draft';
 }

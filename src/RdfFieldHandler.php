@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Event\InboundValueEvent;
 use Drupal\rdf_entity\Event\OutboundValueEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
@@ -99,20 +100,21 @@ class RdfFieldHandler {
       foreach ($rdf_bundle_entities as $rdf_bundle_entity) {
         $bundle_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $rdf_bundle_entity->id());
         $bundle_definitions_ids = array_keys($bundle_definitions);
-        $bundle_mapping = $rdf_bundle_entity->getThirdPartySetting('rdf_entity', 'rdf_type');
-        if (empty($bundle_mapping)) {
+        $mapping = RdfEntityMapping::loadByName($entity_type_id, $rdf_bundle_entity->id());
+        if (!$bundle_mapping = $mapping->getRdfType()) {
           throw new \Exception("The {$rdf_bundle_entity->label()} rdf entity does not have an rdf_type set.");
         }
         $this->outboundMap[$entity_type_id]['bundles'][$rdf_bundle_entity->id()] = $bundle_mapping;
         // More than one drupal bundle can share the same mapped uri.
         $this->inboundMap[$entity_type_id]['bundles'][$bundle_mapping][] = $rdf_bundle_entity->id();
+        $base_fields_mapping = $mapping->getMappings();
         foreach ($storage_definitions as $id => $storage_definition) {
           if (!in_array($id, $bundle_definitions_ids)) {
             continue;
           }
 
           if ($storage_definition instanceof BaseFieldDefinition) {
-            $field_data = rdf_entity_get_third_party_property($rdf_bundle_entity, 'mapping', $id, FALSE);
+            $field_data = $base_fields_mapping[$id] ?? FALSE;
             $main_property = $storage_definition->getFieldStorageDefinition()->getMainPropertyName();
           }
           else {

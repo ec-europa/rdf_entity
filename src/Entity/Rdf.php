@@ -7,6 +7,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\user\UserInterface;
@@ -250,7 +251,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function setName($name) {
-    $this->set('name', $name);
+    $this->set('label', $name);
     return $this;
   }
 
@@ -268,14 +269,14 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function isPublished() {
-    /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
     $storage = $this->entityTypeManager()->getStorage($this->getEntityTypeId());
-    $published_graph = $storage->getBundleGraphUri($this->bundle(), 'default');
+    $published_graph = $storage->getGraphHandler()->getBundleGraphUri($this->getEntityTypeId(), $this->bundle(), RdfEntityGraphInterface::DEFAULT);
     $entity_graph_name = $this->get('graph')->first()->getValue()['value'];
     if (empty($entity_graph_name)) {
       return FALSE;
     }
-    $entity_graph = $storage->getBundleGraphUri($this->bundle(), $entity_graph_name);
+    $entity_graph = $storage->getGraphHandler()->getBundleGraphUri($this->getEntityTypeId(), $this->bundle(), $entity_graph_name);
     return ($entity_graph === $published_graph);
   }
 
@@ -378,18 +379,17 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * Returns whether the entity bundle has mapping for a certain field column.
    *
-   * @param string $field
+   * @param string $field_name
    *   The field name.
    * @param string $column
    *   The field column. Defaults to 'value'.
    *
    * @return bool
-   *   True if the mapping is set, false otherwise.
+   *   TRUE if the mapping is set, FALSE otherwise.
    */
-  protected function hasFieldMapping($field, $column = 'value') {
-    $bundle = $this->get($this->getEntityType()->getKey('bundle'))->entity;
-    $mapping = rdf_entity_get_third_party_property($bundle, 'mapping', $field);
-    return !empty($mapping[$column]['predicate']);
+  protected function hasFieldMapping($field_name, $column = 'value') {
+    $mapping = RdfEntityMapping::loadByName($this->getEntityTypeId(), $this->bundle());
+    return $mapping && !empty($mapping->getMapping($field_name, $column)['predicate']);
   }
 
 }

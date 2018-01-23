@@ -6,6 +6,7 @@ services:
         - { name: event_subscriber }
   rdf_draft.subscriber:
     class: Drupal\rdf_draft\EventSubscriber\ActiveGraphSubscriber
+    arguments: ['@sparql.graph_handler']
     tags:
       - { name: event_subscriber }
 

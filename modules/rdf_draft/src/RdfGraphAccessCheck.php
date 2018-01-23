@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfInterface;
 use Symfony\Component\Routing\Route;
 
@@ -54,19 +55,14 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
 
     // The active graph is the published graph. It is handled by the default
     // operation handler.
-    // @todo: getActiveGraph is not the default. We should load from settings.
-    $default_graph = $storage->getBundleGraphUri($rdf_entity->bundle(), 'default');
-    $requested_graph = $storage->getBundleGraphUri($rdf_entity->bundle(), $graph);
+    $default_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), RdfEntityGraphInterface::DEFAULT);
+    $requested_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), $graph);
     if ($requested_graph == $default_graph) {
       return AccessResult::neutral();
     }
 
-    $active_graph_type = $storage->getRequestGraphs($rdf_entity->id());
     // Check if there is an entity saved in the passed graph.
-    $storage->setRequestGraphs($rdf_entity->id(), [$graph]);
-    $entity = $storage->load($rdf_entity->id());
-    // Restore active graph.
-    $storage->setRequestGraphs($rdf_entity->id(), $active_graph_type);
+    $entity = $storage->load($rdf_entity->id(), [$graph]);
 
     // @todo: When the requested graph is the only one and it is not the
     // default, it is loaded in the default view, so maybe there is no need

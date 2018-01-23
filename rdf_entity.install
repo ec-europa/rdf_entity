@@ -5,6 +5,11 @@
  * Includes installation functions for the rdf_entity module.
  */
 
+use Drupal\Core\Serialization\Yaml;
+use Drupal\rdf_entity\Entity\RdfEntityGraph;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
+use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+
 /**
  * Implements hook_requirements().
  */
@@ -25,4 +30,52 @@ function rdf_entity_requirements($phase) {
 
   $requirements += rdf_entity_virtuoso_permission_requirements();
   return $requirements;
+}
+
+/**
+ * Move RDF entity mapping data from bundle entities into dedicated entities.
+ */
+function rdf_entity_update_8001() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  // Update or post-update scripts might need this config entity available when
+  // they run. We don't wait on configuration synchronization, because that runs
+  // usually after the database update, so we make this entity available in an
+  // early stage of updates.
+  $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/rdf_entity.graph.default.yml'));
+  RdfEntityGraph::create($values)->save();
+
+  // Iterate over all entities that are bundles of content entities with
+  // RdfEntitySparqlStorage and move their 3rd party settings belonging to
+  // rdf_entity module into their dedicated rdf_entity_mapping config entities.
+  foreach ($entity_type_manager->getDefinitions() as $entity_type_id => $entity_type) {
+    $storage = $entity_type_manager->getStorage($entity_type_id);
+    if (!$storage instanceof RdfEntitySparqlStorage) {
+      continue;
+    }
+
+    if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
+      $bundle_storage = $entity_type_manager->getStorage($bundle_entity_type_id);
+      /** @var \Drupal\Core\Config\Entity\ConfigEntityBase $bundle_entity */
+      foreach ($bundle_storage->loadMultiple() as $bundle => $bundle_entity) {
+        $third_party_settings = $bundle_entity->getThirdPartySettings('rdf_entity');
+        $values = [
+          'entity_type_id' => $entity_type_id,
+          'bundle' => $bundle,
+        ] + $third_party_settings;
+        // Rename key 'mapping' to 'base_fields_mapping'.
+        $values['base_fields_mapping'] = $values['mapping'] ?? [];
+        unset($values['mapping']);
+
+        // Create and save the new 'rdf_entity_mapping' entity.
+        RdfEntityMapping::create($values)->save();
+
+        // Cleanup 3rd party settings from the bundle entity.
+        foreach ($third_party_settings as $key => $value) {
+          $bundle_entity->unsetThirdPartySetting('rdf_entity', $key);
+        }
+        $bundle_entity->save();
+      }
+    }
+  }
 }

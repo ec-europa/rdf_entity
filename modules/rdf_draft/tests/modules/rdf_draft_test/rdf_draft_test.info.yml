@@ -1,0 +1,7 @@
+type: module
+core: 8.x
+name: 'RDF Draft Test'
+description: 'Testing module for RDF Draft.'
+package: Testing
+dependencies:
+  - rdf_draft
