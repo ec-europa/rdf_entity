@@ -260,6 +260,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
 
     // @todo: We should filter per entity per graph and not load the whole
     // database only to filter later on.
+    // @see https://github.com/ec-europa/rdf_entity/issues/19
     $ids_string = SparqlArg::serializeUris($ids, ' ');
     $graphs = $this->getGraphHandler()->getEntityTypeGraphUrisFlatList($this->getEntityTypeId());
     $named_graph = '';
@@ -270,6 +271,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
     // @todo Get rid of the language filter. It's here because of eurovoc:
     // \Drupal\taxonomy\Form\OverviewTerms::buildForm loads full entities
     // of the whole tree: 7000+ terms in 24 languages is just too much.
+    // @see https://github.com/ec-europa/rdf_entity/issues/19
     $query = <<<QUERY
 SELECT ?graph ?entity_id ?predicate ?field_value
 $named_graph
@@ -287,8 +289,6 @@ QUERY;
 
   /**
    * Processes results from the load query and returns a list of values.
-   *
-   * @todo Reduce the cyclomatic complexity of this function.
    *
    * When an entity is loaded, the values might derive from multiple graph. This
    * function will process the results and attempt to load a published version
@@ -309,6 +309,10 @@ QUERY;
    *
    * @throws \Exception
    *    Thrown when the entity graph is empty.
+   *
+   * @see https://github.com/ec-europa/rdf_entity/issues/19
+   *
+   * @todo Reduce the cyclomatic complexity of this function in #19.
    */
   protected function processGraphResults($results, array $graph_ids): ?array {
     $values_per_entity = $this->deserializeGraphResults($results);
