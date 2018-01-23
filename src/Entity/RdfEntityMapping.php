@@ -143,7 +143,10 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
    * {@inheritdoc}
    */
   public function getTargetEntityType(): ?ContentEntityTypeInterface {
-    return $this->entityTypeManager()->getDefinition($this->entity_type_id);
+    if (!$this->getTargetEntityTypeId()) {
+      return NULL;
+    }
+    return $this->entityTypeManager()->getDefinition($this->getTargetEntityTypeId());
   }
 
   /**
@@ -277,21 +280,16 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
 
     /** @var \Drupal\rdf_entity\RdfEntityGraphInterface $graph */
     foreach (RdfEntityGraph::loadMultiple(array_keys($this->getGraphs())) as $graph) {
-      // Add dependency to graph.
+      // Add dependency to each graph.
       $this->addDependency($graph->getConfigDependencyKey(), $graph->getConfigDependencyName());
     }
 
     // Add dependency to the paired bundle entity.
     if ($entity_type = $this->getTargetEntityType()) {
       if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
-        try {
-          $bundle_storage = $this->entityTypeManager()->getStorage($bundle_entity_type_id);
-          if ($bundle_entity = $bundle_storage->load($this->getTargetBundle())) {
-            $this->addDependency($bundle_entity->getConfigDependencyKey(), $bundle_entity->getConfigDependencyName());
-          }
-        }
-        catch (\Exception $exception) {
-          // Fail silently to allow the next graphs to be added.
+        $bundle_storage = $this->entityTypeManager()->getStorage($bundle_entity_type_id);
+        if ($bundle_entity = $bundle_storage->load($this->getTargetBundle())) {
+          $this->addDependency($bundle_entity->getConfigDependencyKey(), $bundle_entity->getConfigDependencyName());
         }
       }
     }

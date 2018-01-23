@@ -323,23 +323,16 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
  * @see rdf_entity_form_alter()
  */
 function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $bundle_entity, array $form, FormStateInterface $form_state): void {
+  $values = $form_state->getValue('rdf_entity');
   /** @var \Drupal\rdf_entity\RdfEntityMappingInterface $mapping */
   $mapping = $form_state->get('rdf_entity_mapping');
-  $values = $form_state->getValue('rdf_entity');
-
-  try {
-    $mapping
-      ->setRdfType($values['rdf_type'])
-      ->setEntityIdPlugin($values['entity_id_plugin'])
-      // Add only non-empty values.
-      ->setGraphs(array_filter($values['graph']))
-      ->setMappings($values['base_fields_mapping'])
-      ->save();
-  }
-  catch (\Exception $exception) {
-    \Drupal::logger('rdf_entity')->critical(t('Could not save RDF entity mapping'), ['exception' => $exception]);
-    throw $exception;
-  }
+  $mapping
+    ->setRdfType($values['rdf_type'])
+    ->setEntityIdPlugin($values['entity_id_plugin'])
+    // Add only non-empty values.
+    ->setGraphs(array_filter($values['graph']))
+    ->setMappings($values['base_fields_mapping'])
+    ->save();
 }
 
 /**

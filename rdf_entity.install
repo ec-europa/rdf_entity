@@ -49,32 +49,32 @@ function rdf_entity_update_8001() {
   // RdfEntitySparqlStorage and move their 3rd party settings belonging to
   // rdf_entity module into their dedicated rdf_entity_mapping config entities.
   foreach ($entity_type_manager->getDefinitions() as $entity_type_id => $entity_type) {
-    if ($storage = $entity_type_manager->getStorage($entity_type_id)) {
-      if ($storage instanceof RdfEntitySparqlStorage) {
-        if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
-          if ($bundle_storage = $entity_type_manager->getStorage($bundle_entity_type_id)) {
-            /** @var \Drupal\Core\Config\Entity\ConfigEntityBase $bundle_entity */
-            foreach ($bundle_storage->loadMultiple() as $bundle => $bundle_entity) {
-              $third_party_settings = $bundle_entity->getThirdPartySettings('rdf_entity');
-              $values = [
-                'entity_type_id' => $entity_type_id,
-                'bundle' => $bundle,
-              ] + $third_party_settings;
-              // Rename key 'mapping' to 'base_fields_mapping'.
-              $values['base_fields_mapping'] = $values['mapping'] ?? [];
-              unset($values['mapping']);
+    $storage = $entity_type_manager->getStorage($entity_type_id);
+    if (!$storage instanceof RdfEntitySparqlStorage) {
+      continue;
+    }
 
-              // Create the new 'rdf_entity_mapping' entity.
-              RdfEntityMapping::create($values)->save();
+    if ($bundle_entity_type_id = $entity_type->getBundleEntityType()) {
+      $bundle_storage = $entity_type_manager->getStorage($bundle_entity_type_id);
+      /** @var \Drupal\Core\Config\Entity\ConfigEntityBase $bundle_entity */
+      foreach ($bundle_storage->loadMultiple() as $bundle => $bundle_entity) {
+        $third_party_settings = $bundle_entity->getThirdPartySettings('rdf_entity');
+        $values = [
+          'entity_type_id' => $entity_type_id,
+          'bundle' => $bundle,
+        ] + $third_party_settings;
+        // Rename key 'mapping' to 'base_fields_mapping'.
+        $values['base_fields_mapping'] = $values['mapping'] ?? [];
+        unset($values['mapping']);
 
-              // Cleanup 3rd party settings from the bundle entity.
-              foreach ($third_party_settings as $key => $value) {
-                $bundle_entity->unsetThirdPartySetting('rdf_entity', $key);
-              }
-              $bundle_entity->save();
-            }
-          }
+        // Create and save the new 'rdf_entity_mapping' entity.
+        RdfEntityMapping::create($values)->save();
+
+        // Cleanup 3rd party settings from the bundle entity.
+        foreach ($third_party_settings as $key => $value) {
+          $bundle_entity->unsetThirdPartySetting('rdf_entity', $key);
         }
+        $bundle_entity->save();
       }
     }
   }

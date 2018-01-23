@@ -42,13 +42,9 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
  */
 function rdf_draft_entity_operation(EntityInterface $entity) {
   $operations = [];
-  try {
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
-    $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
-  }
-  catch (\Exception $exception) {
-    return [];
-  }
+
+  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
 
   if ($storage instanceof RdfEntitySparqlStorageInterface) {
     foreach ($storage->getGraphDefinitions() as $name => $definition) {
