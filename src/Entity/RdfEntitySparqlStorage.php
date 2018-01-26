@@ -826,7 +826,13 @@ QUERY;
       throw new DuplicatedIdException("Attempting to create a new entity with the ID '$id' already taken.");
     }
 
-    $graph_id = !$entity->get('graph')->isEmpty() ? $entity->graph->value : $this->getGraphHandler()->getDefaultGraphId($this->getEntityTypeId());
+    // If the graph is not specified, fallback to the default one for the entity
+    // type.
+    if ($entity->get('graph')->isEmpty()) {
+      $entity->set('graph', $this->getGraphHandler()->getDefaultGraphId($this->getEntityTypeId()));
+    }
+
+    $graph_id = $entity->get('graph')->value;
     $graph_uri = $this->getGraphHandler()->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $graph_id);
     $graph = self::getGraph($graph_uri);
     $lang_array = $this->toLangArray($entity);
