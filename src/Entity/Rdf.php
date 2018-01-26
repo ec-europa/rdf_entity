@@ -272,7 +272,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
     /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
     $storage = $this->entityTypeManager()->getStorage($this->getEntityTypeId());
     $published_graph = $storage->getGraphHandler()->getBundleGraphUri($this->getEntityTypeId(), $this->bundle(), RdfEntityGraphInterface::DEFAULT);
-    $entity_graph_name = $this->get('graph')->first()->getValue()['value'];
+    $entity_graph_name = $this->get('graph')->value;
     if (empty($entity_graph_name)) {
       return FALSE;
     }
