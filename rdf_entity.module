@@ -168,20 +168,6 @@ function rdf_entity_form_alter_builder($entity_type, FieldStorageConfig $entity,
 }
 
 /**
- * Implements hook_entity_create().
- */
-function rdf_entity_entity_create(EntityInterface $entity) {
-  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
-  $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
-  if ($storage instanceof RdfEntitySparqlStorage) {
-    if ($entity->get('graph')->isEmpty()) {
-      // If no graph has been explicitly set, use the top entry.
-      $entity->set('graph', $storage->getGraphHandler()->getDefaultGraphId($entity->getEntityTypeId()));
-    }
-  }
-}
-
-/**
  * Implements hook_form_alter().
  *
  * Configurations for the RDF entity bundle.
