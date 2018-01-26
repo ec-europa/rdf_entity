@@ -227,6 +227,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
             }
           }
           $entity = new $this->entityClass($entity_values, $this->entityTypeId, $bundle, $translations);
+          $this->trackOriginalGraph($entity);
           $entities[$id] = $entity;
         }
         $this->invokeStorageLoadHook($entities);
