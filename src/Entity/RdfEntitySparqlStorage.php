@@ -562,7 +562,7 @@ QUERY;
     // END forking from ContentEntityStorageBase::doPreSave().
     // Finally reset the entity original graph property so that that its updated
     // value is available for the rest of this request.
-    $entity->rdfEntityOriginalGraph = $entity->graph->value;
+    $this->trackOriginalGraph($entity);
 
     return $id;
   }
@@ -1276,6 +1276,24 @@ QUERY;
         throw new \InvalidArgumentException("Graph '$graph_id' doesn't exist for entity type '{$this->getEntityTypeId()}'.");
       }
     });
+  }
+
+  /**
+   * Keep track of the originating graph of an entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity object.
+   */
+  protected function trackOriginalGraph(EntityInterface $entity): void {
+    // Store the graph ID of the loaded entity to be, eventually, used when this
+    // entity gets saved. During the saving process, this value is passed to
+    // RdfEntitySparqlStorage::loadUnchanged() to correctly determine the
+    // original entity graph. This value persists in entity over an entity form
+    // submit, as the entity is stored in the form state, so that the entity
+    // save can rely on it.
+    // @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::doPreSave()
+    // @see \Drupal\Core\Entity\EntityForm
+    $entity->rdfEntityOriginalGraph = $entity->get('graph')->value;
   }
 
 }
