@@ -870,6 +870,18 @@ QUERY;
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function doPostSave(EntityInterface $entity, $update) {
+    parent::doPostSave($entity, $update);
+
+    // After saving, this is now the "original entity", but subsequent saves
+    // must be able to reference the original graph.
+    // @see \Drupal\Core\Entity\EntityStorageBase::doPostSave()
+    $this->trackOriginalGraph($entity);
+  }
+
+  /**
    * In this method the latest values have to be applied to the entity.
    *
    * The end array should have an index with the x-default language which should
