@@ -20,7 +20,17 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * A list of allowed operators for the id and bundle key.
    */
-  const ID_BUNDLE_ALLOWED_OPERATORS = ['=', '!=', '<>', 'IN', 'NOT IN'];
+  const ID_BUNDLE_ALLOWED_OPERATORS = [
+    '=',
+    '!=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '<>',
+    'IN',
+    'NOT IN'
+  ];
 
   /**
    * The rdf graph handler service object.
@@ -319,6 +329,10 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
         $value = [$value];
         $operator = 'NOT IN';
 
+      case '>':
+      case '<':
+      case '>=':
+      case '<=':
       case 'NOT IN':
         $this->conditions[] = [
           'field' => $field,
@@ -602,13 +616,18 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   protected function compileFilter(array $condition) {
     $prefix = self::$filterOperatorMap[$condition['operator']]['prefix'];
     $suffix = self::$filterOperatorMap[$condition['operator']]['suffix'];
+    $condition['field'] = $this->toVar($condition['field']);
+    $operators = ['<', '>', '<=', '>='];
+    // If the id is compared as a string, we need to convert it to one.
+    if ($condition['field'] === $this->fieldMappings[$this->idKey] && in_array($condition['operator'], $operators)) {
+      $condition['field'] = 'STR(' . $condition['field'] . ')';
+    }
     if (is_array($condition['value'])) {
       if (!isset(self::$filterOperatorMap[$condition['operator']]['delimiter'])) {
         throw new \Exception("An array value is not supported for this operator.");
       }
       $condition['value'] = '(' . implode(self::$filterOperatorMap[$condition['operator']]['delimiter'], $condition['value']) . ')';
     }
-    $condition['field'] = $this->toVar($condition['field']);
     return $prefix . $condition['field'] . ' ' . $condition['operator'] . ' ' . $condition['value'] . $suffix;
   }
 
@@ -767,10 +786,18 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
     if (empty($value)) {
       return $value;
     }
-    // If the field name is the id, escape the value. It has been already
-    // converted and the value is an array.
+
     if ($field === $this->idKey) {
-      return SparqlArg::toResourceUris($value);
+      // If the field name is the id, and the operators are not among the '>',
+      // '<', '>=', '<=', then the value has already been converted in an array
+      // so escape it.
+      if (is_array($value)) {
+        return SparqlArg::toResourceUris($value);
+      }
+      // Convert the value to sting in order to perform the rest of comparisons.
+      elseif (is_string($value)) {
+        return 'STR("' . $value . '")';
+      }
     }
 
     // If the field name is the bundle key, convert the values to their
