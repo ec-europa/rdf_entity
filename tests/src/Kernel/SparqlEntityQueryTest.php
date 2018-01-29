@@ -460,6 +460,74 @@ class SparqlEntityQueryTest extends JoinupKernelTestBase {
   }
 
   /**
+   * Tests operators '<', '>', '<=', '>=' for Ids.
+   *
+   * @dataProvider idStringComparisonDataProvider
+   */
+  public function testIdStringComparison($value, $operator, $expected_results) {
+    $query = $this->factory->get('rdf_entity');
+    $query->condition('id', $value, $operator);
+    $this->queryResults = $query->sort('id')->execute();
+    $this->assertResult($expected_results);
+  }
+
+  /**
+   * Data provider for testIdStringComparison test.
+   */
+  public function idStringComparisonDataProvider() {
+    return [
+      [
+        'http://dummy.example.com/002',
+        '<',
+        ['http://dummy.example.com/001'],
+      ],
+      [
+        'http://dummy.example.com/002',
+        '<=',
+        ['http://dummy.example.com/001', 'http://dummy.example.com/002'],
+      ],
+      [
+        'http://dummy.example.com/009',
+        '>',
+        // The multifield bundle entities have an id starting with 'http://m'
+        // which is sorted after the 'http://d' so all entities of the
+        // multifield bundled are also returned for the '>' and '>=' operators.
+        [
+          'http://dummy.example.com/010',
+          'http://multifield.example.com/001',
+          'http://multifield.example.com/002',
+          'http://multifield.example.com/003',
+          'http://multifield.example.com/004',
+          'http://multifield.example.com/005',
+          'http://multifield.example.com/006',
+          'http://multifield.example.com/007',
+          'http://multifield.example.com/008',
+          'http://multifield.example.com/009',
+          'http://multifield.example.com/010',
+        ],
+      ],
+      [
+        'http://dummy.example.com/009',
+        '>=',
+        [
+          'http://dummy.example.com/009',
+          'http://dummy.example.com/010',
+          'http://multifield.example.com/001',
+          'http://multifield.example.com/002',
+          'http://multifield.example.com/003',
+          'http://multifield.example.com/004',
+          'http://multifield.example.com/005',
+          'http://multifield.example.com/006',
+          'http://multifield.example.com/007',
+          'http://multifield.example.com/008',
+          'http://multifield.example.com/009',
+          'http://multifield.example.com/010',
+        ],
+      ],
+    ];
+  }
+
+  /**
    * Asserts that arrays are identical.
    */
   protected function assertResult() {
