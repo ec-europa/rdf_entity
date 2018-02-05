@@ -4,7 +4,7 @@ namespace Drupal\rdf_taxonomy\Tests;
 
 use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\taxonomy\Entity\Term;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
+use Drupal\Tests\rdf_entity\Kernel\RdfKernelTestBase;
 
 /**
  * Tests Entity Query functionality of the Sparql backend.
@@ -13,7 +13,7 @@ use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
  *
  * @group Entity
  */
-class SparqlTaxonomyTest extends JoinupKernelTestBase {
+class SparqlTaxonomyTest extends RdfKernelTestBase {
 
   /**
    * Modules to enable.

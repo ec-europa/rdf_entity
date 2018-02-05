@@ -5,14 +5,14 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 use Drupal\Component\Utility\Random;
 use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\rdf_entity\RdfInterface;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
+use Drupal\Tests\rdf_entity\Kernel\RdfKernelTestBase;
 
 /**
  * Tests Entity Query functionality of the Sparql backend.
  *
  * @group Entity
  */
-class SparqlEntityInsertTest extends JoinupKernelTestBase {
+class SparqlEntityInsertTest extends RdfKernelTestBase {
 
   /**
    * Modules to enable.

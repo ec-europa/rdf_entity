@@ -3,14 +3,13 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests the support of saving various encoded stings in the triple store.
  *
  * @group rdf_entity
  */
-class RdfEncodingTest extends JoinupKernelTestBase {
+class RdfEncodingTest extends RdfKernelTestBase {
 
   /**
    * Test that naughty strings can safely be saved to the database.

@@ -3,14 +3,13 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests rdf_entity owner functionality.
  *
  * @group rdf_entity
  */
-class RdfOwnerTest extends JoinupKernelTestBase {
+class RdfOwnerTest extends RdfKernelTestBase {
 
   /**
    * Tests rdf_entity owner functionality.

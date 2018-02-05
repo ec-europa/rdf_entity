@@ -4,7 +4,6 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\rdf_entity\Exception\DuplicatedIdException;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Provides unit testing for the 'rdf_entity' entity.
@@ -13,7 +12,7 @@ use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
  *
  * @group rdf_entity
  */
-class RdfEntityCreationTest extends JoinupKernelTestBase {
+class RdfEntityCreationTest extends RdfKernelTestBase {
 
   /**
    * Tests overlapping IDs.
