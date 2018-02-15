@@ -794,7 +794,8 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
       if (is_array($value)) {
         return SparqlArg::toResourceUris($value);
       }
-      // Convert the value to sting in order to perform the rest of comparisons.
+      // Convert the value to a string in order to perform the remaining
+      // comparisons.
       elseif (is_string($value)) {
         return 'STR("' . $value . '")';
       }
