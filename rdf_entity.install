@@ -37,6 +37,8 @@ function rdf_entity_requirements($phase) {
  */
 function rdf_entity_update_8001() {
   $entity_type_manager = \Drupal::entityTypeManager();
+  // Clear the cache, so the new entity type definitions are available.
+  $entity_type_manager->clearCachedDefinitions();
 
   // Update or post-update scripts might need this config entity available when
   // they run. We don't wait on configuration synchronization, because that runs
