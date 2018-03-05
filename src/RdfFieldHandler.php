@@ -686,6 +686,7 @@ class RdfFieldHandler {
       'xsd:dateTime' => t('Datetime'),
       'xsd:decimal' => t('Decimal'),
       'xsd:integer' => t('Integer'),
+      'xsd:anyURI' => t('URI (xsd:anyURI)'),
     ];
   }
 
