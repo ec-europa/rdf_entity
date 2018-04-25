@@ -640,10 +640,10 @@ QUERY;
       unset($values[$uuid_key]);
     }
 
-    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
-    $query = $this->getQuery();
-    $query->setGraphType($graph_ids);
-    $query->accessCheck(FALSE);
+    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\SparqlQueryInterface $query */
+    $query = $this->getQuery()
+      ->graphs($graph_ids)
+      ->accessCheck(FALSE);
     $this->buildPropertyQuery($query, $values);
     $result = $query->execute();
 
@@ -746,31 +746,6 @@ QUERY;
    */
   protected function getQueryServiceName() {
     return 'entity.query.sparql';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getQuery($conjunction = 'AND') {
-    // Access the service directly rather than entity.query factory so the
-    // storage's current entity type is used.
-    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
-    $query = \Drupal::service($this->getQueryServiceName())->get($this->entityType, $conjunction, $this->graphHandler, $this->fieldHandler);
-
-    /*
-     * When the storage class supports the notion of a 'published state' by
-     * implementing the published interface, we then have to determine if
-     * drafting has been enabled for this entity type (rdf_draft module). If so,
-     * the 'draft' graph will hold the unpublished versions, 'default' graph
-     * contains the published entities.
-     */
-    if (in_array(EntityPublishedInterface::class, class_implements($this->entityClass))) {
-      if ($this->moduleHandler->moduleExists('rdf_draft')) {
-        $query->setGraphType($this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId()));
-      }
-    }
-
-    return $query;
   }
 
   /**

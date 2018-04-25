@@ -122,17 +122,13 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
   /**
    * Returns a Query object for RDF entities.
    *
-   * @return \Drupal\rdf_entity\Entity\Query\Sparql\Query
+   * @return \Drupal\Core\Entity\Query\QueryInterface
    *   The entity query.
    */
   protected function getRdfEntityQuery() : Query {
-    /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('rdf_entity');
-    /** @var \Drupal\rdf_entity\Entity\Query\Sparql\Query $query */
-    $query = $storage->getQuery();
-    $query->setGraphType($storage->getGraphHandler()->getEntityTypeGraphIds('rdf_entity'));
-
-    return $query;
+    return $storage->getQuery();
   }
 
   /**

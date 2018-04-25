@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Entity\Query\Sparql;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
-use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Entity\Query\Sql\ConditionAggregate;
 use Drupal\rdf_entity\Database\Driver\sparql\Connection;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 
 /**
- * The base entity query class for Rdf entities.
+ * The base entity query class for RDF entities.
  */
-class Query extends QueryBase implements QueryInterface {
+class Query extends QueryBase implements SparqlQueryInterface {
 
   /**
    * The connection object.
@@ -39,15 +40,13 @@ class Query extends QueryBase implements QueryInterface {
   protected $prepared = FALSE;
 
   /**
-   * The graphs from where the query is going to try and load entities from.
+   * The graph IDs from where the query is going load entities from.
    *
-   * The variable holds a plain array of graph uris.
+   * If the value is NULL, the query will load entities from all graphs.
    *
-   * @var array
-   *
-   * @todo: Needs change to query graphs.
+   * @var string[]|null
    */
-  protected $graphs = NULL;
+  protected $graphIds;
 
   /**
    * An array that is meant to hold the results.
@@ -102,11 +101,6 @@ class Query extends QueryBase implements QueryInterface {
    *   The rdf graph handler service.
    * @param \Drupal\rdf_entity\RdfFieldHandler $rdf_field_handler
    *   The rdf mapping handler service.
-   *
-   * @throws \Exception
-   *   Thrown when the storage passed is not an RdfEntitySparqlStorage.
-   *
-   * @todo: Is this exception check needed?
    */
   public function __construct(EntityTypeInterface $entity_type, $conjunction, Connection $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
     // Assign the handlers before calling the parent so that they can be passed
@@ -114,63 +108,28 @@ class Query extends QueryBase implements QueryInterface {
     $this->graphHandler = $rdf_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
     $this->entityTypeManager = $entity_type_manager;
-    $this->entityStorage = $this->entityTypeManager->getStorage($entity_type->id());
     $this->connection = $connection;
     parent::__construct($entity_type, $conjunction, $namespaces);
 
-    if (!$this->entityStorage instanceof RdfEntitySparqlStorage) {
-      throw new \Exception('Sparql storage is required for this query.');
-    }
-
     // Set a unique tag for the rdf_entity queries.
     $this->addTag('rdf_entity');
-    $this->addMetaData('entity_type', $this->getEntityType());
-  }
-
-  /**
-   * Returns the graph handler service.
-   *
-   * @return \Drupal\rdf_entity\RdfGraphHandler
-   *   The graph handler service.
-   */
-  public function getGraphHandler() {
-    return $this->graphHandler;
-  }
-
-  /**
-   * Returns the mapping handler service.
-   *
-   * @return \Drupal\rdf_entity\RdfFieldHandler
-   *   The mapping handler service.
-   */
-  public function getfieldHandler() {
-    return $this->fieldHandler;
+    $this->addMetaData('entity_type', $this->entityType);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityTypeId() {
-    return $this->entityTypeId;
-  }
-
-  /**
-   * Returns the entity type.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
-   *   The entity type object.
-   */
-  public function getEntityType() {
+  public function getEntityType(): EntityTypeInterface {
     return $this->entityType;
   }
 
   /**
-   * Returns the entity type storage.
-   *
-   * @return \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage
-   *   The entity type storage.
+   * {@inheritdoc}
    */
-  public function getEntityStorage() {
+  public function getEntityStorage(): RdfEntitySparqlStorageInterface {
+    if (!isset($this->entityStorage)) {
+      $this->entityStorage = $this->entityTypeManager->getStorage($this->getEntityTypeId());
+    }
     return $this->entityStorage;
   }
 
@@ -196,23 +155,25 @@ class Query extends QueryBase implements QueryInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function graphs(array $graph_ids = NULL): SparqlQueryInterface {
+    $this->graphIds = $graph_ids;
+    return $this;
+  }
+
+  /**
    * Sets the graph types for the query.
-   *
-   * This allows the filtering of graphs on the query level. Set the graph IDs
-   * to restrict the entities to the list of graphs. If the parameter is not
-   * passed, the default, topmost graph is used.
    *
    * @param string[]|null $graph_ids
    *   (optional) An array of graphs ids to be passed into the query.
    *
-   * @todo: When a condition is set on the bundle, this graphs should be
-   * filtered accordingly.
-   *
-   * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::processGraphResults()
+   * @deprecated Use the ::graphs() method instead.
    */
   public function setGraphType(array $graph_ids = NULL) {
-    $graph_ids = $graph_ids ?: $this->getGraphHandler()->getDefaultGraphId($this->getEntityTypeId());
-    $this->graphs = $this->entityStorage->getGraphHandler()->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $graph_ids);
+    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated. Please use the ::graphs() method instead.', E_USER_DEPRECATED);
+    $graph_ids = $graph_ids ?: [$this->graphHandler->getDefaultGraphId($this->getEntityTypeId())];
+    $this->graphs($graph_ids);
   }
 
   /**
@@ -235,11 +196,17 @@ class Query extends QueryBase implements QueryInterface {
     }
     $this->query .= "\n";
 
-    if ($this->graphs) {
-      foreach ($this->graphs as $graph) {
-        $this->query .= 'FROM <' . $graph . '>' . "\n";
-      }
+
+    if (!$this->graphIds) {
+      // If no graph IDs were requested, allow all graphs that Drupal is aware
+      // of given this entity type.
+      $this->graphIds = $this->graphHandler->getEntityTypeGraphIds($this->getEntityTypeId());
     }
+    $graph_uris = $this->graphHandler->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $this->graphIds);
+    foreach ($graph_uris as $graph_uri) {
+      $this->query .= "FROM <$graph_uri>\n";
+    }
+
     return $this;
   }
 

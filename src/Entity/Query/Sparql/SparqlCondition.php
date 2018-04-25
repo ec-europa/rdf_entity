@@ -198,7 +198,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($conjunction, QueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
+  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
     $conjunction = strtoupper($conjunction);
     parent::__construct($conjunction, $query, $namespaces);
     $this->graphHandler = $rdf_graph_handler;
