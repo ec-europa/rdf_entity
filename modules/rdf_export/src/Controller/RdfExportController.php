@@ -6,7 +6,9 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\rdf_export\RdfSerializerInterface;
 use EasyRdf\Format;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -15,6 +17,32 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Provides route responses for rdf_entity.module.
  */
 class RdfExportController extends ControllerBase {
+
+  /**
+   * The RDF serializer service.
+   *
+   * @var \Drupal\rdf_export\RdfSerializerInterface
+   */
+  protected $rdfSerializer;
+
+  /**
+   * Instantiates a new RdfExportController object.
+   *
+   * @param \Drupal\rdf_export\RdfSerializerInterface $rdf_serializer
+   *   The RDF serializer interface.
+   */
+  public function __construct(RdfSerializerInterface $rdf_serializer) {
+    $this->rdfSerializer = $rdf_serializer;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('rdf_export.serializer')
+    );
+  }
 
   /**
    * Build an list of possible download links to RDF serialization methods.
@@ -69,7 +97,7 @@ class RdfExportController extends ControllerBase {
     if (!$entity || !$entity instanceof EntityInterface) {
       throw new AccessDeniedHttpException();
     }
-    $output = $this->serializeRdfEntity($entity->id(), $export_format);
+    $output = $this->rdfSerializer->serializeEntity($entity, $export_format);
 
     $response = new Response();
     $response->setContent($output);
@@ -77,28 +105,6 @@ class RdfExportController extends ControllerBase {
     $disposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'export.' . $format->getDefaultExtension());
     $response->headers->set('Content-Disposition', $disposition);
     return $response;
-  }
-
-  /**
-   * Converts an rdf entity id into its serialized rdf form.
-   */
-  protected function serializeRdfEntity($entity_id, $format = 'turtle') {
-    $query = "CONSTRUCT {
-  ?s ?p ?o .
-}
-WHERE {
-  {
-    ?s ?p ?o .
-    VALUES ?s { <$entity_id> }
-  } UNION {
-     ?s ?p ?o .
-     VALUES ?o { <$entity_id> }
-  }
-}";
-    $sparql = \Drupal::getContainer()->get('sparql_endpoint');
-    /** @var \EasyRdf\Graph $graph */
-    $graph = $sparql->query($query);
-    return $graph->serialise($format);
   }
 
   /**
