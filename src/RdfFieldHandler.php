@@ -215,8 +215,8 @@ class RdfFieldHandler {
    * @return array
    *   An array of predicates.
    *
-   * @throws \Exception
-   *    Thrown when a non existing field is requested.
+   * @throws \Drupal\rdf_entity\Exception\UnmappedFieldException
+   *    Thrown when a unmapped field is requested.
    */
   public function getFieldPredicates($entity_type_id, $field, $column = NULL, $bundle = NULL) {
     $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
