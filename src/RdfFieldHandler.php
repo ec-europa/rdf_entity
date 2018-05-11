@@ -11,6 +11,7 @@ use Drupal\rdf_entity\Event\InboundValueEvent;
 use Drupal\rdf_entity\Event\OutboundValueEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
 use Drupal\rdf_entity\Exception\NonExistingFieldPropertyException;
+use Drupal\rdf_entity\Exception\UnmappedFieldException;
 use EasyRdf\Literal;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -220,7 +221,7 @@ class RdfFieldHandler {
   public function getFieldPredicates($entity_type_id, $field, $column = NULL, $bundle = NULL) {
     $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
     if (!isset($drupal_to_sparql['fields'][$field])) {
-      throw new \Exception("You are requesting the mapping for a non mapped field: $field.");
+      throw new UnmappedFieldException("You are requesting the mapping for a non mapped field: $field.");
     }
     $field_mapping = $drupal_to_sparql['fields'][$field];
     $column = $column ?: $field_mapping['main_property'];
