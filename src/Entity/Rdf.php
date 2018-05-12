@@ -378,6 +378,28 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public static function load($id, array $graph_ids = NULL) {
+    $entity_type_repository = \Drupal::service('entity_type.repository');
+    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(get_called_class()));
+    return $storage->load($id, $graph_ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function loadMultiple(array $ids = NULL, array $graph_ids = NULL) {
+    $entity_type_repository = \Drupal::service('entity_type.repository');
+    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(get_called_class()));
+    return $storage->loadMultiple($ids, $graph_ids);
+  }
+
+  /**
    * Returns whether the entity bundle has mapping for a certain field column.
    *
    * @param string $field_name
