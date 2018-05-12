@@ -233,7 +233,7 @@ class RdfFieldHandler {
         $return[$bundle] = $field_mapping['columns'][$column][$bundle]['predicate'];
       }
     }
-    return array_unique(array_filter($return));
+    return array_filter($return);
   }
 
   /**
