@@ -199,7 +199,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
 
     if (!$this->graphIds) {
       // If no graph IDs were requested, allow all graphs that Drupal is aware
-      // of given this entity type.
+      // for this entity type.
       $this->graphIds = $this->graphHandler->getEntityTypeGraphIds($this->getEntityTypeId());
     }
     $graph_uris = $this->graphHandler->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $this->graphIds);
