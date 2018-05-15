@@ -94,6 +94,6 @@ $storage = \Drupal::entityTypeManager()->getStorage('food');
 $query = $storage->getQuery;
 $ids = $query
   ->condition('type', 'fruit')
-  ->setGraphType(['default', 'draft'])
+  ->graphs(['default', 'draft'])
   ->execute();
 ```

@@ -79,15 +79,15 @@ $query = \Drupal::service('entity_type.manager')
 To further filter by graph, it is enough to call the
 
 ```
-$query->setGraphType(['default', 'draft']);
+$query->graphs(['default', 'draft']);
 ```
 This is where the filter applies. You cannot currently filter by the
 `condition()` method.
 
 NOTICE: The results will have only one graph per entity and this will be the
-first available graph. With the `setGraphType()` method, you set the priority,
+first available graph. With the `graphs()` method, you set the priority,
 not the list of graphs to retrieve from. Also, all loaded entities will be
-affected by the priority provided in the setGraphType. If you want to set the
+affected by the priority provided in the `graphs` method. If you want to set the
 priority only for a specific entity, given that you have the id of this entity,
 you can do it by setting the priority to the GraphHandler service itself through
 the storage class.
@@ -108,7 +108,7 @@ This is because multiple entities can be loaded in a single request or the same
 entity can be loaded more than once. This means that we cannot have a global
 priority, nor reset the priority after the entity is loaded.
 
-The difference with the `$query->setGraphType()` above, is that the query saves
+The difference with the `$query->graphs()` above, is that the query saves
 the graph locally for the query. That means that all loaded entities are
 affected by it. For entities that do not have a specific set of graphs in the
 query, the normal priority is being used (first from the 'default' graph and
