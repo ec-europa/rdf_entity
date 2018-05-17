@@ -24,6 +24,7 @@ use Drupal\rdf_entity\Exception\DuplicatedIdException;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Graph;
 use EasyRdf\Literal;
@@ -818,7 +819,7 @@ QUERY;
           foreach ($column_data as $column => $value) {
             // Filter out empty values or non mapped fields. The id is also
             // excluded as it is not mapped.
-            if ($value === NULL || $value === '' || !$this->fieldHandler->hasFieldPredicate($this->getEntityTypeId(), $field_name, $column, $bundle)) {
+            if ($value === NULL || $value === '' || !$this->fieldHandler->hasFieldPredicate($this->getEntityTypeId(), $bundle, $field_name, $column)) {
               continue;
             }
             $predicate = $this->fieldHandler->getFieldPredicates($this->getEntityTypeId(), $field_name, $column, $bundle);
@@ -968,7 +969,7 @@ QUERY;
       LanguageInterface::LANGCODE_SYSTEM,
     ];
 
-    if ($format == RdfFieldHandler::TRANSLATABLE_LITERAL && !empty($langcode) && !in_array($langcode, $non_languages)) {
+    if ($format == RdfFieldHandlerInterface::TRANSLATABLE_LITERAL && !empty($langcode) && !in_array($langcode, $non_languages)) {
       return $langcode;
     }
 

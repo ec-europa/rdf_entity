@@ -4,9 +4,9 @@ namespace Drupal\rdf_entity\Entity\Query\Sparql;
 
 use Drupal\Core\Entity\Query\ConditionFundamentals;
 use Drupal\Core\Entity\Query\ConditionInterface;
-use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
@@ -693,7 +693,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   protected function getLangCode($field, $column = NULL, $default_lang = NULL) {
     $format = $this->fieldHandler->getFieldFormat($this->query->getEntityTypeId(), $field, $column);
     $format = reset($format);
-    if ($format !== RdfFieldHandler::TRANSLATABLE_LITERAL) {
+    if ($format !== RdfFieldHandlerInterface::TRANSLATABLE_LITERAL) {
       return FALSE;
     }
 

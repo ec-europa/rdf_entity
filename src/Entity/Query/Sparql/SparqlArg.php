@@ -3,7 +3,7 @@
 namespace Drupal\rdf_entity\Entity\Query\Sparql;
 
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
 /**
@@ -62,7 +62,7 @@ class SparqlArg {
     if (preg_match('/^<(.+)>$/', $uri) !== NULL) {
       $uri = trim($uri, '<>');
     }
-    return self::serialize($uri, RdfFieldHandler::RESOURCE);
+    return self::serialize($uri, RdfFieldHandlerInterface::RESOURCE);
   }
 
   /**
@@ -116,15 +116,15 @@ class SparqlArg {
   public static function serialize($value, $format, $lang = NULL) {
     $data['value'] = $value;
     switch ($format) {
-      case RdfFieldHandler::RESOURCE:
+      case RdfFieldHandlerInterface::RESOURCE:
         $data['type'] = 'uri';
         break;
 
-      case RdfFieldHandler::NON_TYPE:
+      case RdfFieldHandlerInterface::NON_TYPE:
         $data['type'] = 'literal';
         break;
 
-      case RdfFieldHandler::TRANSLATABLE_LITERAL:
+      case RdfFieldHandlerInterface::TRANSLATABLE_LITERAL:
         $data['lang'] = $lang;
         $data['type'] = 'literal';
         break;

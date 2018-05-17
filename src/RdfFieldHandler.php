@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
@@ -18,27 +20,76 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * Contains helper methods that help with the uri mappings of Drupal elements.
  */
-class RdfFieldHandler {
-
-  const RESOURCE = 'resource';
-  const TRANSLATABLE_LITERAL = 't_literal';
-  const NON_TYPE = 'literal';
+class RdfFieldHandler implements RdfFieldHandlerInterface {
 
   /**
-   * A drupal oriented property mapping array.
+   * A Drupal oriented property mapping array.
+   *
+   * A YAML representation of this array would look like:
+   * @code
+   * rdf_entity:
+   *   bundle_key: rid
+   *   bundles:
+   *     catalog: http://www.w3.org/ns/dcat#Catalog
+   *     other_bundle: ...
+   *   fields:
+   *     label:
+   *       main_property: value
+   *       columns:
+   *         value:
+   *           catalog:
+   *             predicate: http://purl.org/dc/terms/title
+   *             format: t_literal
+   *             serialize: false
+   *             data_type: string
+   *           other_bundle:
+   *             predicate: ...
+   *             ...
+   *         other_column:
+   *           catalog:
+   *             ...
+   *     other_field: ...
+   * other_entity_type:
+   *   bundle_key: ...
+   *   ...
+   * @endcode
    *
    * @var array
-   *
-   * @todo: More information on the structure?
    */
   protected $outboundMap;
 
   /**
    * A SPARQL oriented property mapping array.
    *
-   * @var array
+   * A YAML representation of this array would look like:
+   * @code
+   * rdf_entity:
+   *   bundle_key: rid
+   *   bundles:
+   *     http://www.w3.org/ns/dcat#Catalog:
+   *       - catalog
+   *       - collection
+   *     http://example.com:
+   *       - other_bundle
+   *   fields:
+   *     http://purl.org/dc/terms/title:
+   *       catalog:
+   *         field_name: label
+   *         column: value
+   *         serialize: false
+   *         type: string
+   *         data_type: string
+   *       other_field:
+   *         field_name: ...
+   *         ...
+   *     http://example.com/field_mapping:
+   *       ....
+   * other_entity_type:
+   *   bundle_key: ...
+   *   ...
+   * @endcode
    *
-   * @todo: More information on the structure?
+   * @var array
    */
   protected $inboundMap;
 
@@ -80,86 +131,92 @@ class RdfFieldHandler {
   }
 
   /**
-   * Prepares the property mappings for the given entity type id.
+   * Prepares the property mappings for the given entity type ID.
+   *
+   * This is the central point where the field maps SPARQL-to-Drupal (inbound)
+   * and Drupal-to-SPARQL (outbound) are build. The parsed results are
+   * statically cached.
    *
    * @param string $entity_type_id
-   *   The entity type id.
+   *   The entity type ID.
    *
    * @throws \Exception
-   *    Thrown when a bundle does not have the bundle mapped.
+   *   Thrown when a bundle does not have the mapped bundle.
    */
   protected function buildEntityTypeProperties($entity_type_id) {
     if (empty($this->outboundMap[$entity_type_id]) && empty($this->inboundMap[$entity_type_id])) {
-      $storage = $this->entityTypeManager->getStorage($entity_type_id);
-      $bundle_type = $storage->getEntityType()->getBundleEntityType();
+      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+
+      // @todo Support entity types without bundles or without bundle config
+      // entities, in #18.
+      // @see https://github.com/ec-europa/rdf_entity/issues/18
+      $bundle_type = $entity_type->getBundleEntityType();
+
       $bundle_storage = $this->entityTypeManager->getStorage($bundle_type);
       $this->outboundMap[$entity_type_id] = $this->inboundMap[$entity_type_id] = [];
       $this->outboundMap[$entity_type_id]['bundle_key'] = $this->inboundMap[$entity_type_id]['bundle_key'] = $bundle_storage->getEntityType()->getKey('id');
-      $rdf_bundle_entities = $this->entityTypeManager->getStorage($bundle_type)->loadMultiple();
+      $bundle_entities = $this->entityTypeManager->getStorage($bundle_type)->loadMultiple();
 
-      $storage_definitions = $this->entityFieldManager->getFieldStorageDefinitions($entity_type_id);
-      foreach ($rdf_bundle_entities as $rdf_bundle_entity) {
-        $bundle_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $rdf_bundle_entity->id());
-        $bundle_definitions_ids = array_keys($bundle_definitions);
-        $mapping = RdfEntityMapping::loadByName($entity_type_id, $rdf_bundle_entity->id());
+      foreach ($bundle_entities as $bundle_id => $bundle_entity) {
+        $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle_entity->id());
+        $mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_entity->id());
         if (!$bundle_mapping = $mapping->getRdfType()) {
-          throw new \Exception("The {$rdf_bundle_entity->label()} rdf entity does not have an rdf_type set.");
+          throw new \Exception("The {$bundle_entity->label()} rdf entity does not have an rdf_type set.");
         }
-        $this->outboundMap[$entity_type_id]['bundles'][$rdf_bundle_entity->id()] = $bundle_mapping;
-        // More than one drupal bundle can share the same mapped uri.
-        $this->inboundMap[$entity_type_id]['bundles'][$bundle_mapping][] = $rdf_bundle_entity->id();
+        $this->outboundMap[$entity_type_id]['bundles'][$bundle_id] = $bundle_mapping;
+        // More than one Drupal bundle can share the same mapped URI.
+        $this->inboundMap[$entity_type_id]['bundles'][$bundle_mapping][] = $bundle_id;
         $base_fields_mapping = $mapping->getMappings();
-        foreach ($storage_definitions as $id => $storage_definition) {
-          if (!in_array($id, $bundle_definitions_ids)) {
-            continue;
-          }
+        foreach ($field_definitions as $field_name => $field_definition) {
+          $field_storage_definition = $field_definition->getFieldStorageDefinition();
 
-          if ($storage_definition instanceof BaseFieldDefinition) {
-            $field_data = $base_fields_mapping[$id] ?? FALSE;
-            $main_property = $storage_definition->getFieldStorageDefinition()->getMainPropertyName();
+          // @todo Unify field mappings in #16.
+          // @see https://github.com/ec-europa/rdf_entity/issues/16
+          if ($field_storage_definition instanceof BaseFieldDefinition) {
+            $field_mapping = $base_fields_mapping[$field_name] ?? NULL;
           }
           else {
-            $field_data = $storage_definition->getThirdPartySetting('rdf_entity', 'mapping');
-            $main_property = $storage_definition->getMainPropertyName();
+            $field_mapping = $field_storage_definition->getThirdPartySetting('rdf_entity', 'mapping');
           }
 
-          if (!$field_data) {
+          // This field is not mapped.
+          if (!$field_mapping) {
             continue;
           }
 
-          $this->outboundMap[$entity_type_id]['fields'][$id]['main_property'] = $main_property;
-          foreach ($field_data as $column => $column_info) {
-            if (empty($column_info['predicate'])) {
+          $this->outboundMap[$entity_type_id]['fields'][$field_name]['main_property'] = $field_storage_definition->getMainPropertyName();;
+          foreach ($field_mapping as $column_name => $column_mapping) {
+            if (empty($column_mapping['predicate'])) {
               continue;
             }
 
             // Handle the serialized values.
             $serialize = FALSE;
-            $field_storage_schema = $storage_definition->getSchema()['columns'];
+            $field_storage_schema = $field_storage_definition->getSchema()['columns'];
             // Inflate value back into a normal item.
-            if (isset($field_storage_schema[$column]['serialize']) && $field_storage_schema[$column]['serialize'] === TRUE) {
+            if (!empty($field_storage_schema[$column_name]['serialize'])) {
               $serialize = TRUE;
             }
 
             // Retrieve the property definition primitive data type.
-            $property_definition = $storage_definition->getPropertyDefinition($column);
+            $property_definition = $field_storage_definition->getPropertyDefinition($column_name);
             if (empty($property_definition)) {
-              throw new NonExistingFieldPropertyException("Field $id of type {$storage_definition->getType()} has no property $column.");
+              throw new NonExistingFieldPropertyException("Field '$field_name' of type '{$field_storage_definition->getType()}'' has no property '$column_name'.");
             }
             $data_type = $property_definition->getDataType();
 
-            $this->outboundMap[$entity_type_id]['fields'][$id]['columns'][$column][$rdf_bundle_entity->id()] = [
-              'predicate' => $column_info['predicate'],
-              'format' => $column_info['format'],
+            $this->outboundMap[$entity_type_id]['fields'][$field_name]['columns'][$column_name][$bundle_id] = [
+              'predicate' => $column_mapping['predicate'],
+              'format' => $column_mapping['format'],
               'serialize' => $serialize,
               'data_type' => $data_type,
             ];
 
-            $this->inboundMap[$entity_type_id]['fields'][$column_info['predicate']][$rdf_bundle_entity->id()] = [
-              'field_name' => $id,
-              'column' => $column,
+            $this->inboundMap[$entity_type_id]['fields'][$column_mapping['predicate']][$bundle_id] = [
+              'field_name' => $field_name,
+              'column' => $column_name,
               'serialize' => $serialize,
-              'type' => $storage_definition->getType(),
+              'type' => $field_storage_definition->getType(),
               'data_type' => $data_type,
             ];
           }
@@ -169,31 +226,9 @@ class RdfFieldHandler {
   }
 
   /**
-   * Checks if the drupal-to-sparql array after checking if it needs build.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   *
-   * @return array
-   *   The drupal-to-sparql array.
+   * {@inheritdoc}
    */
-  public function getOutboundMap($entity_type_id) {
-    if (!isset($this->outboundMap[$entity_type_id])) {
-      $this->buildEntityTypeProperties($entity_type_id);
-    }
-    return $this->outboundMap[$entity_type_id];
-  }
-
-  /**
-   * Checks if the sparql-to-drupal array after checking if it needs build.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   *
-   * @return array
-   *   The sparql-to-drupal array.
-   */
-  public function getInboundMap($entity_type_id) {
+  public function getInboundMap(string $entity_type_id): array {
     if (!isset($this->inboundMap[$entity_type_id])) {
       $this->buildEntityTypeProperties($entity_type_id);
     }
@@ -201,99 +236,222 @@ class RdfFieldHandler {
   }
 
   /**
-   * Returns the predicates for a given field.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
-   *   The field name.
-   * @param string $column
-   *   The column name. If empty, the main property will be used instead.
-   * @param string $bundle
-   *   Optionally filter the final array by bundle.
-   *
-   * @return array
-   *   An array of predicates.
-   *
-   * @throws \Drupal\rdf_entity\Exception\UnmappedFieldException
-   *    Thrown when a unmapped field is requested.
+   * {@inheritdoc}
    */
-  public function getFieldPredicates($entity_type_id, $field, $column = NULL, $bundle = NULL) {
+  public function getFieldPredicates(string $entity_type_id, string $field_name, ?string $column_name = NULL, ?string $bundle = NULL): array {
     $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
-    if (!isset($drupal_to_sparql['fields'][$field])) {
-      throw new UnmappedFieldException("You are requesting the mapping for a non mapped field: $field.");
+    if (!isset($drupal_to_sparql['fields'][$field_name])) {
+      throw new UnmappedFieldException("You are requesting the mapping for a non mapped field: $field_name.");
     }
-    $field_mapping = $drupal_to_sparql['fields'][$field];
-    $column = $column ?: $field_mapping['main_property'];
+    $field_mapping = $drupal_to_sparql['fields'][$field_name];
+    $column_name = $column_name ?: $field_mapping['main_property'];
 
     $bundles = $bundle ? [$bundle] : array_keys($drupal_to_sparql['bundles']);
     $return = [];
     foreach ($bundles as $bundle) {
-      if (isset($field_mapping['columns'][$column][$bundle]['predicate'])) {
-        $return[$bundle] = $field_mapping['columns'][$column][$bundle]['predicate'];
+      if (isset($field_mapping['columns'][$column_name][$bundle]['predicate'])) {
+        $return[$bundle] = $field_mapping['columns'][$column_name][$bundle]['predicate'];
       }
     }
     return array_filter($return);
   }
 
   /**
-   * Returns the format for a given field.
+   * {@inheritdoc}
+   */
+  public function getFieldFormat(string $entity_type_id, string $field_name, ?string $column_name = NULL, ?string $bundle = NULL): array {
+    $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
+    if (!isset($drupal_to_sparql['fields'][$field_name])) {
+      throw new \Exception("You are requesting the mapping for a non mapped field: $field_name.");
+    }
+    $field_mapping = $drupal_to_sparql['fields'][$field_name];
+    $column_name = $column_name ?: $field_mapping['main_property'];
+
+    if (!empty($bundle)) {
+      return [$field_mapping['columns'][$column_name][$bundle]['format']];
+    }
+
+    return array_values(array_column($field_mapping['columns'][$column_name], 'format'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldMainProperty(string $entity_type_id, string $field_name): string {
+    $outbound_data = $this->getOutboundMap($entity_type_id);
+    return $outbound_data['fields'][$field_name]['main_property'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPropertyListToArray(string $entity_type_id): array {
+    $inbound_map = $this->getInboundMap($entity_type_id);
+    return array_unique(array_keys($inbound_map['fields']));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasFieldPredicate(string $entity_type_id, string $bundle, string $field_name, string $column_name): bool {
+    $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
+    return isset($drupal_to_sparql['fields'][$field_name]['columns'][$column_name][$bundle]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function bundlesToUris(string $entity_type_id, array $bundles, bool $to_resource_uris = FALSE): array {
+    if (SparqlArg::isValidResources($bundles)) {
+      return $bundles;
+    }
+
+    foreach ($bundles as $index => $bundle) {
+      $value = $this->getOutboundBundleValue($entity_type_id, $bundle);
+      if (empty($value)) {
+        throw new \Exception("The $bundle bundle does not have a mapping.");
+      }
+      $bundles[$index] = $to_resource_uris ? SparqlArg::uri($value) : $value;
+    }
+
+    return $bundles;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOutboundValue(string $entity_type_id, string $field_name, $value, ?string $langcode = NULL, ?string $column_name = NULL, ?string $bundle = NULL) {
+    $outbound_map = $this->getOutboundMap($entity_type_id);
+    $format = $this->getFieldFormat($entity_type_id, $field_name, $column_name, $bundle);
+    $format = reset($format);
+
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field_name, $column_name, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new OutboundValueEvent($entity_type_id, $field_name, $value, $field_mapping_info, $langcode, $column_name, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::OUTBOUND_VALUE, $event);
+    $value = $event->getValue();
+
+    $serialize = $this->isFieldSerializable($entity_type_id, $field_name, $column_name);
+    if ($serialize) {
+      $value = serialize($value);
+    }
+
+    if ($field_name == $outbound_map['bundle_key']) {
+      $value = $this->getOutboundBundleValue($entity_type_id, $value);
+    }
+
+    switch ($format) {
+      case static::RESOURCE:
+        return [
+          'type' => substr($value, 0, 2) == '_:' ? 'bnode' : 'uri',
+          'value' => $value,
+        ];
+
+      case static::NON_TYPE:
+        return new Literal($value);
+
+      case static::TRANSLATABLE_LITERAL:
+        return Literal::create($value, $langcode);
+
+      default:
+        return Literal::create($value, NULL, $format);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInboundBundleValue(string $entity_type_id, string $bundle_uri): array {
+    $inbound_map = $this->getInboundMap($entity_type_id);
+    if (empty($inbound_map['bundles'][$bundle_uri])) {
+      throw new \Exception("A bundle mapped to <$bundle_uri> was not found.");
+    }
+
+    return $inbound_map['bundles'][$bundle_uri];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInboundValue(string $entity_type_id, string $field_name, $value, ?string $langcode = NULL, ?string $column_name = NULL, ?string $bundle = NULL) {
+    // The outbound map contains the same information as the inbound map: the
+    // only difference is how the data is structured. It's safe to retrieve the
+    // field information from the outbound map.
+    // @see self::buildEntityTypeProperties()
+    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field_name, $column_name, $bundle);
+    $field_mapping_info = reset($field_mapping_info);
+
+    $event = new InboundValueEvent($entity_type_id, $field_name, $value, $field_mapping_info, $langcode, $column_name, $bundle);
+    $this->eventDispatcher->dispatch(RdfEntityEvents::INBOUND_VALUE, $event);
+    $value = $event->getValue();
+
+    if ($this->isFieldSerializable($entity_type_id, $field_name, $column_name)) {
+      $value = unserialize($value);
+    }
+
+    return $value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getSupportedDataTypes(): array {
+    return [
+      static::RESOURCE => t('Resource'),
+      static::TRANSLATABLE_LITERAL => t('Translatable literal'),
+      static::NON_TYPE => t('String (No type)'),
+      'xsd:string' => t('Literal'),
+      'xsd:boolean' => t('Boolean'),
+      'xsd:date' => t('Date'),
+      'xsd:dateTime' => t('Datetime'),
+      'xsd:decimal' => t('Decimal'),
+      'xsd:integer' => t('Integer'),
+      'xsd:anyURI' => t('URI (xsd:anyURI)'),
+    ];
+  }
+
+  /**
+   * Returns the Drupal-to-SPARQL mapping array.
    *
    * @param string $entity_type_id
    *   The entity type id.
-   * @param string $field
-   *   The field name.
-   * @param string $column
-   *   The column name. If empty, the main property will be used instead.
-   * @param string $bundle
-   *   Optionally filter the final array by bundle.
    *
    * @return array
-   *   An array of predicates.
-   *
-   * @throws \Exception
-   *    Thrown when a non existing field is requested.
+   *   The drupal-to-sparql array.
    */
-  public function getFieldFormat($entity_type_id, $field, $column = NULL, $bundle = NULL) {
-    $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
-    if (!isset($drupal_to_sparql['fields'][$field])) {
-      throw new \Exception("You are requesting the mapping for a non mapped field: $field.");
+  protected function getOutboundMap(string $entity_type_id): array {
+    if (!isset($this->outboundMap[$entity_type_id])) {
+      $this->buildEntityTypeProperties($entity_type_id);
     }
-    $field_mapping = $drupal_to_sparql['fields'][$field];
-    $column = $column ?: $field_mapping['main_property'];
-
-    if (!empty($bundle)) {
-      return [$field_mapping['columns'][$column][$bundle]['format']];
-    }
-
-    return array_values(array_column($field_mapping['columns'][$column], 'format'));
+    return $this->outboundMap[$entity_type_id];
   }
 
   /**
    * Returns whether the field is serializable.
    *
    * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
+   *   The entity type ID.
+   * @param string $field_name
    *   The field name.
-   * @param string $column
-   *   The column name. If empty, the main property will be used instead.
+   * @param string|null $column_name
+   *   (optional) The column name. If omitted, the main property will be used.
    *
    * @return bool
    *   Whether the field is serializable.
    *
    * @throws \Exception
-   *    Thrown when a non existing field is requested.
+   *   Thrown when a non existing field is requested.
    */
-  public function isFieldSerializable($entity_type_id, $field, $column = NULL) {
+  protected function isFieldSerializable(string $entity_type_id, string $field_name, ?string $column_name = NULL): bool {
     $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
-    if (!isset($drupal_to_sparql['fields'][$field])) {
-      throw new \Exception("You are requesting the mapping for a non mapped field: $field.");
+    if (!isset($drupal_to_sparql['fields'][$field_name])) {
+      throw new \Exception("You are requesting the mapping for a non mapped field: $field_name.");
     }
-    $field_mapping = $drupal_to_sparql['fields'][$field];
-    $column = $column ?: $field_mapping['main_property'];
+    $field_mapping = $drupal_to_sparql['fields'][$field_name];
+    $column_name = $column_name ?: $field_mapping['main_property'];
 
-    $serialize_array = array_column($field_mapping['columns'][$column], 'serialize');
+    $serialize_array = array_column($field_mapping['columns'][$column_name], 'serialize');
     if (empty($serialize_array)) {
       return FALSE;
     }
@@ -303,255 +461,12 @@ class RdfFieldHandler {
   }
 
   /**
-   * Returns a list of label predicates of the passed entity type.
-   *
-   * @param string $entity_type_id
-   *   The entity type machine name.
-   * @param string $key
-   *   The entity key to return.
-   * @param string $bundle
-   *   Optionally filter by bundle.
-   *
-   * @return array
-   *   An array of label predicates indexed by their respective entity bundles.
-   *
-   * @throws \Exception
-   *    Thrown when an rdf mapping has not been set for a label in one of the
-   *    entity bundles.
-   */
-  protected function getEntityTypeKeyPredicates($entity_type_id, $key, $bundle = NULL) {
-    $entity_type = $this->entityTypeManager->getStorage($entity_type_id)->getEntityType();
-    if (!in_array($key, array_keys($entity_type->getKeys()))) {
-      throw new \Exception("The requested entity key was not found in the entity type.");
-    }
-
-    $key = $entity_type->getKey($key);
-    return $this->getFieldPredicates($entity_type_id, $key, NULL, $bundle);
-  }
-
-  /**
-   * Returns the field's main property.
-   *
-   * @param string $entity_type_id
-   *   The entity type machine name.
-   * @param string $field
-   *   The field name.
-   *
-   * @return string
-   *   The main property of the field.
-   */
-  public function getFieldMainProperty($entity_type_id, $field) {
-    $outbound_data = $this->getOutboundMap($entity_type_id);
-    return $outbound_data['fields'][$field]['main_property'];
-  }
-
-  /**
-   * Returns a flat list of property Uris of the given entity type id.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   *
-   * @return array
-   *   An array of property Uris that belong to the entity type id.
-   */
-  public function getPropertyListToArray($entity_type_id) {
-    $inbound_map = $this->getInboundMap($entity_type_id);
-    $return = array_keys($inbound_map['fields']);
-    return array_unique($return);
-  }
-
-  /**
-   * Returns all bundle key mappings of the passed rdf entity type.
-   *
-   * These mappings are the actual type of the bundle represented by an rdf
-   * URI. This is not the predicate but the object.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $bundle
-   *   Optionally filter the mappings by bundle.
-   *
-   * @return array
-   *   A list of bundle key mappings from all bundles of the passed entity
-   *    type. The returned array is indexed by the bundle key.
-   *
-   * @throws \Exception
-   *    Thrown when the rdf entity bundle has no mapped type uri.
-   */
-  public function getEntityTypeBundlePredicates($entity_type_id, $bundle = NULL) {
-    return $this->getEntityTypeKeyPredicates($entity_type_id, 'bundle', $bundle);
-  }
-
-  /**
-   * Get the mapping between drupal properties and rdf predicates.
-   *
-   * @return array
-   *   The mapped properties.
-   *
-   * @deprecated To be replaced by getDrupalToSparql
-   */
-  public function getEntityPredicates($entity_type_id) {
-    return $this->getOutboundMap($entity_type_id);
-  }
-
-  /**
-   * Returns if the field has a predicate mapped for the given entity type id.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
-   *   The field name.
-   * @param string $column
-   *   The column.
-   * @param string $bundle
-   *   The bundle id.
-   *
-   * @return bool
-   *   Whether the field is mapped for an entity type id.
-   */
-  public function hasFieldPredicate($entity_type_id, $field, $column, $bundle) {
-    $drupal_to_sparql = $this->getOutboundMap($entity_type_id);
-    return isset($drupal_to_sparql['fields'][$field]['columns'][$column][$bundle]);
-  }
-
-  /**
-   * Determines if a field is an entity reference.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field_name
-   *   The field machine name.
-   *
-   * @return bool
-   *   Whether the field is referencing an rdf resource.
-   */
-  public function fieldIsResource($entity_type_id, $field_name) {
-    $format = $this->getFieldFormat($entity_type_id, $field_name);
-    $format = reset($format);
-    return $format === self::RESOURCE;
-  }
-
-  /**
-   * Determines if a field is an entity reference.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field_name
-   *   The field machine name.
-   *
-   * @return bool
-   *   Whether the field is referencing an rdf resource.
-   */
-  public function fieldIsTranslatableLiteral($entity_type_id, $field_name) {
-    $format = $this->getFieldFormat($entity_type_id, $field_name);
-    $format = reset($format);
-    return $format === self::TRANSLATABLE_LITERAL;
-  }
-
-  /**
-   * Converts a list of bundle Ids to their corresponding Uris.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param array $values
-   *   An array of bundle machine names.
-   * @param bool $to_resource_uris
-   *   If true, the Ids will be transformed into resource Ids instead.
-   *
-   * @return array
-   *   The altered array.
-   *
-   * @throws \Exception
-   *    Thrown when the bundle does not have a mapping.
-   */
-  public function bundlesToUris($entity_type_id, array $values, $to_resource_uris = FALSE) {
-    if (SparqlArg::isValidResources($values)) {
-      return $values;
-    }
-
-    foreach ($values as $index => $bundle) {
-      $value = $this->getOutboundBundleValue($entity_type_id, $bundle);
-      if (empty($value)) {
-        throw new \Exception("The $bundle bundle does not have a mapping.");
-      }
-      $values[$index] = $to_resource_uris ? SparqlArg::uri($value) : $value;
-    }
-
-    return $values;
-  }
-
-  /**
-   * Returns the outbound value for the given field.
-   *
-   * This method will be used to convert the value to it's respective SPARQL
-   * format e.g. integer value '1' will be converted to '1^^<xsd:integer>'.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
-   *   The field name.
-   * @param string $value
-   *   The value to convert.
-   * @param string $lang
-   *   Optional. Pass the language if one exists. This should be null if the
-   *   format is not t_literal.
-   * @param string $column
-   *   The column for which to calculate the value. If null, the field's main
-   *   column will be used.
-   * @param string $bundle
-   *   (optional) The same field of an entity type might use different value
-   *   formats, depending on how is mapped on each bundle. Pass the bundle, when
-   *   is available, for a better determination of the value format.
-   *
-   * @return mixed
-   *   The calculated value.
-   */
-  public function getOutboundValue($entity_type_id, $field, $value, $lang = NULL, $column = NULL, $bundle = NULL) {
-    $outbound_map = $this->getOutboundMap($entity_type_id);
-    $format = $this->getFieldFormat($entity_type_id, $field, $column, $bundle);
-    $format = reset($format);
-
-    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
-    $field_mapping_info = reset($field_mapping_info);
-
-    $event = new OutboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
-    $this->eventDispatcher->dispatch(RdfEntityEvents::OUTBOUND_VALUE, $event);
-    $value = $event->getValue();
-
-    $serialize = $this->isFieldSerializable($entity_type_id, $field, $column);
-    if ($serialize) {
-      $value = serialize($value);
-    }
-
-    if ($field == $outbound_map['bundle_key']) {
-      $value = $this->getOutboundBundleValue($entity_type_id, $value);
-    }
-
-    switch ($format) {
-      case self::RESOURCE:
-        return [
-          'type' => substr($value, 0, 2) == '_:' ? 'bnode' : 'uri',
-          'value' => $value,
-        ];
-
-      case self::NON_TYPE:
-        return new Literal($value);
-
-      case self::TRANSLATABLE_LITERAL:
-        return Literal::create($value, $lang);
-
-      default:
-        return Literal::create($value, NULL, $format);
-    }
-  }
-
-  /**
    * Returns the outbound bundle mapping.
    *
    * @param string $entity_type_id
-   *   The entity type id.
+   *   The entity type ID.
    * @param string $bundle
-   *   The bundle id.
+   *   The bundle ID.
    *
    * @return string
    *   The bundle mapping.
@@ -559,7 +474,7 @@ class RdfFieldHandler {
    * @throws \Exception
    *    Thrown when the bundle is not found.
    */
-  public function getOutboundBundleValue($entity_type_id, $bundle) {
+  protected function getOutboundBundleValue(string $entity_type_id, string $bundle): string {
     $outbound_map = $this->getOutboundMap($entity_type_id);
     if (empty($outbound_map['bundles'][$bundle])) {
       throw new \Exception("The $bundle bundle does not have a mapped id.");
@@ -569,81 +484,16 @@ class RdfFieldHandler {
   }
 
   /**
-   * Returns the inbound bundle mapping.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $bundle
-   *   The bundle uri.
-   *
-   * @return array
-   *   An array of bundles that match the requested bundle.
-   *
-   * @throws \Exception
-   *    Thrown when the bundle is not found.
-   */
-  public function getInboundBundleValue($entity_type_id, $bundle) {
-    $inbound_map = $this->getInboundMap($entity_type_id);
-    if (empty($inbound_map['bundles'][$bundle])) {
-      throw new \Exception("A bundle mapped to <$bundle> was not found.");
-    }
-
-    return $inbound_map['bundles'][$bundle];
-  }
-
-  /**
-   * Returns the inbound value for the given field.
-   *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
-   *   The field name.
-   * @param string $value
-   *   The value to convert.
-   * @param string $lang
-   *   Optional. Pass the language if one exists. This should be null if the
-   *   format is not t_literal.
-   * @param string $column
-   *   The column for which to calculate the value. If null, the field's main
-   *   column will be used.
-   * @param string $bundle
-   *   (optional) The same field of an entity type might use different value
-   *   formats, depending on how is mapped on each bundle. Pass the bundle, when
-   *   is available, for a better determination of the value format.
-   *
-   * @return mixed
-   *   The calculated value.
-   */
-  public function getInboundValue($entity_type_id, $field, $value, $lang = NULL, $column = NULL, $bundle = NULL) {
-    // The outbound map contains the same information as the inbound map: the
-    // only difference is how the data is structured. It's safe to retrieve the
-    // field information from the outbound map.
-    // @see self::buildEntityTypeProperties()
-    $field_mapping_info = $this->getFieldInfoFromOutboundMap($entity_type_id, $field, $column, $bundle);
-    $field_mapping_info = reset($field_mapping_info);
-
-    $event = new InboundValueEvent($entity_type_id, $field, $value, $field_mapping_info, $lang, $column, $bundle);
-    $this->eventDispatcher->dispatch(RdfEntityEvents::INBOUND_VALUE, $event);
-    $value = $event->getValue();
-
-    if ($this->isFieldSerializable($entity_type_id, $field, $column)) {
-      $value = unserialize($value);
-    }
-
-    return $value;
-  }
-
-  /**
    * Retrieves information about the mapping of a certain field.
    *
    * @param string $entity_type_id
-   *   The entity type id.
-   * @param string $field
+   *   The entity type ID.
+   * @param string $field_name
    *   The field name.
-   * @param string|null $column
-   *   The column name. If empty, defaults to the field main property.
+   * @param string|null $column_name
+   *   (optional) The column name. If omitted, the field main property is used.
    * @param string|null $bundle
-   *   The entity bundle. Defaults to empty.
+   *   (optional) If passed, filter the final array by bundle.
    *
    * @return array
    *   An associative array with the information about the field mappings.
@@ -653,42 +503,21 @@ class RdfFieldHandler {
    * @throws \Exception
    *   Thrown when the field is not found.
    */
-  public function getFieldInfoFromOutboundMap($entity_type_id, $field, $column = NULL, $bundle = NULL) {
+  protected function getFieldInfoFromOutboundMap(string $entity_type_id, string $field_name, ?string $column_name = NULL, ?string $bundle = NULL): array {
     $mapping = $this->getOutboundMap($entity_type_id);
 
-    if (!isset($mapping['fields'][$field])) {
-      throw new \Exception("You are requesting the mapping info for a non mapped field: $field.");
+    if (!isset($mapping['fields'][$field_name])) {
+      throw new \Exception("You are requesting the mapping info for a non mapped field: $field_name.");
     }
 
-    $field_mapping = $mapping['fields'][$field];
-    $column = $column ?: $field_mapping['main_property'];
+    $field_mapping = $mapping['fields'][$field_name];
+    $column_name = $column_name ?: $field_mapping['main_property'];
 
     if (!empty($bundle)) {
-      return [$field_mapping['columns'][$column][$bundle]];
+      return [$field_mapping['columns'][$column_name][$bundle]];
     }
 
-    return array_values($field_mapping['columns'][$column]);
-  }
-
-  /**
-   * Returns an array of available datatypes.
-   *
-   * @return array
-   *   An array of datatypes.
-   */
-  public static function getSupportedDatatypes() {
-    return [
-      self::RESOURCE => t('Resource'),
-      self::TRANSLATABLE_LITERAL => t('Translatable literal'),
-      self::NON_TYPE => t('String (No type)'),
-      'xsd:string' => t('Literal'),
-      'xsd:boolean' => t('Boolean'),
-      'xsd:date' => t('Date'),
-      'xsd:dateTime' => t('Datetime'),
-      'xsd:decimal' => t('Decimal'),
-      'xsd:integer' => t('Integer'),
-      'xsd:anyURI' => t('URI (xsd:anyURI)'),
-    ];
+    return array_values($field_mapping['columns'][$column_name]);
   }
 
 }
