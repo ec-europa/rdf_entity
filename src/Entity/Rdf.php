@@ -342,9 +342,11 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteFromGraph($graph) {
+  public function deleteFromGraph(string $graph_id): void {
     if (!$this->isNew()) {
-      $this->entityManager()->getStorage($this->entityTypeId)->deleteFromGraph($this->id(), $graph);
+      /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+      $storage = $this->entityTypeManager()->getStorage($this->entityTypeId);
+      $storage->deleteFromGraph([$this], $graph_id);
     }
   }
 

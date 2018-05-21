@@ -40,10 +40,10 @@ interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface,
    * This method does not delete the entity entirely so it skips the delete
    * hooks.
    *
-   * @param string $graph
-   *   The graph machine name.
+   * @param string $graph_id
+   *   The ID of the graph.
    */
-  public function deleteFromGraph($graph);
+  public function deleteFromGraph(string $graph_id): void;
 
   /**
    * Checks if the entity has a specific graph.

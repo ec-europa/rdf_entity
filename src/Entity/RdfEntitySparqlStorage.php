@@ -611,11 +611,16 @@ QUERY;
   /**
    * {@inheritdoc}
    */
-  public function deleteFromGraph(string $entity_id, string $graph_id): void {
-    $entity = $this->load($entity_id, [$graph_id]);
-    if (!empty($entity)) {
-      $this->doDelete([$entity_id => $entity]);
-      $this->resetCache([$entity_id]);
+  public function deleteFromGraph(array $entities, string $graph_id): void {
+    if (!empty($entities)) {
+      $ids = array_map(function (ContentEntityInterface $entity): string {
+        return $entity->id();
+      }, $entities);
+      // Make sure that passed entities are keyed by entity ID and are loaded
+      // only from the requested graph.
+      $entities = $this->loadMultiple($ids, [$graph_id]);
+      $this->doDelete($entities);
+      $this->resetCache(array_keys($entities));
     }
   }
 
