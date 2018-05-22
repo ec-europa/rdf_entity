@@ -27,12 +27,12 @@ interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface,
   /**
    * Sets the name of the rdf entity.
    *
-   * @param int $name
-   *   The rdf entity's name.
+   * @param string $name
+   *   The RDF entity's name.
    *
    * @return $this
    */
-  public function setName($name);
+  public function setName(string $name): self;
 
   /**
    * Removes an entity from the passed graph.

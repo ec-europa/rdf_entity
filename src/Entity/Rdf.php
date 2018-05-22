@@ -250,7 +250,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
+  public function setName(string $name): RdfInterface {
     $this->set('label', $name);
     return $this;
   }
