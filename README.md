@@ -45,7 +45,7 @@ Grant 'update' rights to the SPARQL user:
 System admin -> Users -> SPARQL (edit)
 Account roles -> Put SPARQL_UPDATE in 'Selected'
 
-## Connecting Drupal to the Sparql endpoint
+## Connecting Drupal to the SPARQL endpoint
 The following example demonstrates the use with a local Virtuoso installation.
 To connect Drupal to the endpoint, the db connection should be added to the
 settings.php file.
@@ -54,6 +54,9 @@ settings.php file.
       'prefix' => '',
       'host' => '127.0.0.1',
       'port' => '8890',
+      // Optional. This is actually the endpoint path. If omitted, 'sparql' will
+      // be used.
+      'database' => 'data/endpoint',
       'namespace' => 'Drupal\\rdf_entity\\Database\\Driver\\sparql',
       'driver' => 'sparql',
     ];
