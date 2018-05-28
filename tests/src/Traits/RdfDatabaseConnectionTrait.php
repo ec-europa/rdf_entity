@@ -33,7 +33,7 @@ trait RdfDatabaseConnectionTrait {
   protected function detectVirtuoso6() {
     $client = Http::getDefaultHttpClient();
     $client->resetParameters(TRUE);
-    $client->setUri("http://{$this->sparqlConnectionInfo['host']}:{$this->sparqlConnectionInfo['port']}/");
+    $client->setUri("http://{$this->getSparqlConnectionInfo()['host']}:{$this->getSparqlConnectionInfo()['port']}/");
     $client->setMethod('GET');
     $response = $client->request();
     $server_header = $response->getHeader('Server');
@@ -49,21 +49,8 @@ trait RdfDatabaseConnectionTrait {
    *   When SIMPLETEST_SPARQL_DB is not set.
    */
   protected function setUpSparql() {
-    // If the test is run with argument db url then use it.
-    // export SIMPLETEST_SPARQL_DB='sparql://127.0.0.1:8890/'.
-    $db_url = getenv('SIMPLETEST_SPARQL_DB');
-    if (empty($db_url)) {
-      throw new \LogicException('No Sparql connection was defined. Set the SIMPLETEST_SPARQL_DB environment variable.');
-    }
-
-    $this->sparqlConnectionInfo = Database::convertDbUrlToConnectionInfo($db_url, dirname(dirname(__FILE__)));
-    $this->sparqlConnectionInfo['namespace'] = 'Drupal\\rdf_entity\\Database\\Driver\\sparql';
-
-    // Do not allow Virtuoso 6.
     $this->detectVirtuoso6();
-
-    Database::addConnectionInfo('sparql_default', 'default', $this->sparqlConnectionInfo);
-
+    Database::addConnectionInfo('sparql_default', 'default', $this->getSparqlConnectionInfo());
     $this->sparql = Database::getConnection('default', 'sparql_default');
   }
 
@@ -83,6 +70,23 @@ trait RdfDatabaseConnectionTrait {
     ];
 
     parent::writeSettings($settings);
+  }
+
+  /**
+   * Returns the SPARQL connection info.
+   *
+   * @return array
+   *   The connection infp array.
+   */
+  protected function getSparqlConnectionInfo(): array {
+    if (!isset($this->sparqlConnectionInfo)) {
+      if (empty($db_url = getenv('SIMPLETEST_SPARQL_DB'))) {
+        throw new \LogicException('No SPARQL connection was defined. Set the SIMPLETEST_SPARQL_DB environment variable.');
+      }
+      $this->sparqlConnectionInfo = Database::convertDbUrlToConnectionInfo($db_url, dirname(dirname(__FILE__)));
+      $this->sparqlConnectionInfo['namespace'] = 'Drupal\\rdf_entity\\Database\\Driver\\sparql';
+    }
+    return $this->sparqlConnectionInfo;
   }
 
 }
