@@ -17,6 +17,13 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   use RdfDatabaseConnectionTrait;
 
   /**
+   * The testing term.
+   *
+   * @var \Drupal\taxonomy\TermInterface
+   */
+  protected $term;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -98,13 +105,13 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
       'vid' => 'unlocked_vocab',
       'name' => 'Top Level Term',
     ]);
-    $term = reset($terms);
+    $this->term = reset($terms);
 
     // Tests term editing.
     $edit = [
       'name[0][value]' => 'Changed Term',
     ];
-    $this->drupalPostForm($term->toUrl('edit-form'), $edit, 'Save');
+    $this->drupalPostForm($this->term->toUrl('edit-form'), $edit, 'Save');
     $this->assertSession()->pageTextContains('Updated term Changed Term.');
 
     // Tests term deletion.
@@ -112,6 +119,14 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Are you sure you want to delete the taxonomy term Changed Term?');
     $this->getSession()->getPage()->pressButton('Delete');
     $this->assertSession()->pageTextContains('Deleted term Changed Term.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tearDown() {
+    $this->term->delete();
+    parent::tearDown();
   }
 
 }
