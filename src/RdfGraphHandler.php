@@ -52,7 +52,7 @@ class RdfGraphHandler implements RdfGraphHandlerInterface {
     if (!isset($this->cache['definition'][$entity_type_id])) {
       $query = $this->getRdfEntityGraphStorage()->getQuery();
       $ids = $query->condition($query->orConditionGroup()
-        ->condition('entity_types.*', $entity_type_id)
+        ->condition('entity_types.*', [$entity_type_id], 'IN')
         // A NULL value means "all entity types".
         ->notExists('entity_types')
       )->condition('status', TRUE)
