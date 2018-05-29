@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\rdf_taxonomy\Functional;
 
+use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
@@ -27,9 +28,8 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
-    'rdf_entity',
+    'rdf_draft',
     'rdf_taxonomy',
-    'taxonomy',
   ];
 
   /**
@@ -38,6 +38,11 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   protected function setUp() {
     $this->setUpSparql();
     parent::setUp();
+
+    // The RDF taxonomy doesn't have draft graph.
+    RdfEntityGraph::load('draft')
+      ->set('entity_types', ['rdf_entity'])
+      ->save();
 
     // Create an unlocked vocabulary and its mapping.
     Vocabulary::create([
@@ -106,6 +111,10 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
       'name' => 'Top Level Term',
     ]);
     $this->term = reset($terms);
+
+    // Test term view.
+    $this->drupalGet($this->term->toUrl());
+    $this->assertSession()->statusCodeEquals(200);
 
     // Tests term editing.
     $edit = [
