@@ -74,7 +74,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * The rdf mapping helper service object.
    *
-   * @var \Drupal\rdf_entity\RdfFieldHandler
+   * @var \Drupal\rdf_entity\RdfFieldHandlerInterface
    */
   protected $fieldHandler;
 
@@ -104,12 +104,12 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The module handler service.
    * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
    *   The rdf graph helper service.
-   * @param \Drupal\rdf_entity\RdfFieldHandler $rdf_field_handler
+   * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
     parent::__construct($entity_type, $entity_manager, $cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
