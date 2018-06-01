@@ -15,16 +15,6 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
   use RdfDatabaseConnectionTrait;
 
   /**
-   * Modules to enable for this test.
-   *
-   * @var string[]
-   */
-  public static $modules = [
-    'ds',
-    'comment',
-  ];
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
