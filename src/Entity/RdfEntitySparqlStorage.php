@@ -894,10 +894,9 @@ QUERY;
 
     $current_langcode = $entity->language()->getId();
     if ($entity->isDefaultTranslation()) {
-      foreach ($entity->getFields() as $name => $property) {
-        $item_list = $entity->get($name);
-        if (!$item_list->isEmpty()) {
-          $values[$name][$current_langcode] = $item_list->getValue();
+      foreach ($entity->getFields(FALSE) as $name => $field_item_list) {
+        if (!$field_item_list->isEmpty()) {
+          $values[$name][$current_langcode] = $field_item_list->getValue();
         }
       }
       $processed = [$entity->language()->getId()];
