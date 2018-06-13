@@ -48,9 +48,9 @@ topmost graph is the graph witch has the lowest `weight` property.
 #### Reading the graph of an entity
 
 ```php
-$graph_id = $entity->get('graph')->value;
+$graph_id = $entity->get('graph')->target_id;
 // or...
-$graph_id = $entity->graph->value;
+$graph_id = $entity->graph->target_id;
 
 ```
 

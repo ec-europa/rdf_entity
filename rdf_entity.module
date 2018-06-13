@@ -36,14 +36,12 @@ function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $
     return;
   }
 
-  // @todo Now that graphs are entities, transform this field into an entity
-  // reference field in #15.
-  // @see https://github.com/ec-europa/rdf_entity/issues/15
-  $fields['graph'] = BaseFieldDefinition::create('uri')
+  $fields['graph'] = BaseFieldDefinition::create('entity_reference')
     ->setLabel(t('The graph where the entity is stored.'))
     ->setTargetEntityTypeId('rdf_entity')
     ->setName('graph')
-    ->setComputed(TRUE);
+    ->setComputed(TRUE)
+    ->setSetting('target_type', 'rdf_entity_graph');
 }
 
 /**
