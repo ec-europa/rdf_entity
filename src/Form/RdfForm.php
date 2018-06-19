@@ -42,10 +42,12 @@ class RdfForm extends ContentEntityForm {
     /** @var \Drupal\rdf_entity\Entity\Rdf $entity */
     $entity = $this->getEntity();
     $entity->save();
-    $form_state->setRedirect(
-      'entity.rdf_entity.canonical',
-      ['rdf_entity' => $entity->id()]
-    );
+    if (!$form_state->getRedirect()) {
+      $form_state->setRedirect(
+        'entity.rdf_entity.canonical',
+        ['rdf_entity' => $entity->id()]
+      );
+    }
   }
 
 }
