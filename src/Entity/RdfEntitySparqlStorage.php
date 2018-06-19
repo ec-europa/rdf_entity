@@ -701,7 +701,7 @@ QUERY;
     /** @var string $id */
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     foreach ($entities as $id => $entity) {
-      $graph_uri = $this->getGraphHandler()->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $entity->graph->value);
+      $graph_uri = $this->getGraphHandler()->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $entity->graph->target_id);
       $entities_by_graph[$graph_uri][$id] = $entity;
     }
     foreach ($entities_by_graph as $graph_uri => $entities_to_delete) {
@@ -808,7 +808,7 @@ QUERY;
       $entity->set('graph', $this->getGraphHandler()->getDefaultGraphId($this->getEntityTypeId()));
     }
 
-    $graph_id = $entity->get('graph')->value;
+    $graph_id = $entity->get('graph')->target_id;
     $graph_uri = $this->getGraphHandler()->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $graph_id);
     $graph = self::getGraph($graph_uri);
     $lang_array = $this->toLangArray($entity);
@@ -1098,7 +1098,7 @@ QUERY;
   protected function setStaticCache(array $entities) {
     if ($this->entityType->isStaticallyCacheable()) {
       foreach ($entities as $id => $entity) {
-        $this->entities[$id][$entity->graph->value] = $entity;
+        $this->entities[$id][$entity->graph->target_id] = $entity;
       }
     }
   }
@@ -1144,7 +1144,7 @@ QUERY;
       'entity_field_info',
     ];
     foreach ($entities as $id => $entity) {
-      $cid = "{$this->buildCacheId($id)}:{$entity->graph->value}";
+      $cid = "{$this->buildCacheId($id)}:{$entity->graph->target_id}";
       $this->cacheBackend->set($cid, $entity, CacheBackendInterface::CACHE_PERMANENT, $cache_tags);
     }
   }
@@ -1280,7 +1280,7 @@ QUERY;
     // save can rely on it.
     // @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::doPreSave()
     // @see \Drupal\Core\Entity\EntityForm
-    $entity->rdfEntityOriginalGraph = $entity->get('graph')->value;
+    $entity->rdfEntityOriginalGraph = $entity->get('graph')->target_id;
   }
 
 }

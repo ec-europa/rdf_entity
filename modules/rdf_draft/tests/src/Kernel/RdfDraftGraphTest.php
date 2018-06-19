@@ -57,12 +57,12 @@ class RdfDraftGraphTest extends KernelTestBase {
 
     // Check that, by default, only the draft exists.
     $apple = $storage->load($id);
-    $this->assertEquals('draft', $apple->graph->value);
+    $this->assertEquals('draft', $apple->graph->target_id);
     $this->assertFalse($storage->hasGraph($apple, 'default'));
 
     // Check cascading over the graph candidate list.
     $apple = $storage->load($id, ['default', 'draft']);
-    $this->assertEquals('draft', $apple->graph->value);
+    $this->assertEquals('draft', $apple->graph->target_id);
 
     // Add the 'default' graph.
     $apple
@@ -72,7 +72,7 @@ class RdfDraftGraphTest extends KernelTestBase {
 
     // Check that, by default, the 'default' graph is loaded.
     $apple = $storage->load($id);
-    $this->assertEquals('default', $apple->graph->value);
+    $this->assertEquals('default', $apple->graph->target_id);
     $this->assertTrue($storage->hasGraph($apple, 'default'));
     $this->assertTrue($storage->hasGraph($apple, 'draft'));
 
@@ -91,7 +91,7 @@ class RdfDraftGraphTest extends KernelTestBase {
       ->save();
 
     $apple = $storage->load($id, ['arbitrary']);
-    $this->assertEquals('arbitrary', $apple->graph->value);
+    $this->assertEquals('arbitrary', $apple->graph->target_id);
     $this->assertEquals('Apple in arbitrary graph', $apple->label());
 
     // Try to request the entity from a non-existing graph.
