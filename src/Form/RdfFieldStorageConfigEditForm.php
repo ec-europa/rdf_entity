@@ -14,7 +14,8 @@ class RdfFieldStorageConfigEditForm extends FieldStorageConfigEditForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  protected function getCardinalityForm() {
+    $form = parent::getCardinalityForm();
     $type = $this->entity->get('entity_type');
 
     // Skip validation of cardinality for Sparql backend fields if the field
@@ -31,14 +32,9 @@ class RdfFieldStorageConfigEditForm extends FieldStorageConfigEditForm {
       // part of the storage form validation that checks the database by
       // tricking it in thinking the entity is new.
       if (!$this->hasRdfFieldMapping()) {
-        $this->entity->enforceIsNew(TRUE);
-        parent::validateForm($form, $form_state);
-        $this->entity->enforceIsNew(FALSE);
-        return;
+        unset($form['#element_validate']);
       }
     }
-
-    parent::validateForm($form, $form_state);
   }
 
   /**
@@ -49,7 +45,8 @@ class RdfFieldStorageConfigEditForm extends FieldStorageConfigEditForm {
    */
   protected function hasRdfFieldMapping() {
     /** @var \Drupal\field\FieldStorageConfigInterface $unchanged_entity */
-    $unchanged_entity = $this->entityTypeManager->getStorage('field_storage_config')->loadUnchanged($this->entity->id());
+    $unchanged_entity = $this->entityTypeManager->getStorage('field_storage_config')
+      ->loadUnchanged($this->entity->id());
     return !empty($unchanged_entity->getThirdPartySetting('rdf_entity', 'mapping', [])['value']);
   }
 
