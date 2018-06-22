@@ -99,7 +99,7 @@ class RdfDraftGraphTest extends KernelTestBase {
     $apple = $storage->load($id, ['invalid graph', 'default', 'draft']);
 
     // Delete the draft version.
-    $storage->deleteFromGraph($apple->id(), 'draft');
+    $storage->deleteFromGraph([$apple], 'draft');
     $this->assertNull($storage->load($id, ['draft']));
     $this->assertNotNull($storage->load($id, ['default']));
     $this->assertNotNull($storage->load($id, ['arbitrary']));

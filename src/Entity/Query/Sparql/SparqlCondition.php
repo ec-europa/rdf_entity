@@ -4,9 +4,8 @@ namespace Drupal\rdf_entity\Entity\Query\Sparql;
 
 use Drupal\Core\Entity\Query\ConditionFundamentals;
 use Drupal\Core\Entity\Query\ConditionInterface;
-use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
@@ -42,7 +41,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * The rdf mapping handler service object.
    *
-   * @var \Drupal\rdf_entity\RdfFieldHandler
+   * @var \Drupal\rdf_entity\RdfFieldHandlerInterface
    */
   protected $fieldHandler;
 
@@ -198,7 +197,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler) {
+  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     $conjunction = strtoupper($conjunction);
     parent::__construct($conjunction, $query, $namespaces);
     $this->graphHandler = $rdf_graph_handler;
@@ -693,7 +692,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   protected function getLangCode($field, $column = NULL, $default_lang = NULL) {
     $format = $this->fieldHandler->getFieldFormat($this->query->getEntityTypeId(), $field, $column);
     $format = reset($format);
-    if ($format !== RdfFieldHandler::TRANSLATABLE_LITERAL) {
+    if ($format !== RdfFieldHandlerInterface::TRANSLATABLE_LITERAL) {
       return FALSE;
     }
 

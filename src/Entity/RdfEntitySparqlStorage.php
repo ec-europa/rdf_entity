@@ -24,6 +24,7 @@ use Drupal\rdf_entity\Exception\DuplicatedIdException;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
+use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use EasyRdf\Graph;
 use EasyRdf\Literal;
@@ -73,7 +74,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * The rdf mapping helper service object.
    *
-   * @var \Drupal\rdf_entity\RdfFieldHandler
+   * @var \Drupal\rdf_entity\RdfFieldHandlerInterface
    */
   protected $fieldHandler;
 
@@ -103,12 +104,12 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The module handler service.
    * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
    *   The rdf graph helper service.
-   * @param \Drupal\rdf_entity\RdfFieldHandler $rdf_field_handler
+   * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandler $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
     parent::__construct($entity_type, $entity_manager, $cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
@@ -610,11 +611,16 @@ QUERY;
   /**
    * {@inheritdoc}
    */
-  public function deleteFromGraph(string $entity_id, string $graph_id): void {
-    $entity = $this->load($entity_id, [$graph_id]);
-    if (!empty($entity)) {
-      $this->doDelete([$entity_id => $entity]);
-      $this->resetCache([$entity_id]);
+  public function deleteFromGraph(array $entities, string $graph_id): void {
+    if (!empty($entities)) {
+      $ids = array_map(function (ContentEntityInterface $entity): string {
+        return $entity->id();
+      }, $entities);
+      // Make sure that passed entities are keyed by entity ID and are loaded
+      // only from the requested graph.
+      $entities = $this->loadMultiple($ids, [$graph_id]);
+      $this->doDelete($entities);
+      $this->resetCache(array_keys($entities));
     }
   }
 
@@ -818,7 +824,7 @@ QUERY;
           foreach ($column_data as $column => $value) {
             // Filter out empty values or non mapped fields. The id is also
             // excluded as it is not mapped.
-            if ($value === NULL || $value === '' || !$this->fieldHandler->hasFieldPredicate($this->getEntityTypeId(), $field_name, $column, $bundle)) {
+            if ($value === NULL || $value === '' || !$this->fieldHandler->hasFieldPredicate($this->getEntityTypeId(), $bundle, $field_name, $column)) {
               continue;
             }
             $predicate = $this->fieldHandler->getFieldPredicates($this->getEntityTypeId(), $field_name, $column, $bundle);
@@ -967,7 +973,7 @@ QUERY;
       LanguageInterface::LANGCODE_SYSTEM,
     ];
 
-    if ($format == RdfFieldHandler::TRANSLATABLE_LITERAL && !empty($langcode) && !in_array($langcode, $non_languages)) {
+    if ($format == RdfFieldHandlerInterface::TRANSLATABLE_LITERAL && !empty($langcode) && !in_array($langcode, $non_languages)) {
       return $langcode;
     }
 

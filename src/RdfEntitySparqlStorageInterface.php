@@ -78,14 +78,14 @@ interface RdfEntitySparqlStorageInterface extends ContentEntityStorageInterface 
   public function hasGraph(EntityInterface $entity, string $graph_id): bool;
 
   /**
-   * Deletes a the version of the entity stored in a given graph.
+   * Deletes the version of the entities stored in a given graph.
    *
-   * @param string $entity_id
-   *   The ID of the entity to be deleted.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   An array of entity objects to delete.
    * @param string $graph_id
    *   The ID of the graph from where to delete the entity.
    */
-  public function deleteFromGraph(string $entity_id, string $graph_id): void;
+  public function deleteFromGraph(array $entities, string $graph_id): void;
 
   /**
    * Loads one entity.
