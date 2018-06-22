@@ -146,4 +146,20 @@ interface RdfEntitySparqlStorageInterface extends ContentEntityStorageInterface 
    */
   public function loadByProperties(array $values = [], array $graph_ids = NULL): array;
 
+  /**
+   * Resets the internal, static entity cache.
+   *
+   * @param $ids
+   *   (optional) If specified, the cache is reset for the entities with the
+   *   given ids only.
+   * @param string[]|null $graph_ids
+   *   (optional) A list of graphs from where to clean the cache. If passed, it
+   *   works only if the $ids parameter is present. If omitted the entity cache
+   *   from graphs is cleared. Defaults to NULL.
+   *
+   * @throws \InvalidArgumentException
+   *   When $ids is NULL and $graph_ids is not NULL.
+   */
+  public function resetCache(array $ids = NULL, array $graph_ids = NULL): void;
+
 }
