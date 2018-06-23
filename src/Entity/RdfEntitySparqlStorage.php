@@ -575,10 +575,19 @@ QUERY;
   public function loadUnchanged($id, array $graph_ids = NULL): ?ContentEntityInterface {
     $this->checkGraphs($graph_ids);
 
-    // Code forked from parent::loadUnchanged() and adapted to accept graph
-    // candidates.
+    // START: Code forked from parent::loadUnchanged() and adapted to accept
+    // graph andidates.
     $ids = [$id];
     parent::resetCache($ids);
+
+    // START: Code adapted from EntityStorageBase::resetCache().
+    // This part is replacing the ContentEntityStorageBase::resetCache() line.
+    if ($this->entityType->isStaticallyCacheable()) {
+      foreach ($graph_ids as $graph_id) {
+        unset($this->entities[$id][$graph_id]);
+      }
+    }
+    // END: Code adapted from EntityStorageBase::resetCache().
     $entities = $this->getFromPersistentCache($ids, $graph_ids);
     if (!$entities) {
       $entities[$id] = $this->load($id, $graph_ids);
@@ -591,6 +600,7 @@ QUERY;
     }
 
     return $entities[$id];
+    // END: Code forked from parent::loadUnchanged().
   }
 
   /**
