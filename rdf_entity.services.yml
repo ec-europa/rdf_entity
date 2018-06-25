@@ -38,7 +38,16 @@ services:
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }
-  rdf_entity.inbound_outbound_value_subscriber:
-    class: Drupal\rdf_entity\EventSubscriber\InboundOutboundValueSubscriber
+  rdf_entity.inbound_value.datetime.subscriber:
+    class: Drupal\rdf_entity\EventSubscriber\InboundValueDateTimeSubscriber
+    tags:
+      - { name: event_subscriber }
+  rdf_entity.outbound_value.datetime.subscriber:
+    class: Drupal\rdf_entity\EventSubscriber\OutboundValueDateTimeSubscriber
+    tags:
+      - { name: event_subscriber }
+  rdf_entity.inbound_value.translatable_literal.subscriber:
+    class: Drupal\rdf_entity\EventSubscriber\InboundValueTranslatableLiteralSubscriber
+    arguments: ['@typed_data_manager']
     tags:
       - { name: event_subscriber }
