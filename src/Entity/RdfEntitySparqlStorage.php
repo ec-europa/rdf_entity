@@ -1158,14 +1158,17 @@ QUERY;
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL) {
-    // Since the notion of graphs exist in the SPARQL storage, the cache reset
-    // should remove entities from all graphs.
-    $graphs = $this->getGraphHandler()->getEntityTypeGraphIds($this->entityTypeId);
+  public function resetCache(array $ids = NULL, array $graph_ids = NULL): void {
+    if ($graph_ids && !$ids) {
+      throw new \InvalidArgumentException('Passing a value in $graphs_ids works only when used with non-null $ids.');
+    }
+
+    $this->checkGraphs($graph_ids);
+
     if ($ids) {
       $cids = [];
       foreach ($ids as $id) {
-        foreach ($graphs as $graph) {
+        foreach ($graph_ids as $graph) {
           unset($this->entities[$id][$graph]);
           $cids[] = "{$this->buildCacheId($id)}:{$graph}";
         }
