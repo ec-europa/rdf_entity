@@ -25,20 +25,23 @@ matrix:
 before_install:
   - composer --verbose self-update
   - export
-  - export BUILD_DIR="$HOME/build/project"
-  - mkdir ${BUILD_DIR}
-  - cd ${BUILD_DIR}
+  - export PROJECT_DIR="$HOME/build/project"
+  - mkdir ${PROJECT_DIR}
+  - cd ${PROJECT_DIR}
   - composer require drupal/drupal:"^8"
-  - mv ./vendor/drupal/drupal ./web
-  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/web/modules/
+  - composer require drush/drush:"^9"
+  - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
+  - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
+  - ./vendor/bin/drush --yes si testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - ./vendor/bin/drush --yes pm:enable rdf_entity
   - pwd
-  - ls -al ${BUILD_DIR}
-  - ls -al ${BUILD_DIR}/web
-  - ls -al ${BUILD_DIR}/web/modules
-  - ls -al ${BUILD_DIR}/web/modules/rdf_entity
+  - ls -al ${PROJECT_DIR}
+  - ls -al ${PROJECT_DIR}/web
+  - ls -al ${PROJECT_DIR}/web/modules
+  - ls -al ${PROJECT_DIR}/web/modules/rdf_entity/
 
 notifications:
   email: false
