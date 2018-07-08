@@ -2,7 +2,7 @@ language: php
 
 php:
   - 7.1
-  - 7.2
+#  - 7.2
 
 sudo: false
 
@@ -12,7 +12,7 @@ mysql:
   encoding: utf8
 
 env:
-  - TEST=PHP_CodeSniffer
+#  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
 
 matrix:
@@ -22,10 +22,13 @@ matrix:
       env: TEST=PHP_CodeSniffer
 
 before_install:
+  - pwd
+  - ls -al $HOME
   - composer --verbose self-update
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
+  - pwd
   - ls -al $HOME
 
 notifications:
