@@ -30,7 +30,7 @@ before_install:
   - cd ${BUILD_DIR}
   - composer require drupal/drupal:"^8"
   - mv ./vendor/drupal ./
-  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/drupal/modules/
+#  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/drupal/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
