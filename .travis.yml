@@ -24,10 +24,12 @@ matrix:
 
 before_install:
   - composer --verbose self-update
+  - export
   - export BUILD_DIR="$HOME/build/drupal"
   - mkdir ${BUILD_DIR}
+  - cp ./tests/fixtures/travis-ci/composer.json ${BUILD_DIR}
   - cd ${BUILD_DIR}
-  - composer require drupal/drupal:"^8.5"
+  - composer install --no-interaction
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
