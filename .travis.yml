@@ -14,14 +14,13 @@ mysql:
 env:
 #  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
-  global:
-    - BUILD_DIR="$HOME/build/drupal"
 
 matrix:
   fast_finish: true
   exclude:
     - php: 7.2
       env: TEST=PHP_CodeSniffer
+
 
 before_install:
   - composer --verbose self-update
