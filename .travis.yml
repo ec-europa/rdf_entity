@@ -31,7 +31,7 @@ before_install:
   - cd ${BUILD_DIR}
   - composer install --no-interaction
   - mv ./vendor/drupal ./web
-  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/web/modules/
+#  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
