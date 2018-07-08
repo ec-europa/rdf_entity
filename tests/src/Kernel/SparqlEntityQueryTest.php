@@ -10,7 +10,7 @@ use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
  *
  * @see \Drupal\KernelTests\Core\Entity\EntityQueryTest
  *
- * @group Entity
+ * @group rdf_entity
  */
 class SparqlEntityQueryTest extends JoinupKernelTestBase {
 
