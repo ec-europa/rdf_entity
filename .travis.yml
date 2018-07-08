@@ -14,7 +14,8 @@ mysql:
 env:
 #  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
-  - BUILD_DIR="${HOME}/build/drupal"
+  global:
+    - BUILD_DIR="$HOME/build/drupal"
 
 matrix:
   fast_finish: true
@@ -24,6 +25,7 @@ matrix:
 
 before_install:
   - composer --verbose self-update
+  - export BUILD_DIR="$HOME/build/drupal"
   - mkdir ${BUILD_DIR}
   - cd ${BUILD_DIR}
   - composer require drupal/drupal:"^8.5"
