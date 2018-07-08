@@ -35,6 +35,7 @@ before_install:
 install:
   - pwd
   - ls -al ${BUILD_DIR}
+  - ls -al ${BUILD_DIR}/vendor
 
 notifications:
   email: false
