@@ -27,8 +27,8 @@ before_install:
   - export
   - export BUILD_DIR="$HOME/build/drupal"
   - mkdir ${BUILD_DIR}
-  - cp ./tests/fixtures/travis-ci/composer.json ${BUILD_DIR}
   - cd ${BUILD_DIR}
+  - composer require drupal/drupal:"^8"
   - composer install --no-interaction
   - mv ./vendor/drupal ./web
 #  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/web/modules/
