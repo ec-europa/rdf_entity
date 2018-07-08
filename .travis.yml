@@ -14,6 +14,7 @@ mysql:
 env:
 #  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
+  - BUILD_DIR="${HOME}/build/drupal"
 
 matrix:
   fast_finish: true
@@ -22,14 +23,15 @@ matrix:
       env: TEST=PHP_CodeSniffer
 
 before_install:
-  - pwd
-  - ls -al $HOME
   - composer --verbose self-update
+  - mkdir ${BUILD_DIR}
+  - cd ${BUILD_DIR}
+  - composer require drupal/drupal:"^8.5"
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
   - pwd
-  - ls -al $HOME
+  - ls -al ${BUILD_DIR}
 
 notifications:
   email: false
