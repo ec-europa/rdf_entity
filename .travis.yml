@@ -39,7 +39,7 @@ env:
     - DRUPAL_TI_ENVIRONMENT="drupal-8"
 
     # The drush version to use, by default: drush/drush:8.0.*
-    - DRUPAL_TI_DRUSH_VERSION="drush/drush:^9.0.0"
+    - DRUPAL_TI_DRUSH_VERSION="drush/drush:~9.0"
 
     # The installation profile to use:
     #- DRUPAL_TI_INSTALL_PROFILE="testing"
