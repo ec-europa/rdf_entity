@@ -30,12 +30,16 @@ before_install:
   - cp ./tests/fixtures/travis-ci/composer.json ${BUILD_DIR}
   - cd ${BUILD_DIR}
   - composer install --no-interaction
+  - mv ./vendor/drupal ./web
+  - ln -s ${TRAVIS_BUILD_DIR} ./web/modules/rdf_entity
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
   - pwd
   - ls -al ${BUILD_DIR}
-  - ls -al ${BUILD_DIR}/vendor
+  - ls -al ${BUILD_DIR}/web
+  - ls -al ${BUILD_DIR}/web/modules
+  - ls -al ${BUILD_DIR}/web/modules/rdf_entity
 
 notifications:
   email: false
