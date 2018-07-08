@@ -25,21 +25,20 @@ matrix:
 before_install:
   - composer --verbose self-update
   - export
-  - export BUILD_DIR="$HOME/build/drupal"
+  - export BUILD_DIR="$HOME/build/project"
   - mkdir ${BUILD_DIR}
   - cd ${BUILD_DIR}
   - composer require drupal/drupal:"^8"
-  - composer install --no-interaction
-  - mv ./vendor/drupal ./web
-#  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/web/modules/
+  - mv ./vendor/drupal ./
+  - ln -s ${TRAVIS_BUILD_DIR} ${BUILD_DIR}/drupal/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
   - pwd
   - ls -al ${BUILD_DIR}
-  - ls -al ${BUILD_DIR}/web
-  - ls -al ${BUILD_DIR}/web/modules
-  - ls -al ${BUILD_DIR}/web/modules/rdf_entity
+  - ls -al ${BUILD_DIR}/drupal
+  - ls -al ${BUILD_DIR}/drupal/modules
+  - ls -al ${BUILD_DIR}/drupal/modules/rdf_entity
 
 notifications:
   email: false
