@@ -15,6 +15,9 @@ env:
 #  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
 
+services:
+  - openlink/virtuoso_opensource:latest
+
 matrix:
   fast_finish: true
   exclude:
@@ -33,7 +36,6 @@ before_install:
   - ln -s ${TRAVIS_BUILD_DIR} ${TESTING_SITE_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
-
   # remove
   - whoami
   - export
@@ -44,8 +46,8 @@ before_install:
   - ls -al ${TESTING_SITE_DIR}/web/modules/rdf_entity/
 
 install:
-  - ./vendor/bin/drush -vvv --yes --root=${TESTING_SITE_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  - ./vendor/bin/drush -vvv --yes --root=${TESTING_SITE_DIR}/web pm:enable rdf_entity
+  - ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
 
 notifications:
   email: false
