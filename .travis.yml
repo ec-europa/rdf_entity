@@ -32,8 +32,7 @@ before_install:
   - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json.dist
   - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${TESTING_SITE_DIR}/web/phpunit.xml
   - cd ${TESTING_SITE_DIR}
-  #- sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
-  - cat composer.json.dist | envsubst > composer.json
+  - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
