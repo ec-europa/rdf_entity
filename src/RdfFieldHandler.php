@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreFile
+
 declare(strict_types = 1);
 
 namespace Drupal\rdf_entity;
@@ -25,10 +27,8 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
   /**
    * A Drupal oriented property mapping array.
    *
-   * @var array
-   * 
    * A YAML representation of this array would look like:
-   * @codingStandardsIgnoreStart
+   * @code
    * rdf_entity:
    *   bundle_key: rid
    *   bundles:
@@ -54,17 +54,17 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
    * other_entity_type:
    *   bundle_key: ...
    *   ...
-   * @codingStandardsIgnoreEnd
+   * @endcode
+   *
+   * @var array
    */
   protected $outboundMap;
 
   /**
    * A SPARQL oriented property mapping array.
    *
-   * @var array
-   *
    * A YAML representation of this array would look like:
-   * @codingStandardsIgnoreStart
+   * @code
    * rdf_entity:
    *   bundle_key: rid
    *   bundles:
@@ -89,7 +89,9 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
    * other_entity_type:
    *   bundle_key: ...
    *   ...
-   * @codingStandardsIgnoreEnd
+   * @endcode
+   *
+   * @var array
    */
   protected $inboundMap;
 
