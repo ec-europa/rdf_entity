@@ -12,10 +12,8 @@ mysql:
   encoding: utf8
 
 env:
-#  - TEST=PHP_CodeSniffer
+  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
-#services:
-#  - docker
 
 matrix:
   fast_finish: true
@@ -29,11 +27,13 @@ before_install:
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
-  - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json.dist
+  - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${TESTING_SITE_DIR}/web/phpunit.xml
   - cd ${TESTING_SITE_DIR}
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
+  # PHPCS
+  - ./vendor/bin/phpcs --config-set installed_paths ./vendor/drupal/coder/coder_sniffer
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
   # Virtuoso setup.

@@ -2,7 +2,8 @@
 
 case "$1" in
     PHP_CodeSniffer)
-        ./vendor/bin/phpcs
+        cd ${TESTING_SITE_DIR}
+        ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md ./web/modules/rdf_entity
         exit $?
         ;;
     PHPUnit)
