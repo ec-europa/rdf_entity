@@ -6,7 +6,7 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
 
 /**
- * Base setup for a Joinup workflow test.
+ * Base setup for a browser tests using RDF module.
  */
 abstract class RdfWebTestBase extends BrowserTestBase {
 
