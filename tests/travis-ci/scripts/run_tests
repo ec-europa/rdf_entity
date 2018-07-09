@@ -6,6 +6,7 @@ case "$1" in
         exit $?
         ;;
     PHPUnit)
+        cd ${TESTING_SITE_DIR}
         ./vendor/bin/phpunit -c ./web/core ./web/modules/rdf_entity/tests/src
         exit $?
         ;;
