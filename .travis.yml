@@ -36,6 +36,7 @@ before_install:
   # Revert when the patch goes in.
   #- composer install --no-interaction --prefer-dist
   - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
+  - mkdir -p -m 0755 ${PROJECT_DIR}/web/sites/default/files
   - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
