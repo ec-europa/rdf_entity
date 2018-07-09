@@ -32,7 +32,9 @@ before_install:
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
   - cp ./tests/fixtures/travis-ci/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cd ${TESTING_SITE_DIR}
-  - sed -i -e 's#TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
+  #- sed -i -e 's#TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
+  - cat composer.json | envsubst > composer.json
+  - cat composer.json
   - composer install --no-interaction
 #  - mkdir -p -m 0755 ${TESTING_SITE_DIR}/web/sites/default/files
 #  - ln -s ${TRAVIS_BUILD_DIR} ${TESTING_SITE_DIR}/web/modules/
