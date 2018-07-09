@@ -33,9 +33,7 @@ before_install:
   - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cd ${TESTING_SITE_DIR}
   # Replace environment variables with their values.
-  - cat composer.json
   - cat composer.json | envsubst > composer.json
-  - cat composer.json
   - composer install --no-interaction
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'

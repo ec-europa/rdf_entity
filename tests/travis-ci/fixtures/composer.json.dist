@@ -3,7 +3,6 @@
   "prefer-stable": true,
   "require": {
     "php": ">=7.1.0",
-    "composer/composer": "^1.6.5",
     "composer/installers": "^1.5.0",
     "drupal-composer/drupal-scaffold": "dev-master",
     "drupal/core": "~8",
@@ -14,7 +13,10 @@
   "repositories": [
     {
       "type": "path",
-      "url": "$TRAVIS_BUILD_DIR"
+      "url": "$TRAVIS_BUILD_DIR",
+      "options": {
+        "symlink": false
+      }
     }
   ],
   "extra": {
