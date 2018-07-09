@@ -6,7 +6,7 @@ case "$1" in
         exit $?
         ;;
     PHPUnit)
-        ./vendore/bin/phpunit -c ./web/core ./web/modules/rdf_entity/tests/src
+        ./vendor/bin/phpunit -c ./web/core ./web/modules/rdf_entity/tests/src
         exit $?
         ;;
     *)
