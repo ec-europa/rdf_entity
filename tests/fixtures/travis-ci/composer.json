@@ -1,0 +1,12 @@
+{
+  "require": {
+    "drupal/drupal": "~8",
+    "drush/drush": "dev-bootstrap-exception"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/claudiu-cristea/drush.git"
+    }
+  ]
+}
