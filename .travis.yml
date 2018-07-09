@@ -32,11 +32,6 @@ before_install:
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
 
-  # Virtuoso setup.
-  - mkdir ${TESTING_SITE_DIR}/virtuoso
-  - which docker
-  - docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
-
 script: ${TESTING_SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests ${TEST}
 
 notifications:

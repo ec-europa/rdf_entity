@@ -16,6 +16,10 @@ case "$1" in
         # Install Drupal.
         ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
 
+        # Virtuoso setup.
+        mkdir ${TESTING_SITE_DIR}/virtuoso
+        /usr/bin/docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
+
         # Add the SPARQL connection in settings.php.
         chmod 0775 ${TESTING_SITE_DIR}/web/sites/default/settings.php
         cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
