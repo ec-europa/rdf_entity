@@ -29,12 +29,11 @@ before_install:
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
-  - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
+  - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json.dist
   - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${TESTING_SITE_DIR}/web/phpunit.xml
   - cd ${TESTING_SITE_DIR}
-  - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
-  # envsubst < "source.txt" > "destination.txt"
-  - which envsubst
+  #- sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
+  - cat composer.json.dist | envsubst > composer.json
   - composer install --no-interaction
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
