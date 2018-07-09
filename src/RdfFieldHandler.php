@@ -25,11 +25,8 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
   /**
    * A Drupal oriented property mapping array.
    *
-   *
-   * @var array
-   *
    * A YAML representation of this array would look like:
-   * @code
+   * @codingStandardsIgnoreStart
    * rdf_entity:
    *   bundle_key: rid
    *   bundles:
@@ -55,17 +52,17 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
    * other_entity_type:
    *   bundle_key: ...
    *   ...
-   * @endcode
+   * @codingStandardsIgnoreEnd
+   *
+   * @var array
    */
   protected $outboundMap;
 
   /**
    * A SPARQL oriented property mapping array.
    *
-   * @var array
-   *
    * A YAML representation of this array would look like:
-   * @code
+   * @codingStandardsIgnoreStart
    * rdf_entity:
    *   bundle_key: rid
    *   bundles:
@@ -90,7 +87,9 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
    * other_entity_type:
    *   bundle_key: ...
    *   ...
-   * @endcode
+   * @codingStandardsIgnoreEnd
+   *
+   * @var array
    */
   protected $inboundMap;
 
