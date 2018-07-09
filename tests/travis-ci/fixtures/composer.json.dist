@@ -16,10 +16,7 @@
   "repositories": [
     {
       "type": "path",
-      "url": "$TRAVIS_BUILD_DIR",
-      "options": {
-        "symlink": false
-      }
+      "url": "$TRAVIS_BUILD_DIR"
     }
   ],
   "extra": {
