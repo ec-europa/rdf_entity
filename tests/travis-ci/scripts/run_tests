@@ -6,8 +6,8 @@ case "$1" in
         exit $?
         ;;
     PHPUnit)
-        cd ${TESTING_SITE_DIR}
-        ./vendor/bin/phpunit
+        cd ${TESTING_SITE_DIR}/web
+        ../vendor/bin/phpunit
         exit $?
         ;;
     *)
