@@ -1,0 +1,15 @@
+#!/bin/bash
+
+case "$1" in
+    PHP_CodeSniffer)
+        ./vendor/bin/phpcs
+        exit $?
+        ;;
+    PHPUnit)
+        phpunit ./tests/src/
+        exit $?
+        ;;
+    *)
+        echo "Unknown test '$1'"
+        exit 1
+esac
