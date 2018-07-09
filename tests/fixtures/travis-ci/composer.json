@@ -3,12 +3,19 @@
   "prefer-stable": true,
   "require": {
     "drupal/drupal": "~8",
-    "drush/drush": "dev-bootstrap-exception"
+    "drush/drush": "10.0.0"
   },
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/claudiu-cristea/drush.git"
+      "type": "package",
+      "package": {
+        "name": "drush/drush",
+        "version": "10.0.0",
+        "dist": {
+          "url": "https://github.com/claudiu-cristea/drush/archive/bootstrap-exception.zip",
+          "type": "zip"
+        }
+      }
     }
   ]
 }
