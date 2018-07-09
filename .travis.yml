@@ -39,7 +39,6 @@ before_install:
   - mysql -e 'CREATE DATABASE rdf_entity_test'
   # Virtuoso setup.
   - mkdir ${TESTING_SITE_DIR}/virtuoso
-  - cat ${TRAVIS_BUILD_DIR}/tests/fixtures/travis-ci/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - docker run --name my-virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
 
   # remove
@@ -54,6 +53,7 @@ before_install:
 
 install:
   - ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - cat ${TRAVIS_BUILD_DIR}/tests/fixtures/travis-ci/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
 
 notifications:
