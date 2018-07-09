@@ -24,30 +24,28 @@ matrix:
 
 before_install:
   - composer --verbose self-update
-  - export PROJECT_DIR="$HOME/build/project"
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - mkdir ${PROJECT_DIR}
-  - cp ./tests/fixtures/travis-ci/composer.json.dist ${PROJECT_DIR}/composer.json
-  - cd ${PROJECT_DIR}
-#  - composer require drupal/drupal:"^8"
-#  - composer global require drush/drush:"^9"
+  - export TESTING_SITE_DIR="$HOME/build/testing_site"
+  - mkdir -p ${TESTING_SITE_DIR}/web
+  - cp ./tests/fixtures/travis-ci/composer.json.dist ${TESTING_SITE_DIR}/composer.json
+  - cd ${TESTING_SITE_DIR}
   - composer install --no-interaction
-  - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
-  - mkdir -p -m 0755 ${PROJECT_DIR}/web/sites/default/files
-  - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
+  - mkdir -p -m 0755 ${TESTING_SITE_DIR}/web/sites/default/files
+  - ln -s ${TRAVIS_BUILD_DIR} ${TESTING_SITE_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
-# remove
+
+
+  # remove
   - whoami
   - export
   - pwd
-  - ls -al ${PROJECT_DIR}
-  - ls -al ${PROJECT_DIR}/web
-  - ls -al ${PROJECT_DIR}/web/modules
-  - ls -al ${PROJECT_DIR}/web/modules/rdf_entity/
+  - ls -al ${TESTING_SITE_DIR}
+  - ls -al ${TESTING_SITE_DIR}/web
+  - ls -al ${TESTING_SITE_DIR}/web/modules
+  - ls -al ${TESTING_SITE_DIR}/web/modules/rdf_entity/
 
 install:
-  - ./vendor/bin/drush -vvv --yes --root=${PROJECT_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  - ./vendor/bin/drush -vvv --yes --root=${PROJECT_DIR}/web pm:enable rdf_entity
+  - ./vendor/bin/drush -vvv --yes --root=${TESTING_SITE_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - ./vendor/bin/drush -vvv --yes --root=${TESTING_SITE_DIR}/web pm:enable rdf_entity
 
 notifications:
   email: false
