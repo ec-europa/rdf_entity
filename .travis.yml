@@ -27,15 +27,18 @@ before_install:
   - export
   - export PROJECT_DIR="$HOME/build/project"
   - mkdir ${PROJECT_DIR}
+  - cp ${TRAVIS_PROJECT_DIR}/tests/fixtures/travis-ci/composer.json ${PROJECT_DIR}/
   - cd ${PROJECT_DIR}
-  - composer require drupal/drupal:"^8"
-  - composer require drush/drush:"^9"
+  # - composer require drupal/drupal:"^8"
+  # - composer require drush/drush:"^9"
+  # Revert when the patch goes in.
+  - composer install --no-interaction
   - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
   - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
-  - ./vendor/bin/drush -vvv --yes site:install standard --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - ./vendor/bin/drush -vvv --yes site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
   - ./vendor/bin/drush --yes pm:enable rdf_entity
   - pwd
   - ls -al ${PROJECT_DIR}
