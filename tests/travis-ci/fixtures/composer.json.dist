@@ -3,6 +3,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=7.1.0",
+    "behat/mink-goutte-driver": "~1.2",
     "composer/installers": "^1.5.0",
     "drupal-composer/drupal-scaffold": "dev-master",
     "drupal/core": "~8",
