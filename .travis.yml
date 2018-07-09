@@ -53,6 +53,7 @@ before_install:
 
 install:
   - ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - chmod 0775 ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - cat ${TRAVIS_BUILD_DIR}/tests/fixtures/travis-ci/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
 
