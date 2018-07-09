@@ -27,7 +27,7 @@ before_install:
   - export
   - export PROJECT_DIR="$HOME/build/project"
   - mkdir ${PROJECT_DIR}
-  - cp ${TRAVIS_PROJECT_DIR}/tests/fixtures/travis-ci/composer.json ${PROJECT_DIR}/
+  - cp ./tests/fixtures/travis-ci/composer.json ${PROJECT_DIR}/
   - cd ${PROJECT_DIR}
   # - composer require drupal/drupal:"^8"
   # - composer require drush/drush:"^9"
