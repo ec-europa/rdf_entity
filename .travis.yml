@@ -56,7 +56,7 @@ install:
   - cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
 
-script: ${TESTING_SITE_DIR}/tests/travis-ci/scripts/run_tests.sh ${TEST}
+script: ${TESTING_SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests.sh ${TEST}
 
 notifications:
   email: false
