@@ -16,7 +16,7 @@ env:
   - TEST=PHPUnit
 
 services:
-  - openlink/virtuoso_opensource:latest
+  - docker
 
 matrix:
   fast_finish: true
@@ -26,6 +26,7 @@ matrix:
 
 
 before_install:
+  # Build the codebase.
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
@@ -34,7 +35,11 @@ before_install:
   - composer install --no-interaction
   - mkdir -p -m 0755 ${TESTING_SITE_DIR}/web/sites/default/files
   - ln -s ${TRAVIS_BUILD_DIR} ${TESTING_SITE_DIR}/web/modules/
+  # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
+  # Virtuoso setup.
+  - mkdir ${TESTING_SITE_DIR}/virtuoso
+  - docker run --name my-virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
 
   # remove
   - whoami
