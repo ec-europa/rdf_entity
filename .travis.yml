@@ -32,8 +32,6 @@ before_install:
   - cd ${TESTING_SITE_DIR}
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
-  # PHP CS
-  - ./vendor/bin/phpcs --config-set installed_paths ./vendor/drupal/coder/coder_sniffer
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
   # Virtuoso setup.
