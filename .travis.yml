@@ -22,7 +22,7 @@ matrix:
       env: TEST=PHP_CodeSniffer
 
 before_install:
-  # Build the codebase.
+  # Deploy the codebase.
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
