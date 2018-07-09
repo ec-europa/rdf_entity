@@ -1,4 +1,6 @@
 {
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "drupal/drupal": "~8",
     "drush/drush": "dev-bootstrap-exception"
