@@ -10,7 +10,7 @@ use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
  *
  * @group rdf_entity
  */
-class RdfEncodingTest extends JoinupKernelTestBase {
+class RdfEncodingTest extends RdfKernelTestBase {
 
   /**
    * Test that naughty strings can safely be saved to the database.
