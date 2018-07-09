@@ -25,7 +25,7 @@ matrix:
 before_install:
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
-  - mkdir -p ${TESTING_SITE_DIR}/web
+  - mkdir -p ${TESTING_SITE_DIR}/web/modules
   - cp ./tests/fixtures/travis-ci/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cd ${TESTING_SITE_DIR}
   - composer install --no-interaction
