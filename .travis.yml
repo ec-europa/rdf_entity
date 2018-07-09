@@ -32,7 +32,7 @@ before_install:
   # - composer require drupal/drupal:"^8"
   # - composer require drush/drush:"^9"
   # Revert when the patch goes in.
-  - composer install --no-interaction
+  - composer install --no-interaction --prefer-dist
   - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
   - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
