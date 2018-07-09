@@ -149,7 +149,7 @@ interface RdfEntitySparqlStorageInterface extends ContentEntityStorageInterface 
   /**
    * Resets the internal, static entity cache.
    *
-   * @param $ids
+   * @param array|null $ids
    *   (optional) If specified, the cache is reset for the entities with the
    *   given ids only.
    * @param string[]|null $graph_ids

@@ -2,7 +2,6 @@
 
 namespace Drupal\rdf_entity\Form;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\field_ui\Form\FieldStorageConfigEditForm;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 

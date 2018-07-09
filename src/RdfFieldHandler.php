@@ -1,5 +1,7 @@
 <?php
 
+// @codingStandardsIgnoreFile
+
 declare(strict_types = 1);
 
 namespace Drupal\rdf_entity;

@@ -3,14 +3,13 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Exception\SparqlQueryException;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Test that a proper exception is thrown when a query fails.
  *
  * @group rdf_entity
  */
-class RdfQueryExceptionTest extends JoinupKernelTestBase {
+class RdfQueryExceptionTest extends RdfKernelTestBase {
 
   /**
    * Exception with query in message thrown for selects.

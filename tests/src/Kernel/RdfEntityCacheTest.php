@@ -4,14 +4,13 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests RDF entity caching.
  *
  * @group rdf_entity
  */
-class RdfEntityCacheTest extends JoinupKernelTestBase {
+class RdfEntityCacheTest extends RdfKernelTestBase {
 
   /**
    * Tests RDF entity cache tags.
