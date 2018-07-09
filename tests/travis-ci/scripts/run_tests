@@ -12,7 +12,7 @@ case "$1" in
     PHPUnit)
         # Create the MySQL database.
         mysql -e 'CREATE DATABASE rdf_entity_test'
-        which docker
+
         # Install Drupal.
         ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
 
