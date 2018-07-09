@@ -24,30 +24,30 @@ matrix:
 
 before_install:
   - composer --verbose self-update
-  - whoami
-  - export
   - export PROJECT_DIR="$HOME/build/project"
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - mkdir ${PROJECT_DIR}
-  # - cp ./tests/fixtures/travis-ci/composer.json ${PROJECT_DIR}/
+  - cp ./tests/fixtures/travis-ci/composer.json.dist ${PROJECT_DIR}/composer.json
   - cd ${PROJECT_DIR}
-  - composer require drupal/drupal:"^8"
-  - composer global require drush/drush:"^9"
-  # Revert when the patch goes in.
-  #- composer install --no-interaction --prefer-dist
+#  - composer require drupal/drupal:"^8"
+#  - composer global require drush/drush:"^9"
+  - composer install --no-interaction
   - mv ${PROJECT_DIR}/vendor/drupal/drupal ${PROJECT_DIR}/web
   - mkdir -p -m 0755 ${PROJECT_DIR}/web/sites/default/files
   - ln -s ${TRAVIS_PROJECT_DIR} ${PROJECT_DIR}/web/modules/
   - mysql -e 'CREATE DATABASE rdf_entity_test'
-
-install:
-  - drush -vvv --yes --root=${PROJECT_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  - drush -vvv --yes --root=${PROJECT_DIR}/web pm:enable rdf_entity
+# remove
+  - whoami
+  - export
   - pwd
   - ls -al ${PROJECT_DIR}
   - ls -al ${PROJECT_DIR}/web
   - ls -al ${PROJECT_DIR}/web/modules
   - ls -al ${PROJECT_DIR}/web/modules/rdf_entity/
+
+install:
+  - ./vendor/bin/drush -vvv --yes --root=${PROJECT_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - ./vendor/bin/drush -vvv --yes --root=${PROJECT_DIR}/web pm:enable rdf_entity
 
 notifications:
   email: false

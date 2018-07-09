@@ -1,0 +1,18 @@
+{
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=7.1.0",
+    "composer/composer": "^1.6.5",
+    "composer/installers": "^1.5.0",
+    "drupal-composer/drupal-scaffold": "dev-master",
+    "drupal/core": "~8",
+    "drush/drush": "~9"
+  },
+  "extra": {
+    "installer-paths": {
+      "web/core": ["type:drupal-core"],
+      "web/modules/{$name}": ["type:drupal-module"]
+    }
+  }
+}
