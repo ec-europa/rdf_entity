@@ -41,8 +41,8 @@ before_install:
   - mysql -e 'CREATE DATABASE rdf_entity_test'
 
 install:
-  - drush -vvv --yes site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  - drush -vvv --yes pm:enable rdf_entity
+  - drush -vvv --yes --root=${PROJECT_DIR}/web site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  - drush -vvv --yes --root=${PROJECT_DIR}/web pm:enable rdf_entity
   - pwd
   - ls -al ${PROJECT_DIR}
   - ls -al ${PROJECT_DIR}/web
