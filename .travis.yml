@@ -39,7 +39,7 @@ before_install:
 
 install:
   - ./vendor/bin/drush -vvv --yes site:install testing --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  - ./vendor/bin/drush --yes pm:enable rdf_entity
+  - ./vendor/bin/drush -vvv --yes pm:enable rdf_entity
   - pwd
   - ls -al ${PROJECT_DIR}
   - ls -al ${PROJECT_DIR}/web
