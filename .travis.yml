@@ -14,7 +14,6 @@ mysql:
 env:
 #  - TEST=PHP_CodeSniffer
   - TEST=PHPUnit
-
 #services:
 #  - docker
 
@@ -29,6 +28,7 @@ before_install:
   # Build the codebase.
   - composer --verbose self-update
   - export TESTING_SITE_DIR="$HOME/build/testing_site"
+  - export SIMPLETEST_SPARQL_DB="sparql://localhost:8890/sparql"
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
   - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cd ${TESTING_SITE_DIR}
