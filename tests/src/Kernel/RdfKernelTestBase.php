@@ -60,5 +60,4 @@ EndOfQuery;
     parent::tearDown();
   }
 
-
 }
