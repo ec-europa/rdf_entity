@@ -7,8 +7,15 @@
     "composer/installers": "^1.5.0",
     "drupal-composer/drupal-scaffold": "dev-master",
     "drupal/core": "~8",
+    "drupal/rdf_entity": "*",
     "drush/drush": "~9"
   },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../rdf_entity"
+    }
+  ],
   "extra": {
     "installer-paths": {
       "web/core": ["type:drupal-core"],
