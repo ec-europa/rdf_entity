@@ -17,6 +17,17 @@
     {
       "type": "path",
       "url": "$TRAVIS_BUILD_DIR"
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "minimaxir/big-list-of-naughty-strings",
+        "version": "0.0.1",
+        "dist": {
+          "url": "https://github.com/minimaxir/big-list-of-naughty-strings/archive/master.zip",
+          "type": "zip"
+        }
+      }
     }
   ],
   "extra": {
