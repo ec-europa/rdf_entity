@@ -32,11 +32,7 @@ before_install:
   - mkdir -p ${TESTING_SITE_DIR}/web/modules
   - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
   - cd ${TESTING_SITE_DIR}
-  # Replace environment variables with their values.
-  - cat composer.json
-  #- envsubst < composer.json > composer.json
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
-  - cat composer.json
   - composer install --no-interaction
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
@@ -60,7 +56,7 @@ install:
   - cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
   - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
 
-script: ./tests/travis-ci/scripts/run_tests.sh ${TEST}
+script: ${TRAVIS_BUILD_DIR}/tests/travis-ci/scripts/run_tests.sh ${TEST}
 
 notifications:
   email: false

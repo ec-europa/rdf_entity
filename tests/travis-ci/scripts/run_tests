@@ -6,7 +6,7 @@ case "$1" in
         exit $?
         ;;
     PHPUnit)
-        phpunit ./tests/src/
+        phpunit ./web/modules/rdf_entity/tests/src/
         exit $?
         ;;
     *)
