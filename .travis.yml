@@ -21,7 +21,6 @@ matrix:
     - php: 7.2
       env: TEST=PHP_CodeSniffer
 
-
 before_install:
   # Build the codebase.
   - composer --verbose self-update
@@ -32,29 +31,6 @@ before_install:
   - cd ${TESTING_SITE_DIR}
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
-
-  # remove
-  - whoami
-  - export
-  - pwd
-  - ls -al ${TESTING_SITE_DIR}
-  - ls -al ${TESTING_SITE_DIR}/virtuoso
-  - ls -al ${TESTING_SITE_DIR}/web
-  - ls -al ${TESTING_SITE_DIR}/web/modules
-  - ls -al ${TESTING_SITE_DIR}/web/modules/rdf_entity/
-  - ls -al ${TESTING_SITE_DIR}/vendor/minimaxir/big-list-of-naughty-strings/
-
-install: { }
-#  - ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-#  - chmod 0775 ${TESTING_SITE_DIR}/web/sites/default/settings.php
-#  - cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
-#  - ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
-#  # Start the webserver.
-#  - cd ${TESTING_SITE_DIR}/web
-#  - nohup php -S localhost:8888 > /dev/null 2>&1 &
-#  # Wait until the web server is responding.
-#  - until curl -s localhost:8888; do true; done > /dev/null
-#  - cd ..
 
 script: ${TESTING_SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests ${TEST}
 

@@ -1,30 +1,38 @@
 #!/bin/bash
 
+cd ${TESTING_SITE_DIR}
+
 case "$1" in
     PHP_CodeSniffer)
-        cd ${TESTING_SITE_DIR}
+        # Run the code sniffer.
         ./vendor/bin/phpcs --config-set installed_paths ../../drupal/coder/coder_sniffer
         ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md ./web/modules/rdf_entity
         exit $?
         ;;
     PHPUnit)
-        cd ${TESTING_SITE_DIR}
-
         # Create the MySQL database.
         mysql -e 'CREATE DATABASE rdf_entity_test'
         # Virtuoso setup.
         mkdir ${TESTING_SITE_DIR}/virtuoso
         docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
 
+        # Install Drupal.
         ./vendor/bin/drush site:install testing --yes --root=${TESTING_SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+
+        # Add the SPARQL connection in settings.php.
         chmod 0775 ${TESTING_SITE_DIR}/web/sites/default/settings.php
         cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${TESTING_SITE_DIR}/web/sites/default/settings.php
+
+        # Enable rdf_entity module.
         ./vendor/bin/drush pm:enable rdf_entity --yes --root=${TESTING_SITE_DIR}/web
-        # Start the webserver.
+
+        # Start the webserver for browser tests.
         cd ${TESTING_SITE_DIR}/web
         nohup php -S localhost:8888 > /dev/null 2>&1 &
         # Wait until the web server is responding.
         until curl -s localhost:8888; do true; done > /dev/null
+
+        # Run PHPUnit tests.
         ../vendor/bin/phpunit
         exit $?
         ;;
