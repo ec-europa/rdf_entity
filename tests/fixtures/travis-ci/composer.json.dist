@@ -13,7 +13,7 @@
   "repositories": [
     {
       "type": "path",
-      "url": "${TRAVIS_BUILD_DIR}"
+      "url": "TRAVIS_BUILD_DIR"
     }
   ],
   "extra": {
