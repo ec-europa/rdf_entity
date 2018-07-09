@@ -34,6 +34,7 @@ before_install:
   - cd ${TESTING_SITE_DIR}
   # Replace environment variables with their values.
   - cat composer.json | envsubst > composer.json
+  - cat composer.json
   - composer install --no-interaction
   # Create the MySQL database.
   - mysql -e 'CREATE DATABASE rdf_entity_test'
