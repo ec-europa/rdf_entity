@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ec-europa/rdf_entity.svg?branch=8.x-1.x)](https://travis-ci.org/ec-europa/rdf_entity)
+
 # Getting started
 A working Sparql endpoint is needed to use the rdf entity module.
 You could either use a remote Sparql endpoint, or you could set one up locally.
