@@ -25,20 +25,40 @@ matrix:
       env: TEST=PHP_CodeSniffer
 
 before_install:
-  # Deploy the codebase.
   - composer --verbose self-update
   - mkdir -p ${SITE_DIR}/web/modules
-  - cp ./tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
-  - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
   - cd ${SITE_DIR}
-  - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
-  - composer install --no-interaction
 
+  ### PHP_CodeSniffer only: We only needs the PHP Code Sniffer (+Drupal coder).
+  - test ${TEST} == "PHPUnit" || composer require drupal/coder
+
+  ### PHPUnit only (till the end).
+
+  # Deploy the codebase.
+  - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
+  - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
+  - test ${TEST} == "PHP_CodeSniffer" || sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
+  - test ${TEST} == "PHP_CodeSniffer" || composer install --no-interaction
   # Virtuoso setup.
-  - mkdir ${SITE_DIR}/virtuoso
-  - docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
+  - test ${TEST} == "PHP_CodeSniffer" || mkdir ${SITE_DIR}/virtuoso
+  - test ${TEST} == "PHP_CodeSniffer" || docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
+  # Create the MySQL database.
+  - test ${TEST} == "PHP_CodeSniffer" || mysql -e 'CREATE DATABASE rdf_entity_test'
+  # Install Drupal.
+  - test ${TEST} == "PHP_CodeSniffer" || ./vendor/bin/drush site:install testing --yes --root=${SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
+  # Add the SPARQL connection in settings.php.
+  - test ${TEST} == "PHP_CodeSniffer" || chmod 0775 ${SITE_DIR}/web/sites/default/settings.php
+  - test ${TEST} == "PHP_CodeSniffer" || cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${SITE_DIR}/web/sites/default/settings.php
+  # Enable the 'rdf_entity' module.
+  - test ${TEST} == "PHP_CodeSniffer" || ./vendor/bin/drush pm:enable rdf_entity --yes --root=${SITE_DIR}/web
+  # Start the webserver for browser tests.
+  - cd ${SITE_DIR}/web
+  - test ${TEST} == "PHP_CodeSniffer" || nohup php -S localhost:8888 > /dev/null 2>&1 &
+  # Wait until the web server is responding.
+  - test ${TEST} == "PHP_CodeSniffer" || until curl -s localhost:8888; do true; done > /dev/null
+  - cd ..
 
-script: ${SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests ${TEST}
+script: ${TRAVIS_BUILD_DIR}/tests/travis-ci/scripts/run_tests ${TEST}
 
 notifications:
   email: false

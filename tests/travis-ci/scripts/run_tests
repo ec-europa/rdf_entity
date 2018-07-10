@@ -1,35 +1,14 @@
 #!/bin/bash
 
-cd ${SITE_DIR}
-
 case "$1" in
     PHP_CodeSniffer)
-        # Run the code sniffer.
+        cd ${SITE_DIR}
         ./vendor/bin/phpcs --config-set installed_paths ../../drupal/coder/coder_sniffer
-        ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt --ignore='*.md' ./web/modules/rdf_entity
+        ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt --ignore='*.md' ${TRAVIS_BUILD_DIR}
         exit $?
         ;;
     PHPUnit)
-        # Create the MySQL database.
-        mysql -e 'CREATE DATABASE rdf_entity_test'
-
-        # Install Drupal.
-        ./vendor/bin/drush site:install testing --yes --root=${SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-
-        # Add the SPARQL connection in settings.php.
-        chmod 0775 ${SITE_DIR}/web/sites/default/settings.php
-        cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${SITE_DIR}/web/sites/default/settings.php
-
-        # Enable rdf_entity module.
-        ./vendor/bin/drush pm:enable rdf_entity --yes --root=${SITE_DIR}/web
-
-        # Start the webserver for browser tests.
         cd ${SITE_DIR}/web
-        nohup php -S localhost:8888 > /dev/null 2>&1 &
-        # Wait until the web server is responding.
-        until curl -s localhost:8888; do true; done > /dev/null
-
-        # Run PHPUnit tests.
         ../vendor/bin/phpunit
         exit $?
         ;;
