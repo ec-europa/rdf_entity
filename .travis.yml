@@ -12,8 +12,11 @@ mysql:
   encoding: utf8
 
 env:
-  - TEST=PHP_CodeSniffer
-  - TEST=PHPUnit
+  global:
+    - SITE_DIR="$HOME/build/testing_site"
+  matrix:
+    - TEST=PHP_CodeSniffer
+    - TEST=PHPUnit
 
 matrix:
   fast_finish: true
@@ -24,19 +27,18 @@ matrix:
 before_install:
   # Deploy the codebase.
   - composer --verbose self-update
-  - export TESTING_SITE_DIR="$HOME/build/testing_site"
-  - mkdir -p ${TESTING_SITE_DIR}/web/modules
-  - cp ./tests/travis-ci/fixtures/composer.json.dist ${TESTING_SITE_DIR}/composer.json
-  - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${TESTING_SITE_DIR}/web/phpunit.xml
-  - cd ${TESTING_SITE_DIR}
+  - mkdir -p ${SITE_DIR}/web/modules
+  - cp ./tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
+  - cp ./tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
+  - cd ${SITE_DIR}
   - sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
   - composer install --no-interaction
 
   # Virtuoso setup.
-  - mkdir ${TESTING_SITE_DIR}/virtuoso
-  - docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${TESTING_SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
+  - mkdir ${SITE_DIR}/virtuoso
+  - docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
 
-script: ${TESTING_SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests ${TEST}
+script: ${SITE_DIR}/web/modules/rdf_entity/tests/travis-ci/scripts/run_tests ${TEST}
 
 notifications:
   email: false
