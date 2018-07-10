@@ -3,14 +3,13 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests the support of saving various encoded stings in the triple store.
  *
  * @group rdf_entity
  */
-class RdfEncodingTest extends JoinupKernelTestBase {
+class RdfEncodingTest extends RdfKernelTestBase {
 
   /**
    * Test that naughty strings can safely be saved to the database.
@@ -18,8 +17,12 @@ class RdfEncodingTest extends JoinupKernelTestBase {
   public function testEncoding() {
     $path = DRUPAL_ROOT . "/../vendor/minimaxir/big-list-of-naughty-strings/blns.json";
     if (!file_exists($path)) {
-      $this->markTestSkipped('Library minimaxir/big-list-of-naughty-strings is required.');
-      return;
+      // Retry with the vendor directory in the Drupal root.
+      $path = DRUPAL_ROOT . "/vendor/minimaxir/big-list-of-naughty-strings/blns.json";
+      if (!file_exists($path)) {
+        $this->markTestSkipped('Library minimaxir/big-list-of-naughty-strings is required.');
+        return;
+      }
     }
     $json = file_get_contents($path);
     $naughty_strings = json_decode($json);

@@ -4,14 +4,13 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests date fields in rdf entities.
  *
  * @group rdf_entity
  */
-class RdfDateFieldsTest extends JoinupKernelTestBase {
+class RdfDateFieldsTest extends RdfKernelTestBase {
 
   /**
    * Tests handling of timestamp field properties.
