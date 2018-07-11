@@ -14,7 +14,7 @@
     "behat/mink-goutte-driver": "~1.2",
     "drupal/coder": "^8.2.12",
     "mikey179/vfsStream": "~1.2",
-    "minimaxir/big-list-of-naughty-strings": "0.0.1",
+    "minimaxir/big-list-of-naughty-strings": "dev-master",
     "phpunit/phpunit": "~6.0"
   },
   "repositories": [
@@ -26,7 +26,7 @@
       "type": "package",
       "package": {
         "name": "minimaxir/big-list-of-naughty-strings",
-        "version": "0.0.1",
+        "version": "dev-master",
         "dist": {
           "url": "https://github.com/minimaxir/big-list-of-naughty-strings/archive/master.zip",
           "type": "zip"
