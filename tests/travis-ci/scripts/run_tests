@@ -1,0 +1,18 @@
+#!/bin/bash
+
+case "$1" in
+    PHP_CodeSniffer)
+        cd ${SITE_DIR}
+        ./vendor/bin/phpcs --config-set installed_paths ../../drupal/coder/coder_sniffer
+        ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt --ignore='*.md' ${TRAVIS_BUILD_DIR}
+        exit $?
+        ;;
+    PHPUnit)
+        cd ${SITE_DIR}/web
+        ../vendor/bin/phpunit
+        exit $?
+        ;;
+    *)
+        echo "Unknown test '$1'"
+        exit 1
+esac
