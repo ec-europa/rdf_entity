@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_export;
 
-use Drupal\rdf_entity\Database\Driver\sparql\Connection;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\RdfInterface;
 
 /**
@@ -15,17 +15,17 @@ class RdfSerializer implements RdfSerializerInterface {
   /**
    * The Sparql connection object.
    *
-   * @var \Drupal\rdf_entity\Database\Driver\sparql\Connection
+   * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
    */
   protected $sparqlEndpoint;
 
   /**
    * Instantiates a new RdfSerializer object.
    *
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\Connection $sparqlEndpoint
+   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparqlEndpoint
    *   The Sparql connection object.
    */
-  public function __construct(Connection $sparqlEndpoint) {
+  public function __construct(ConnectionInterface $sparqlEndpoint) {
     $this->sparqlEndpoint = $sparqlEndpoint;
   }
 

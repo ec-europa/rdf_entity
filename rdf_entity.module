@@ -454,7 +454,7 @@ function rdf_entity_virtuoso_version_requirements() {
     ],
   ];
 
-  /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection */
+  /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection */
   $connection = Database::getConnection('default', 'sparql_default');
   $client = Http::getDefaultHttpClient();
   $client->resetParameters(TRUE);
@@ -505,7 +505,7 @@ function rdf_entity_virtuoso_permission_requirements() {
     CLEAR GRAPH <{$uri}>
 QUERY;
 
-  /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection */
+  /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection */
   $connection = Database::getConnection('default', 'sparql_default');
   $requirements = [
     'rdf_entity_virtuoso_query' => [

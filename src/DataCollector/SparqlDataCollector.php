@@ -5,7 +5,7 @@ namespace Drupal\rdf_entity\DataCollector;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\rdf_entity\Database\Driver\sparql\Connection;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\webprofiler\DataCollector\DrupalDataCollectorTrait;
 use Drupal\webprofiler\DrupalDataCollectorInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,12 +26,12 @@ class SparqlDataCollector extends DataCollector implements DrupalDataCollectorIn
   /**
    * Setup DatabaseDataCollector.
    *
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\Connection $database
+   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $database
    *   Database connection.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config factory.
    */
-  public function __construct(Connection $database, ConfigFactoryInterface $config_factory) {
+  public function __construct(ConnectionInterface $database, ConfigFactoryInterface $config_factory) {
     $this->database = $database;
     $this->configFactory = $config_factory;
   }

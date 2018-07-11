@@ -6,7 +6,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryFactoryInterface;
-use Drupal\rdf_entity\Database\Driver\sparql\Connection;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 
@@ -18,7 +18,7 @@ class QueryFactory implements QueryFactoryInterface {
   /**
    * The connection object.
    *
-   * @var \Drupal\rdf_entity\Database\Driver\sparql\Connection
+   * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
    */
   protected $connection;
 
@@ -53,7 +53,7 @@ class QueryFactory implements QueryFactoryInterface {
   /**
    * Constructs a QueryFactory object.
    *
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection
+   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection
    *   The connection object.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -62,7 +62,7 @@ class QueryFactory implements QueryFactoryInterface {
    * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping helper service.
    */
-  public function __construct(Connection $connection, EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct(ConnectionInterface $connection, EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     $this->connection = $connection;
     $this->namespaces = QueryBase::getNamespaces($this);
     $this->entityTypeManager = $entity_type_manager;

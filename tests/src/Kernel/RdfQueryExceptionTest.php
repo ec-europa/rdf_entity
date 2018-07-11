@@ -16,7 +16,7 @@ class RdfQueryExceptionTest extends JoinupKernelTestBase {
    * Exception with query in message thrown for selects.
    */
   public function testQuerySelectException() {
-    /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $sparql */
+    /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparql */
     $sparql = $this->container->get('sparql_endpoint');
     $this->setExpectedException(SparqlQueryException::class, "Execution of query failed: SELECT ?o WHERE { ?s ?p }");
     $sparql->query('SELECT ?o WHERE { ?s ?p }');
@@ -26,7 +26,7 @@ class RdfQueryExceptionTest extends JoinupKernelTestBase {
    * Exception with query in message thrown for updates.
    */
   public function testQueryUpdateException() {
-    /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $sparql */
+    /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparql */
     $sparql = $this->container->get('sparql_endpoint');
     $this->setExpectedException(SparqlQueryException::class, "Execution of query failed: INSERT DATA INTO <\malformed> {}");
     $sparql->update('INSERT DATA INTO <\malformed> {}');

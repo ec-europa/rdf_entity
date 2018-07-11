@@ -5,7 +5,7 @@ services:
     tags:
       - { name: backend_overridable }
   sparql_endpoint:
-    class: Drupal\rdf_entity\Database\Driver\sparql\Connection
+    class: Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
     factory: Drupal\Core\Database\Database::getConnection
     arguments: [sparql, sparql_default]
   webprofiler.sparql:
