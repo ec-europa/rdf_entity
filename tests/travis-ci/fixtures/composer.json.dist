@@ -12,7 +12,6 @@
   },
   "require-dev": {
     "behat/mink-goutte-driver": "~1.2",
-    "drupal/coder": "^8.2.12",
     "mikey179/vfsStream": "~1.2",
     "minimaxir/big-list-of-naughty-strings": "dev-master",
     "phpunit/phpunit": "~6.0"
