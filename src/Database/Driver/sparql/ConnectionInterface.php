@@ -5,7 +5,6 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity\Database\Driver\sparql;
 
 use Drupal\Core\Database\Log as DatabaseLog;
-use EasyRdf\Http\Response;
 use EasyRdf\Sparql\Client;
 use EasyRdf\Sparql\Result;
 
@@ -31,10 +30,10 @@ interface ConnectionInterface {
    * @param string $query
    *   The query string.
    *
-   * @return \EasyRdf\Http\Response
+   * @return \EasyRdf\Sparql\Result
    *   The response object.
    */
-  public function update(string $query): Response;
+  public function update(string $query): Result;
 
   /**
    * Helper to get the query. Called from the logger.

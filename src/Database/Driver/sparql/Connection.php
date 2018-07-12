@@ -7,7 +7,6 @@ namespace Drupal\rdf_entity\Database\Driver\sparql;
 use Drupal\Core\Database\Log as DatabaseLog;
 use Drupal\rdf_entity\Exception\SparqlQueryException;
 use EasyRdf\Http\Exception as EasyRdfException;
-use EasyRdf\Http\Response;
 use EasyRdf\Sparql\Client;
 use EasyRdf\Sparql\Result;
 
@@ -100,7 +99,7 @@ class Connection implements ConnectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function update(string $query): Response {
+  public function update(string $query): Result {
     if (!empty($this->logger)) {
       // @todo Fix this. Logger should have been auto started.
       // Probably related to the overwritten log object in $this->setLogger.
