@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+third_party_settings: {  }
+name: Catalog
+rid: catalog
+description: 'A catalog of data-sets.'

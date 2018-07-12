@@ -1,0 +1,7 @@
+name: 'DCAT Demo'
+type: module
+description: 'DCAT Demo'
+core: 8.x
+package: Custom
+dependencies:
+  - rdf_entity

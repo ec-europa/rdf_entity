@@ -184,8 +184,8 @@ class Connection {
    *   The EasyRdf connection.
    */
   public static function open(array &$connection_options = []) {
-    // @todo Get endpoint string from settings file.
-    $connect_string = 'http://' . $connection_options['host'] . ':' . $connection_options['port'] . '/sparql';
+    $enpoint_path = $connection_options['database'] ?? 'sparql';
+    $connect_string = "http://{$connection_options['host']}:{$connection_options['port']}/{$enpoint_path}";
     return new Client($connect_string);
   }
 

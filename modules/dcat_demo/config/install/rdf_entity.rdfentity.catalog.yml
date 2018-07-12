@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+third_party_settings: {  }
+name: Dataset
+rid: dataset
+description: 'Represents a set of data.'
