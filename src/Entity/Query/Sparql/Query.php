@@ -196,7 +196,6 @@ class Query extends QueryBase implements SparqlQueryInterface {
     }
     $this->query .= "\n";
 
-
     if (!$this->graphIds) {
       // If no graph IDs were requested, allow all graphs that Drupal is aware
       // for this entity type.

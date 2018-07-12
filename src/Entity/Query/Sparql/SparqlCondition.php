@@ -28,7 +28,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
     '>=',
     '<>',
     'IN',
-    'NOT IN'
+    'NOT IN',
   ];
 
   /**

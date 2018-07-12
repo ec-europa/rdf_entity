@@ -18,76 +18,80 @@ use EasyRdf\Literal;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Contains helper methods that help with the uri mappings of Drupal elements.
+ * Contains helper methods that help with the URI mappings of Drupal elements.
+ *
+ * Mainly, two field maps are created and statically cached:
+ *
+ * The OUTBOUND MAP, witch is a Drupal oriented property mapping array. A YAML
+ * representation of this array would look like:
+ * @codingStandardsIgnoreStart
+ * rdf_entity:
+ *   bundle_key: rid
+ *   bundles:
+ *     catalog: http://www.w3.org/ns/dcat#Catalog
+ *     other_bundle: ...
+ *   fields:
+ *     label:
+ *       main_property: value
+ *       columns:
+ *         value:
+ *           catalog:
+ *             predicate: http://purl.org/dc/terms/title
+ *             format: t_literal
+ *             serialize: false
+ *             data_type: string
+ *           other_bundle:
+ *             predicate: ...
+ *             ...
+ *         other_column:
+ *           catalog:
+ *             ...
+ *     other_field: ...
+ * other_entity_type:
+ *   bundle_key: ...
+ *   ...
+ * @codingStandardsIgnoreEnd
+ *
+ * The INBOUND MAP, witch is a SPARQL oriented property mapping array. A YAML
+ * representation of this array would look like:
+ * @codingStandardsIgnoreStart
+ * rdf_entity:
+ *   bundle_key: rid
+ *   bundles:
+ *     http://www.w3.org/ns/dcat#Catalog:
+ *       - catalog
+ *       - collection
+ *     http://example.com:
+ *       - other_bundle
+ *   fields:
+ *     http://purl.org/dc/terms/title:
+ *       catalog:
+ *         field_name: label
+ *         column: value
+ *         serialize: false
+ *         type: string
+ *         data_type: string
+ *       other_field:
+ *         field_name: ...
+ *         ...
+ *     http://example.com/field_mapping:
+ *       ....
+ * other_entity_type:
+ *   bundle_key: ...
+ *   ...
+ * @codingStandardsIgnoreEnd
  */
 class RdfFieldHandler implements RdfFieldHandlerInterface {
 
   /**
-   * A Drupal oriented property mapping array.
-   *
-   * A YAML representation of this array would look like:
-   * @code
-   * rdf_entity:
-   *   bundle_key: rid
-   *   bundles:
-   *     catalog: http://www.w3.org/ns/dcat#Catalog
-   *     other_bundle: ...
-   *   fields:
-   *     label:
-   *       main_property: value
-   *       columns:
-   *         value:
-   *           catalog:
-   *             predicate: http://purl.org/dc/terms/title
-   *             format: t_literal
-   *             serialize: false
-   *             data_type: string
-   *           other_bundle:
-   *             predicate: ...
-   *             ...
-   *         other_column:
-   *           catalog:
-   *             ...
-   *     other_field: ...
-   * other_entity_type:
-   *   bundle_key: ...
-   *   ...
-   * @endcode
+   * The static cache of outbound map.
    *
    * @var array
    */
   protected $outboundMap;
 
   /**
-   * A SPARQL oriented property mapping array.
-   *
-   * A YAML representation of this array would look like:
-   * @code
-   * rdf_entity:
-   *   bundle_key: rid
-   *   bundles:
-   *     http://www.w3.org/ns/dcat#Catalog:
-   *       - catalog
-   *       - collection
-   *     http://example.com:
-   *       - other_bundle
-   *   fields:
-   *     http://purl.org/dc/terms/title:
-   *       catalog:
-   *         field_name: label
-   *         column: value
-   *         serialize: false
-   *         type: string
-   *         data_type: string
-   *       other_field:
-   *         field_name: ...
-   *         ...
-   *     http://example.com/field_mapping:
-   *       ....
-   * other_entity_type:
-   *   bundle_key: ...
-   *   ...
-   * @endcode
+   * The static cache of inbound map.
    *
    * @var array
    */

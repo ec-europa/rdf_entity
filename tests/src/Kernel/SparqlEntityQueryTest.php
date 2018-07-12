@@ -3,16 +3,15 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\joinup_core\Kernel\JoinupKernelTestBase;
 
 /**
  * Tests Entity Query functionality of the Sparql backend.
  *
  * @see \Drupal\KernelTests\Core\Entity\EntityQueryTest
  *
- * @group Entity
+ * @group rdf_entity
  */
-class SparqlEntityQueryTest extends JoinupKernelTestBase {
+class SparqlEntityQueryTest extends RdfKernelTestBase {
 
   /**
    * Modules to enable.
@@ -21,7 +20,6 @@ class SparqlEntityQueryTest extends JoinupKernelTestBase {
    */
   public static $modules = [
     'field_test',
-    'datetime',
     'language',
   ];
 
