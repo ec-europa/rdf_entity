@@ -1,17 +1,21 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Database\Driver\sparql;
 
 use Drupal\Core\Database\Log as DatabaseLog;
 use Drupal\rdf_entity\Exception\SparqlQueryException;
 use EasyRdf\Http\Exception as EasyRdfException;
+use EasyRdf\Http\Response;
 use EasyRdf\Sparql\Client;
+use EasyRdf\Sparql\Result;
 
 /**
  * @addtogroup database
  * @{
  */
-class Connection {
+class Connection implements ConnectionInterface {
 
   /**
    * The database target this connection is for.
@@ -57,15 +61,9 @@ class Connection {
   }
 
   /**
-   * Execute the actual query against the Sparql endpoint.
-   *
-   * @param string $query
-   *   The query to execute.
-   *
-   * @return \EasyRdf\Sparql\Result
-   *   The query result.
+   * {@inheritdoc}
    */
-  public function query($query) {
+  public function query(string $query): Result {
     if (!empty($this->logger)) {
       // @todo Fix this. Logger should have been auto started.
       // Probably related to the overwritten log object in $this->setLogger.
@@ -100,9 +98,9 @@ class Connection {
   }
 
   /**
-   * Execute the actual update query against the Sparql endpoint.
+   * {@inheritdoc}
    */
-  public function update($query) {
+  public function update(string $query): Response {
     if (!empty($this->logger)) {
       // @todo Fix this. Logger should have been auto started.
       // Probably related to the overwritten log object in $this->setLogger.
@@ -137,26 +135,23 @@ class Connection {
   }
 
   /**
-   * Helper to get the query. Called from the logger.
+   * {@inheritdoc}
    */
-  public function getQueryString() {
+  public function getQueryString(): string {
     return $this->query;
   }
 
   /**
-   * Returns the database connection string.
+   * {@inheritdoc}
    */
-  public function getQueryUri() {
+  public function getQueryUri(): string {
     return $this->connection->getQueryUri();
   }
 
   /**
-   * Associates a logging object with this connection.
-   *
-   * @param \Drupal\Core\Database\Log $logger
-   *   The logging object we want to use.
+   * {@inheritdoc}
    */
-  public function setLogger(DatabaseLog $logger) {
+  public function setLogger(DatabaseLog $logger): void {
     // Because we're incompatible with the PDO logger,
     // we ignore this, and create our own object.
     // @todo Avoid doing this. It's not ok...
@@ -164,102 +159,64 @@ class Connection {
   }
 
   /**
-   * Gets the current logging object for this connection.
-   *
-   * @return \Drupal\Core\Database\Log|null
-   *   The current logging object for this connection. If there isn't one,
-   *   NULL is returned.
+   * {@inheritdoc}
    */
-  public function getLogger() {
+  public function getLogger(): ?Log {
     return $this->logger;
   }
 
   /**
-   * Initialize the database connection.
-   *
-   * @param array $connection_options
-   *   The connection options as defined in settings.php.
-   *
-   * @return \EasyRdf\Sparql\Client
-   *   The EasyRdf connection.
+   * {@inheritdoc}
    */
-  public static function open(array &$connection_options = []) {
+  public static function open(array &$connection_options = []): Client {
     // @todo Get endpoint string from settings file.
     $connect_string = 'http://' . $connection_options['host'] . ':' . $connection_options['port'] . '/sparql';
     return new Client($connect_string);
   }
 
   /**
-   * Tells this connection object what its target value is.
-   *
-   * This is needed for logging and auditing. It's sloppy to do in the
-   * constructor because the constructor for child classes has a different
-   * signature. We therefore also ensure that this function is only ever
-   * called once.
-   *
-   * @param string $target
-   *   (optional) The target this connection is for.
+   * {@inheritdoc}
    */
-  public function setTarget($target = NULL) {
+  public function setTarget(string $target = NULL): void {
     if (!isset($this->target)) {
       $this->target = $target;
     }
   }
 
   /**
-   * Returns the target this connection is associated with.
-   *
-   * @return string|null
-   *   The target string of this connection, or NULL if no target is set.
+   * {@inheritdoc}
    */
-  public function getTarget() {
+  public function getTarget(): ?string {
     return $this->target;
   }
 
   /**
-   * Tells this connection object what its key is.
-   *
-   * @param string $key
-   *   The key this connection is for.
+   * {@inheritdoc}
    */
-  public function setKey($key) {
+  public function setKey(string $key): void {
     if (!isset($this->key)) {
       $this->key = $key;
     }
   }
 
   /**
-   * Returns the key this connection is associated with.
-   *
-   * @return string|null
-   *   The key of this connection, or NULL if no key is set.
+   * {@inheritdoc}
    */
-  public function getKey() {
+  public function getKey(): ?string {
     return $this->key;
   }
 
   /**
-   * Returns the connection information for this connection object.
-   *
-   * Note that Database::getConnectionInfo() is for requesting information
-   * about an arbitrary database connection that is defined. This method
-   * is for requesting the connection information of this specific
-   * open connection object.
-   *
-   * @return array
-   *   An array of the connection information. The exact list of
-   *   properties is driver-dependent.
+   * {@inheritdoc}
    */
-  public function getConnectionOptions() {
+  public function getConnectionOptions(): array {
     return $this->connectionOptions;
   }
 
   /**
-   * Destroys the db connection.
+   * {@inheritdoc}
    */
-  public function destroy() {
-
-  }
+  public function destroy():void {}
 
 }
 
