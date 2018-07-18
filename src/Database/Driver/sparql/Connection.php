@@ -62,7 +62,7 @@ class Connection implements ConnectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function query(string $query): Result {
+  public function query(string $query, array $args = [], array $options = []): Result {
     if (!empty($this->logger)) {
       // @todo Fix this. Logger should have been auto started.
       // Probably related to the overwritten log object in $this->setLogger.
@@ -99,7 +99,7 @@ class Connection implements ConnectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function update(string $query): Result {
+  public function update(string $query, array $args = [], array $options = []): Result {
     if (!empty($this->logger)) {
       // @todo Fix this. Logger should have been auto started.
       // Probably related to the overwritten log object in $this->setLogger.

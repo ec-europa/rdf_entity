@@ -17,23 +17,31 @@ interface ConnectionInterface {
    * Executes the actual query against the Sparql endpoint.
    *
    * @param string $query
-   *   The query to execute.
+   *   The string query to execute.
+   * @param array $args
+   *   An array of arguments for the query.
+   * @param array $options
+   *   An associative array of options to control how the query is run.
    *
    * @return \EasyRdf\Sparql\Result
    *   The query result.
    */
-  public function query(string $query): Result;
+  public function query(string $query, array $args = [], array $options = []): Result;
 
   /**
    * Execute the actual update query against the Sparql endpoint.
    *
    * @param string $query
    *   The query string.
+   * @param array $args
+   *   An array of arguments for the query.
+   * @param array $options
+   *   An associative array of options to control how the query is run.
    *
    * @return \EasyRdf\Sparql\Result
    *   The response object.
    */
-  public function update(string $query): Result;
+  public function update(string $query, array $args = [], array $options = []): Result;
 
   /**
    * Helper to get the query. Called from the logger.
