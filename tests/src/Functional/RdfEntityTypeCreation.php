@@ -17,7 +17,7 @@ class RdfEntityTypeCreation extends BrowserTestBase {
   public static $modules = [
     'rdf_entity',
     // @todo remove the node dependency after the bug in GH-47 is fixed.
-    'node'
+    'node',
   ];
 
   /**

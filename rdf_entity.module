@@ -309,7 +309,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
  *
  * @see rdf_entity_form_alter()
  */
-function rdf_entity_type_mapping_submit(&$form, FormStateInterface $form_state): void {
+function rdf_entity_type_mapping_submit(array &$form, FormStateInterface $form_state): void {
   $values = $form_state->getValue('rdf_entity');
   /** @var \Drupal\rdf_entity\RdfEntityMappingInterface $mapping */
   $mapping = $form_state->get('rdf_entity_mapping');
