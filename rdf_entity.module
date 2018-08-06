@@ -199,7 +199,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
   ];
 
   // When creating a new bundle we can't yet use it for creating a mapping. In
-  // this case we defer to the custom submit handler..
+  // this case we defer to the custom submit handler.
   $mapping = NULL;
   if (!$bundle_entity->isNew()) {
     $mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_entity->id());

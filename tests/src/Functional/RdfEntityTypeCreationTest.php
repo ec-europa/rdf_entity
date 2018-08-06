@@ -9,15 +9,13 @@ use Drupal\Tests\BrowserTestBase;
  *
  * @group rdf_entity
  */
-class RdfEntityTypeCreation extends BrowserTestBase {
+class RdfEntityTypeCreationTest extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'rdf_entity',
-    // @todo remove the node dependency after the bug in GH-47 is fixed.
-    'node',
   ];
 
   /**
