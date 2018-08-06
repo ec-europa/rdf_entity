@@ -3,6 +3,7 @@
 namespace Drupal\Tests\rdf_entity\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
 
 /**
  * Tests the creation of RdfEntityType entities (RDF bundles)
@@ -10,6 +11,16 @@ use Drupal\Tests\BrowserTestBase;
  * @group rdf_entity
  */
 class RdfEntityTypeCreationTest extends BrowserTestBase {
+
+  use RdfDatabaseConnectionTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    $this->setUpSparql();
+    parent::setUp();
+  }
 
   /**
    * {@inheritdoc}
