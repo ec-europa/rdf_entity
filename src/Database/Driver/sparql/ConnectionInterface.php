@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_entity\Database\Driver\sparql;
 
-use Drupal\Core\Database\Log as DatabaseLog;
+use Drupal\Core\Database\Log;
 use EasyRdf\Sparql\Client;
 use EasyRdf\Sparql\Result;
 
@@ -39,17 +39,9 @@ interface ConnectionInterface {
    *   An associative array of options to control how the query is run.
    *
    * @return \EasyRdf\Sparql\Result
-   *   The response object.
+   *   The result object.
    */
   public function update(string $query, array $args = [], array $options = []): Result;
-
-  /**
-   * Helper to get the query. Called from the logger.
-   *
-   * @return string
-   *   The query string.
-   */
-  public function getQueryString(): string;
 
   /**
    * Returns the database connection string.
@@ -65,7 +57,7 @@ interface ConnectionInterface {
    * @param \Drupal\Core\Database\Log $logger
    *   The logging object we want to use.
    */
-  public function setLogger(DatabaseLog $logger): void;
+  public function setLogger(Log $logger): void;
 
   /**
    * Gets the current logging object for this connection.
@@ -83,7 +75,7 @@ interface ConnectionInterface {
    *   The connection options as defined in settings.php.
    *
    * @return \EasyRdf\Sparql\Client
-   *   The EasyRdf connection.
+   *   The EasyRdf client instance.
    */
   public static function open(array &$connection_options = []): Client;
 
@@ -139,7 +131,7 @@ interface ConnectionInterface {
   public function getConnectionOptions(): array;
 
   /**
-   * Destroys the db connection.
+   * Destroys the DB connection.
    */
   public function destroy(): void;
 
