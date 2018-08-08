@@ -12,9 +12,9 @@ use Drupal\Core\Database\StatementInterface;
  * \Drupal\Core\Database\Log::log() is expecting a database statement of type
  * \Drupal\Core\Database\StatementInterface as first argument and the SPARQL
  * database driver uses no StatementInterface class. We workaround this
- * limitation by faking a database statement object just to honour the the
- * logger requirement. We use a statement stub that only stores the connection
- * and the query to be used when logging the event.
+ * limitation by faking a database statement object just to honour the logger
+ * requirement. We use a statement stub that only stores the connection and the
+ * query to be used when logging the event.
  *
  * @see \Drupal\Core\Database\Database::startLog()
  * @see \Drupal\Core\Database\Log
