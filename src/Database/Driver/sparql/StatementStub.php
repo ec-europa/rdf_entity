@@ -16,12 +16,17 @@ use Drupal\Core\Database\StatementInterface;
  * requirement. We use a statement stub that only stores the connection and the
  * query to be used when logging the event.
  *
+ * This class extends also the \Iterator interface just to comply with the
+ * PHPUnit tests. See
+ * https://github.com/sebastianbergmann/phpunit-mock-objects/issues/103.
+ *
  * @see \Drupal\Core\Database\Database::startLog()
  * @see \Drupal\Core\Database\Log
  * @see \Drupal\Core\Database\StatementInterface
  * @see \Drupal\rdf_entity\Database\Driver\sparql\Connection::log()
+ * @see https://github.com/sebastianbergmann/phpunit-mock-objects/issues/103
  */
-class StatementStub implements StatementInterface {
+class StatementStub implements \Iterator, StatementInterface {
 
   /**
    * The SPARQL query.
@@ -126,5 +131,30 @@ class StatementStub implements StatementInterface {
    * {@inheritdoc}
    */
   public function rowCount() {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function next() {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function valid() {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function current() {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function rewind() {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function key() {}
 
 }
