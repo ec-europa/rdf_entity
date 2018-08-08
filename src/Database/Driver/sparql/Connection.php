@@ -212,12 +212,12 @@ class Connection implements ConnectionInterface {
    * @param array $args
    *   Arguments passed to the query.
    * @param float $duration
-   *   The duration of th equery run.
+   *   The duration of the query run.
    *
    * @throws \RuntimeException
    *   If an attempt to log was made but the logger is not started.
    */
-  protected function log(string $query, array $args = [], float $duration = 0): void {
+  protected function log(string $query, array $args, float $duration): void {
     if (!$this->logger) {
       throw new \RuntimeException('Cannot log query as the logger is not started.');
     }
