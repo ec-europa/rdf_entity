@@ -92,6 +92,11 @@ class Connection implements ConnectionInterface {
     }
 
     try {
+      // @todo Implement argument replacement. This is not easy as the core
+      // drivers are deferring this operation to \PDOStatement::execute() but
+      // PDO doesn't have any API that exposes the compiled query. We need to
+      // build a routine to perform the arguments SANITIZATION and REPLACEMENT.
+      // @see \PDOStatement::execute()
       $results = $this->easyRdfClient->query($query);
     }
     catch (EasyRdfException $exception) {
@@ -116,6 +121,11 @@ class Connection implements ConnectionInterface {
     }
 
     try {
+      // @todo Implement argument replacement. This is not easy as the core
+      // drivers are deferring this operation to \PDOStatement::execute() but
+      // PDO doesn't have any API that exposes the compiled query. We need to
+      // build a routine to perform the arguments SANITIZATION and REPLACEMENT.
+      // @see \PDOStatement::execute()
       $result = $this->easyRdfClient->update($query);
     }
     catch (EasyRdfException $exception) {
