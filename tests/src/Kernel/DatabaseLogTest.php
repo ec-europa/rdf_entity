@@ -22,13 +22,20 @@ class DatabaseLogTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->setUpSparql();
   }
 
   /**
    * Tests the log.
+   *
+   * @param string $method
+   *   The method name 'query' or 'update'.
+   * @param string $query
+   *   The query.
+   * @param array $args
+   *   The query arguments.
    *
    * @dataProvider provider
    */
@@ -60,8 +67,16 @@ class DatabaseLogTest extends KernelTestBase {
    */
   public function provider(): array {
     return [
-      'query' => ['query', 'SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 100', []],
-      'update' => ['update', 'CLEAR GRAPH <http://example.com>;', []],
+      'query' => [
+        'query',
+        'SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 100',
+        [],
+      ],
+      'update' => [
+        'update',
+        'CLEAR GRAPH <http://example.com>;',
+        [],
+      ],
     ];
   }
 
