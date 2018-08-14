@@ -36,12 +36,19 @@ class DatabaseLogTest extends KernelTestBase {
    *   The query.
    * @param array $args
    *   The query arguments.
+   * @param \Throwable|null $expected_exception
+   *   The expected exception, if any.
    *
    * @dataProvider provider
    */
-  public function testLog(string $method, string $query, array $args): void {
+  public function testLog(string $method, string $query, array $args, ?\Throwable $expected_exception): void {
+    if ($expected_exception) {
+      $this->expectException(get_class($expected_exception));
+      $this->expectExceptionMessage($expected_exception->getMessage());
+    }
+
     Database::startLog('log_test', 'sparql_default');
-    $this->sparql->{$method}($query);
+    $this->sparql->{$method}($query, $args);
     $log = $this->sparql->getLogger()->get('log_test');
 
     $this->assertCount(1, $log);
@@ -71,11 +78,19 @@ class DatabaseLogTest extends KernelTestBase {
         'query',
         'SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 100',
         [],
+        NULL,
       ],
       'update' => [
         'update',
         'CLEAR GRAPH <http://example.com>;',
         [],
+        NULL,
+      ],
+      'query with arguments' => [
+        'query',
+        'SELECT DISTINCT ?s ?p ?o WHERE { <:subject> ?p ?o } LIMIT 100',
+        [':subject' => 'http://example.com'],
+        new \InvalidArgumentException('Replacement arguments are not yet supported.'),
       ],
     ];
   }
