@@ -172,7 +172,13 @@ class Connection implements ConnectionInterface {
    * {@inheritdoc}
    */
   public static function open(array &$connection_options = []): Client {
-    $connect_string = "http://{$connection_options['host']}:{$connection_options['port']}/sparql";
+    $enpoint_path = !empty($connection_options['database']) ? trim($connection_options['database'], ' /') : '';
+    // After trimming the value might be ''. Testing again.
+    $enpoint_path = $enpoint_path ?: 'sparql';
+    $protocol = empty($connection_options['https']) ? 'http' : 'https';
+
+    $connect_string = "{$protocol}://{$connection_options['host']}:{$connection_options['port']}/{$enpoint_path}";
+
     return new Client($connect_string);
   }
 
