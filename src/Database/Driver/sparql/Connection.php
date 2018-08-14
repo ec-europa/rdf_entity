@@ -87,16 +87,19 @@ class Connection implements ConnectionInterface {
    * {@inheritdoc}
    */
   public function query(string $query, array $args = [], array $options = []): Result {
+    // @todo Remove this in #55.
+    // @see https://github.com/ec-europa/rdf_entity/issues/55
+    if ($args) {
+      throw new \InvalidArgumentException('Replacement arguments are not yet supported.');
+    }
+
     if ($this->logger) {
       $query_start = microtime(TRUE);
     }
 
     try {
-      // @todo Implement argument replacement. This is not easy as the core
-      // drivers are deferring this operation to \PDOStatement::execute() but
-      // PDO doesn't have any API that exposes the compiled query. We need to
-      // build a routine to perform the arguments SANITIZATION and REPLACEMENT.
-      // @see \PDOStatement::execute()
+      // @todo Implement argument replacement in #55.
+      // @see https://github.com/ec-europa/rdf_entity/issues/55
       $results = $this->easyRdfClient->query($query);
     }
     catch (EasyRdfException $exception) {
@@ -116,16 +119,19 @@ class Connection implements ConnectionInterface {
    * {@inheritdoc}
    */
   public function update(string $query, array $args = [], array $options = []): Result {
+    // @todo Remove this in #55.
+    // @see https://github.com/ec-europa/rdf_entity/issues/55
+    if ($args) {
+      throw new \InvalidArgumentException('Replacement arguments are not yet supported.');
+    }
+
     if ($this->logger) {
       $query_start = microtime(TRUE);
     }
 
     try {
-      // @todo Implement argument replacement. This is not easy as the core
-      // drivers are deferring this operation to \PDOStatement::execute() but
-      // PDO doesn't have any API that exposes the compiled query. We need to
-      // build a routine to perform the arguments SANITIZATION and REPLACEMENT.
-      // @see \PDOStatement::execute()
+      // @todo Implement argument replacement in #55.
+      // @see https://github.com/ec-europa/rdf_entity/issues/55
       $result = $this->easyRdfClient->update($query);
     }
     catch (EasyRdfException $exception) {

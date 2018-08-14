@@ -25,6 +25,12 @@ interface ConnectionInterface {
    *
    * @return \EasyRdf\Sparql\Result
    *   The query result.
+   *
+   * @throws \InvalidArgumentException
+   *   If $args value is passed but arguments replacement is not yet
+   *   supported. To be removed in #55.
+   *
+   * @see https://github.com/ec-europa/rdf_entity/issues/55
    */
   public function query(string $query, array $args = [], array $options = []): Result;
 
@@ -40,6 +46,12 @@ interface ConnectionInterface {
    *
    * @return \EasyRdf\Sparql\Result
    *   The result object.
+   *
+   * @throws \InvalidArgumentException
+   *   If $args value is passed but arguments replacement is not yet
+   *   supported. To be removed in #55.
+   *
+   * @see https://github.com/ec-europa/rdf_entity/issues/55
    */
   public function update(string $query, array $args = [], array $options = []): Result;
 
