@@ -19,13 +19,16 @@ env:
     - SITE_DIR="$HOME/build/testing_site"
   matrix:
     - TEST=PHP_CodeSniffer
-    - TEST=PHPUnit
+    - TEST=8.5.x
+    - TEST=8.6.x
 
 matrix:
   fast_finish: true
   exclude:
     - php: 7.2
       env: TEST=PHP_CodeSniffer
+  allow_failures:
+    - env: TEST=8.6.x
 
 before_install:
   - composer --verbose self-update
@@ -35,7 +38,7 @@ before_install:
   ### PHP_CodeSniffer only.
 
   # We only need the PHP Code Sniffer (and the Drupal coder).
-  - test ${TEST} == "PHPUnit" || composer require drupal/coder
+  - test ${TEST} == "PHP_CodeSniffer" && composer require drupal/coder || true
 
   ### PHPUnit only (till the end).
 
@@ -43,7 +46,7 @@ before_install:
   - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
   - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
   - test ${TEST} == "PHP_CodeSniffer" || sed -i -e 's#\$TRAVIS_BUILD_DIR#'${TRAVIS_BUILD_DIR}'#g' composer.json
-  - test ${TEST} == "PHP_CodeSniffer" || composer install --no-interaction
+  - test ${TEST} == "PHP_CodeSniffer" || composer require drupal/core:$TEST --no-interaction
   # Virtuoso setup.
   - test ${TEST} == "PHP_CodeSniffer" || mkdir ${SITE_DIR}/virtuoso
   - test ${TEST} == "PHP_CodeSniffer" || docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
