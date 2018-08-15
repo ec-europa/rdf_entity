@@ -27,6 +27,8 @@ matrix:
   exclude:
     - php: 7.2
       env: TEST=PHP_CodeSniffer
+  # Todo: remove this section once we have a passing test suite on 8.6.x.
+  # Ref. https://github.com/ec-europa/rdf_entity/issues/58
   allow_failures:
     - env: TEST=8.6.x
 
