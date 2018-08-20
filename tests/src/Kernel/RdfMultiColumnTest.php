@@ -10,13 +10,6 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 class RdfMultiColumnTest extends RdfKernelTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public static $modules = [
-    'link',
-  ];
-
-  /**
    * Tests the link field.
    *
    * Ensures that saving a link field with 2 columns mapped will save and load

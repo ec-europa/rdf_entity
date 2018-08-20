@@ -22,6 +22,7 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
     'rdf_draft',
     'rdf_entity',
     'rdf_entity_test',
+    'link',
   ];
 
   /**
