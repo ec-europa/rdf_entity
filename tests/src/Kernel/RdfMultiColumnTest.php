@@ -34,8 +34,11 @@ class RdfMultiColumnTest extends RdfKernelTestBase {
     ]);
 
     $entity->save();
-    $this->assertEquals('http://example.com', $entity->get('field_link')->uri);
-    $this->assertEquals('My link title', $entity->get('field_link')->title);
+    $storage = $this->entityManager->getStorage('rdf_entity');
+    $storage->resetCache();
+    $rdf = $storage->load($entity->id());
+    $this->assertEquals('http://example.com', $rdf->get('field_link')->uri);
+    $this->assertEquals('My link title', $rdf->get('field_link')->title);
   }
 
 }
