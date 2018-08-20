@@ -22,7 +22,7 @@ class RdfMultiColumnTest extends RdfKernelTestBase {
       'label' => 'My entity',
       'field_link' => [
         'uri' => 'http://example.com',
-        'title' => 'My link title'
+        'title' => 'My link title',
       ],
     ]);
 
