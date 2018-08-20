@@ -13,6 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
@@ -124,7 +125,7 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
  */
 function rdf_entity_field_storage_form_validate(array &$form, FormStateInterface $form_state) {
   $cardinality = (int) $form_state->getValue('cardinality_number');
-  if ($cardinality < 2 && $form_state->getValue('cardinality') !== "-1") {
+  if ($cardinality < 2 && (int) $form_state->getValue('cardinality') !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
     return;
   }
 
