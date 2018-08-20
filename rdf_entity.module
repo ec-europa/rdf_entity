@@ -76,6 +76,7 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
     '#description' => t('This field uses a Sparql backend. Please map the fields to their corresponding rdf properties.'),
     '#weight' => 99,
   ];
+  $form_state->set('rdf_mapping_columns', array_keys($schema['columns']));
   foreach ($schema['columns'] as $column => $column_desc) {
     $description = isset($column_desc['description']) ? $column_desc['description'] . "<br>" : '';
     foreach (['type', 'length', 'size', 'serialize'] as $key) {
@@ -110,6 +111,36 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
   }
 
   $form['#entity_builders'][] = 'rdf_entity_form_alter_builder';
+  $form['#validate'][] = 'rdf_entity_field_storage_form_validate';
+}
+
+/**
+ * Validation callback for the field storage form.
+ *
+ * @param array $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function rdf_entity_field_storage_form_validate(array &$form, FormStateInterface $form_state) {
+  $cardinality = (int) $form_state->getValue('cardinality_number');
+  if ($cardinality < 2 && $form_state->getValue('cardinality') !== "-1") {
+    return;
+  }
+
+  $columns = $form_state->get('rdf_mapping_columns');
+
+  // We can only have 1 predicate mapped if the cardinality is higher than 1.
+  $predicate_count = 0;
+  foreach ($columns as $column) {
+    $predicate = $form_state->getValue('predicate_' . $column);
+    if ($predicate) {
+      $predicate_count++;
+    }
+
+    if ($predicate_count > 1) {
+      $form_state->setErrorByName('rdf_mapping', t('Multiple RDF mapping predicates are not supported with a field cardinality higher than 1.'));
+      break;
+    }
+  }
 }
 
 /**
