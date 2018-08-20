@@ -11,11 +11,11 @@ use Drupal\field_ui\Form\FieldStorageConfigEditForm;
 class RdfFieldStorageConfigEditForm extends FieldStorageConfigEditForm {
 
   /**
+   * {@inheritdoc}
+   *
    * Override the cardinality validation because the RDF storage is not yet
    * aware of the %delta "column" as multiple cardinality is not yet supported
    * with field mappings that contain multiple columns.
-   *
-   * {@inheritdoc}
    */
   public function validateCardinality(array &$element, FormStateInterface $form_state) {
     // Validate field cardinality.

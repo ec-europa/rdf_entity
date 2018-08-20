@@ -118,7 +118,9 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
  * Validation callback for the field storage form.
  *
  * @param array $form
+ *   Form definition.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
  */
 function rdf_entity_field_storage_form_validate(array &$form, FormStateInterface $form_state) {
   $cardinality = (int) $form_state->getValue('cardinality_number');
