@@ -2,9 +2,11 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_entity\Database\Driver\sparql;
+namespace Drupal\Driver\Database\sparql;
 
 use Drupal\Core\Database\Log;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
+use Drupal\rdf_entity\Database\Driver\sparql\StatementStub;
 use Drupal\rdf_entity\Exception\SparqlQueryException;
 use EasyRdf\Http\Exception as EasyRdfException;
 use EasyRdf\Sparql\Client;
@@ -265,13 +267,125 @@ class Connection implements ConnectionInterface {
    * @see \Drupal\Core\Database\Log
    * @see \Drupal\Core\Database\StatementInterface
    * @see \Drupal\rdf_entity\Database\Driver\sparql\StatementStub
-   * @see \Drupal\rdf_entity\Database\Driver\sparql\Connection::log()
+   * @see \Drupal\Driver\Database\sparql\Connection::log()
    */
   protected function getStatement(): StatementStub {
     if (!isset($this->statementStub)) {
       $this->statementStub = (new StatementStub())->setDatabaseConnection($this);
     }
     return $this->statementStub;
+  }
+
+  /**
+   * Creates an array of database connection options from a URL.
+   *
+   * @param string $url
+   *   The URL.
+   * @param string $root
+   *   The root directory of the Drupal installation. Some database drivers,
+   *   like for example SQLite, need this information.
+   *
+   * @return array
+   *   The connection options.
+   *
+   * @throws \InvalidArgumentException
+   *   Exception thrown when the provided URL does not meet the minimum
+   *   requirements.
+   *
+   * @see \Drupal\Core\Database\Database::convertDbUrlToConnectionInfo()
+   *
+   * @internal
+   *   This method should not be called. Use
+   *   \Drupal\Core\Database\Database::convertDbUrlToConnectionInfo() instead.
+   */
+  public static function createConnectionOptionsFromUrl($url, $root) {
+    $url_components = parse_url($url);
+    if (!isset($url_components['scheme'], $url_components['host'], $url_components['path'])) {
+      throw new \InvalidArgumentException('Minimum requirement: driver://host/database');
+    }
+
+    $url_components += [
+      'user' => '',
+      'pass' => '',
+      'fragment' => '',
+    ];
+
+    // Remove leading slash from the URL path.
+    if ($url_components['path'][0] === '/') {
+      $url_components['path'] = substr($url_components['path'], 1);
+    }
+
+    // Use reflection to get the namespace of the class being called.
+    $reflector = new \ReflectionClass(get_called_class());
+
+    $database = [
+      'driver' => $url_components['scheme'],
+      'username' => $url_components['user'],
+      'password' => $url_components['pass'],
+      'host' => $url_components['host'],
+      'database' => $url_components['path'],
+      'namespace' => $reflector->getNamespaceName(),
+    ];
+
+    if (isset($url_components['port'])) {
+      $database['port'] = $url_components['port'];
+    }
+
+    if (!empty($url_components['fragment'])) {
+      $database['prefix']['default'] = $url_components['fragment'];
+    }
+
+    return $database;
+  }
+
+  /**
+   * Creates a URL from an array of database connection options.
+   *
+   * @param array $connection_options
+   *   The array of connection options for a database connection.
+   *
+   * @return string
+   *   The connection info as a URL.
+   *
+   * @throws \InvalidArgumentException
+   *   Exception thrown when the provided array of connection options does not
+   *   meet the minimum requirements.
+   *
+   * @see \Drupal\Core\Database\Database::getConnectionInfoAsUrl()
+   *
+   * @internal
+   *   This method should not be called. Use
+   *   \Drupal\Core\Database\Database::getConnectionInfoAsUrl() instead.
+   */
+  public static function createUrlFromConnectionOptions(array $connection_options) {
+    if (!isset($connection_options['driver'], $connection_options['database'])) {
+      throw new \InvalidArgumentException("As a minimum, the connection options array must contain at least the 'driver' and 'database' keys");
+    }
+
+    $user = '';
+    if (isset($connection_options['username'])) {
+      $user = $connection_options['username'];
+      if (isset($connection_options['password'])) {
+        $user .= ':' . $connection_options['password'];
+      }
+      $user .= '@';
+    }
+
+    $host = empty($connection_options['host']) ? 'localhost' : $connection_options['host'];
+
+    $db_url = $connection_options['driver'] . '://' . $user . $host;
+
+    if (isset($connection_options['port'])) {
+      $db_url .= ':' . $connection_options['port'];
+    }
+
+    $db_url .= '/' . $connection_options['database'];
+
+    if (isset($connection_options['prefix']['default']) && $connection_options['prefix']['default'] !== '') {
+      $db_url .= '#' . $connection_options['prefix']['default'];
+    }
+
+    return $db_url;
   }
 
 }

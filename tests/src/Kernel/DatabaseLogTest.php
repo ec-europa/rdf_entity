@@ -13,7 +13,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  *
  * @group rdf_entity
  *
- * @coversDefaultClass \Drupal\rdf_entity\Database\Driver\sparql\Connection
+ * @coversDefaultClass \Drupal\Driver\Database\sparql\Connection
  */
 class DatabaseLogTest extends KernelTestBase {
 
