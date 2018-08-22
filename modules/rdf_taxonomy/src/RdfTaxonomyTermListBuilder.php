@@ -70,18 +70,15 @@ class RdfTaxonomyTermListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function getEntityIds() {
-    return $this->getStorage()->getQuery()
-      ->condition('vid', $this->getVocabulary()->id())
-      ->execute();
-  }
+    $query = $this->getStorage()->getQuery()
+      ->condition('vid', $this->getVocabulary()->id());
 
-  /**
-   * {@inheritdoc}
-   */
-  public function load() {
-    return $this->getStorage()->loadTree($this->getVocabulary()->id(), 0, NULL, TRUE);
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
   }
-
+  
   /**
    * {@inheritdoc}
    */
