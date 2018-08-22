@@ -78,7 +78,7 @@ class RdfTaxonomyTermListBuilder extends EntityListBuilder {
     }
     return $query->execute();
   }
-  
+
   /**
    * {@inheritdoc}
    */
