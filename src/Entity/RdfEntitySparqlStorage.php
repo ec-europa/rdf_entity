@@ -35,6 +35,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEntitySparqlStorageInterface {
 
   /**
+   * The statically cached entities.
+   *
+   * The parent property has been removed in Drupal 8.6.x and replaces with a
+   * service (see https://www.drupal.org/project/drupal/issues/1596472). We add
+   * here the variable to make it available for the storage.
+   *
+   * @var array
+   *
+   * @see https://www.drupal.org/project/drupal/issues/1596472
+   */
+  protected $entities = [];
+
+  /**
    * Sparql database connection.
    *
    * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
