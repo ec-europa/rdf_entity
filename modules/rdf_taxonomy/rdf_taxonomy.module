@@ -10,9 +10,11 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\rdf_taxonomy\Entity\RdfTerm;
 use Drupal\rdf_taxonomy\RdfTaxonomyTermListBuilder;
-use Drupal\taxonomy\TermInterface;
+use Drupal\rdf_taxonomy\TermRdfStorage;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\VocabularyInterface;
 
 /**
@@ -22,7 +24,8 @@ use Drupal\taxonomy\VocabularyInterface;
  * implementation of the Drupal\Core\Entity\EntityStorageInterface interface.
  */
 function rdf_taxonomy_entity_type_alter(array &$entity_types) {
-  $entity_types['taxonomy_term']->setStorageClass('Drupal\rdf_taxonomy\TermRdfStorage');
+  $entity_types['taxonomy_term']->setClass(RdfTerm::class);
+  $entity_types['taxonomy_term']->setStorageClass(TermRdfStorage::class);
   $entity_types['taxonomy_term']->setHandlerClass('views_data', NULL);
   $entity_types['taxonomy_term']->setHandlerClass('list_builder', RdfTaxonomyTermListBuilder::class);
 }

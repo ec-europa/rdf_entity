@@ -177,13 +177,6 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   protected $labelKey;
 
   /**
-   * The bundle id.
-   *
-   * @var string
-   */
-  protected $entityBundle;
-
-  /**
    * Whether the condition has been compiled.
    *
    * @var bool
@@ -263,6 +256,11 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
         // @see \Drupal\og\MembershipManager::getGroupContentIds
         $field_name_parts = explode('.', $field);
         $field = $field_name_parts[0];
+        // Unmapped fields, such as fields without storage cannot be added as
+        // entity query conditions.
+        if (!$this->fieldHandler->fieldIsMapped($this->query->getEntityTypeId(), $field)) {
+          return $this;
+        }
         $column = isset($field_name_parts[1]) ? $field_name_parts[1] : $this->fieldHandler->getFieldMainProperty($this->query->getEntityTypeId(), $field);
         $this->conditions[] = [
           'field' => $field,

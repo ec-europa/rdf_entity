@@ -218,4 +218,17 @@ interface RdfFieldHandlerInterface {
    */
   public static function getSupportedDataTypes(): array;
 
+  /**
+   * Checks is a field is part of the map given an entity type.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $field_name
+   *   The field name to be checked.
+   *
+   * @return bool
+   *   If the field is mapped.
+   */
+  public function fieldIsMapped(string $entity_type_id, string $field_name): bool;
+
 }
