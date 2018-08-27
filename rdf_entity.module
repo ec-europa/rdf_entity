@@ -28,7 +28,7 @@ use EasyRdf\Http;
 /**
  * Implements hook_entity_base_field_info_alter().
  */
-function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+function rdf_entity_entity_base_field_info_alter(array &$fields, EntityTypeInterface $entity_type) {
   if (!in_array(RdfEntitySparqlStorageInterface::class, class_implements($entity_type->getStorageClass()))) {
     return;
   }
