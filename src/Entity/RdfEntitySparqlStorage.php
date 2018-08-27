@@ -6,6 +6,7 @@ namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\ContentEntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
@@ -119,9 +120,11 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
-    parent::__construct($entity_type, $entity_manager, $cache);
+  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
+    parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -145,7 +148,9 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       $container->get('module_handler'),
       $container->get('sparql.graph_handler'),
       $container->get('sparql.field_handler'),
-      $container->get('plugin.manager.rdf_entity.id')
+      $container->get('plugin.manager.rdf_entity.id'),
+      // We support also Drupal 8.5.x.
+      $container->has('entity.memory_cache') ? $container->get('entity.memory_cache') : NULL
     );
   }
 
