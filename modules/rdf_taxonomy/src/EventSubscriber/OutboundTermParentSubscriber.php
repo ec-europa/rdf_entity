@@ -2,10 +2,8 @@
 
 namespace Drupal\rdf_taxonomy\EventSubscriber;
 
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\rdf_entity\Event\OutboundValueEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
-use function GuzzleHttp\Psr7\str;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
