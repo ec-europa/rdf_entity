@@ -363,11 +363,11 @@ QUERY;
             $column = $inbound_map['fields'][$predicate][$bundle]['column'];
             foreach ($field as $lang => $items) {
               $langcode_key = ($lang === $default_language) ? LanguageInterface::LANGCODE_DEFAULT : $lang;
-              foreach ($items as $item) {
+              foreach ($items as $delta => $item) {
                 $item = $this->fieldHandler->getInboundValue($this->getEntityTypeId(), $field_name, $item, $langcode_key, $column, $bundle);
 
                 if (!isset($return[$entity_id][$field_name][$langcode_key]) || !is_string($return[$entity_id][$field_name][$langcode_key])) {
-                  $return[$entity_id][$field_name][$langcode_key][][$column] = $item;
+                  $return[$entity_id][$field_name][$langcode_key][$delta][$column] = $item;
                 }
               }
               if (is_array($return[$entity_id][$field_name][$langcode_key])) {
