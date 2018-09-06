@@ -7,7 +7,7 @@ use Drupal\rdf_entity\Event\RdfEntityEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Massages outbound date/time values.
+ * Massages outbound term parent value.
  */
 class OutboundTermParentSubscriber implements EventSubscriberInterface {
 
