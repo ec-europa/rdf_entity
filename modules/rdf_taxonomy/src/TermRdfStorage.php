@@ -7,6 +7,7 @@ namespace Drupal\rdf_taxonomy;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use EasyRdf\Graph;
 
@@ -83,18 +84,11 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
   protected $trees = [];
 
   /**
-   * {@inheritdoc}
+   * Ancestor entities.
+   *
+   * @var \Drupal\taxonomy\TermInterface[][]
    */
-  protected function doPreSave(EntityInterface $entity) {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $parent = $entity->get('parent');
-    if ($parent->first() && empty($parent->target_id)) {
-      // If the parent target ID is set to '' (empty string), remove the item to
-      // avoid storing a triple corresponding to parent field in the backend.
-      $parent->removeItem(0);
-    }
-    return parent::doPreSave($entity);
-  }
+  protected $ancestors;
 
   /**
    * {@inheritdoc}
@@ -104,18 +98,25 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
     // @todo Document this. I have no idea what this is for, I only know that
     //   taxonomy terms require this.
     $graph->addResource($entity->id(), 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2004/02/skos/core#Concept');
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function create(array $values = []) {
-    // Save new terms with no parents by default.
-    if (empty($values['parent'])) {
-      $values['parent'] = [''];
+    // Remove reference to root. A taxonomy term with no reference to a parent
+    // means that is under root.
+    $rdf_php = $graph->toRdfPhp();
+    foreach ($rdf_php as $resource_uri => $properties) {
+      foreach ($properties as $property => $values) {
+        // Check only for parent field.
+        if ($resource_uri === $entity->id() && $property === 'http://www.w3.org/2004/02/skos/core#broaderTransitive') {
+          foreach ($values as $delta => $value) {
+            if ($value['value'] === '0') {
+              unset($rdf_php[$resource_uri][$property][$delta]);
+              break 2;
+            }
+          }
+        }
+      }
     }
-    $entity = parent::create($values);
-    return $entity;
+    // Recreate the graph with new data.
+    $graph = new Graph($graph->getUri(), $rdf_php);
   }
 
   /**
@@ -147,78 +148,104 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
    * {@inheritdoc}
    */
   public function loadParents($tid) {
-    if (empty($this->parents[$tid])) {
-      $parents = [];
-      $ids = [];
-      $query = <<<QUERY
-SELECT ?parents
-WHERE {
-  <$tid> <http://www.w3.org/2004/02/skos/core#broaderTransitive> ?parents
-}
-QUERY;
-      $result = $this->sparql->query($query);
-      foreach ($result as $item) {
-        $ids[] = (string) $item->parents;
+    $terms = [];
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    if ($tid && $term = $this->load($tid)) {
+      foreach ($this->getParents($term) as $id => $parent) {
+        // This method currently doesn't return the <root> parent.
+        // @see https://www.drupal.org/node/2019905
+        if (!empty($id)) {
+          $terms[$id] = $parent;
+        }
       }
-      if ($ids) {
-        $parents = $this->loadMultiple($ids);
-      }
-      $this->parents[$tid] = $parents;
     }
-    return $this->parents[$tid];
+
+    return $terms;
+  }
+
+  /**
+   * Returns a list of parents of this term.
+   *
+   * @return \Drupal\taxonomy\TermInterface[]
+   *   The parent taxonomy term entities keyed by term ID. If this term has a
+   *   <root> parent, that item is keyed with 0 and will have NULL as value.
+   */
+  protected function getParents(TermInterface $term) {
+    $parent = $term->get('parent');
+    if ($parent->isEmpty()) {
+      return [0 => NULL];
+    }
+
+    $ids = [];
+    foreach ($term->get('parent') as $item) {
+      $ids[] = $item->target_id;
+    }
+
+    if ($ids) {
+      $query = \Drupal::entityQuery('taxonomy_term')
+        ->condition('tid', $ids, 'IN');
+
+      return static::loadMultiple($query->execute());
+    }
+
+    return [];
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadAllParents($tid) {
-    if (!isset($this->parentsAll[$tid])) {
-      $parents = [];
-      if ($term = $this->load($tid)) {
-        $parents[$term->id()] = $term;
-        $terms_to_search[] = $term->id();
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    return (!empty($tid) && $term = $this->load($tid)) ? $this->getAncestors($term) : [];
+  }
 
-        while ($tid = array_shift($terms_to_search)) {
-          if ($new_parents = $this->loadParents($tid)) {
-            foreach ($new_parents as $new_parent) {
-              if (!isset($parents[$new_parent->id()])) {
-                $parents[$new_parent->id()] = $new_parent;
-                $terms_to_search[] = $new_parent->id();
-              }
-            }
+  /**
+   * Returns all ancestors of this term.
+   *
+   * @return \Drupal\taxonomy\TermInterface[]
+   *   A list of ancestor taxonomy term entities keyed by term ID.
+   *
+   * @internal
+   * @todo Refactor away when TreeInterface is introduced.
+   */
+  protected function getAncestors(TermInterface $term) {
+    if (!isset($this->ancestors[$term->id()])) {
+      $this->ancestors[$term->id()] = [$term->id() => $term];
+      $search[] = $term->id();
+
+      while ($tid = array_shift($search)) {
+        foreach ($this->getParents(static::load($tid)) as $id => $parent) {
+          if ($parent && !isset($this->ancestors[$term->id()][$id])) {
+            $this->ancestors[$term->id()][$id] = $parent;
+            $search[] = $id;
           }
         }
       }
-
-      $this->parentsAll[$tid] = $parents;
     }
-    return $this->parentsAll[$tid];
+    return $this->ancestors[$term->id()];
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadChildren($tid, $vid = NULL) {
-    if (!isset($this->children[$tid])) {
-      $children = [];
-      // Get terms whom refer to tid as being a parent.
-      $query = <<<QUERY
-SELECT ?children
-WHERE {
-   ?children <http://www.w3.org/2004/02/skos/core#broaderTransitive> <$tid>
-}
-QUERY;
-      $result = $this->sparql->query($query);
-      $ids = [];
-      foreach ($result as $item) {
-        $ids[] = (string) $item->children;
-      }
-      if ($ids) {
-        $children = $this->loadMultiple($ids);
-      }
-      $this->children[$tid] = $children;
-    }
-    return $this->children[$tid];
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    return (!empty($tid) && $term = $this->load($tid)) ? $this->getChildren($term) : [];
+  }
+
+  /**
+   * Returns all children terms of this term.
+   *
+   * @return \Drupal\taxonomy\TermInterface[]
+   *   A list of children taxonomy term entities keyed by term ID.
+   *
+   * @internal
+   * @todo Refactor away when TreeInterface is introduced.
+   */
+  public function getChildren(TermInterface $term) {
+    $query = \Drupal::entityQuery('taxonomy_term')
+      ->condition('parent', $term->id());
+    return static::loadMultiple($query->execute());
   }
 
   /**

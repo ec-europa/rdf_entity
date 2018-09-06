@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\rdf_taxonomy\Functional;
 
-use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
@@ -38,11 +37,6 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   protected function setUp() {
     $this->setUpSparql();
     parent::setUp();
-
-    // The RDF taxonomy doesn't have draft graph.
-    RdfEntityGraph::load('draft')
-      ->set('entity_types', ['rdf_entity'])
-      ->save();
 
     // Create an unlocked vocabulary and its mapping.
     Vocabulary::create([
@@ -99,7 +93,6 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
     $edit = [
       'name[0][value]' => 'Top Level Term',
       'description[0][value]' => $this->randomString(),
-      'parent[]' => [''],
     ];
     $this->drupalPostForm('admin/structure/taxonomy/manage/unlocked_vocab/add', $edit, 'Save');
     $this->assertSession()->pageTextContains('Created new term Top Level Term.');

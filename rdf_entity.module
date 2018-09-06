@@ -20,8 +20,8 @@ use Drupal\Core\Url;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\FieldStorageConfigInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
 use EasyRdf\Http;
@@ -29,8 +29,8 @@ use EasyRdf\Http;
 /**
  * Implements hook_entity_base_field_info_alter().
  */
-function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
-  if (!(\Drupal::entityManager()->getStorage($entity_type->id()) instanceof RdfEntitySparqlStorage)) {
+function rdf_entity_entity_base_field_info_alter(array &$fields, EntityTypeInterface $entity_type) {
+  if (!in_array(RdfEntitySparqlStorageInterface::class, class_implements($entity_type->getStorageClass()))) {
     return;
   }
 
@@ -38,7 +38,7 @@ function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $
     ->setLabel(t('The graph where the entity is stored.'))
     ->setTargetEntityTypeId('rdf_entity')
     ->setName('graph')
-    ->setComputed(TRUE)
+    ->setCustomStorage(TRUE)
     ->setSetting('target_type', 'rdf_entity_graph');
 }
 
@@ -57,13 +57,13 @@ function rdf_entity_entity_type_alter(array &$entity_types) {
  */
 function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Only add mapping form element to fields of entities implementing
-  // RdfEntitySparqlStorage.
+  // RdfEntitySparqlStorageInterface.
   $id = $form_state->get('entity_type_id');
   if (!$id) {
     return;
   }
   $storage = \Drupal::entityManager()->getStorage($id);
-  if (!$storage instanceof RdfEntitySparqlStorage) {
+  if (!$storage instanceof RdfEntitySparqlStorageInterface) {
     return;
   }
 
@@ -214,9 +214,9 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
   $entity_type_id = $bundle_entity->getEntityType()->getBundleOf();
   $form_state->set('entity_type_id', $entity_type_id);
 
-  /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-  if (!$storage instanceof RdfEntitySparqlStorage) {
+  if (!$storage instanceof RdfEntitySparqlStorageInterface) {
     return;
   }
   $base_fields = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type_id);

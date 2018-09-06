@@ -57,7 +57,7 @@ trait RdfDatabaseConnectionTrait {
     }
 
     $this->sparqlConnectionInfo = Database::convertDbUrlToConnectionInfo($db_url, dirname(dirname(__FILE__)));
-    $this->sparqlConnectionInfo['namespace'] = 'Drupal\\rdf_entity\\Database\\Driver\\sparql';
+    $this->sparqlConnectionInfo['namespace'] = 'Drupal\\Driver\\Database\\sparql';
 
     // Do not allow Virtuoso 6.
     $this->detectVirtuoso6();
