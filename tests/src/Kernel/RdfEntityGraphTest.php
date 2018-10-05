@@ -48,15 +48,15 @@ class RdfEntityGraphTest extends KernelTestBase {
     // Create a 2nd graph.
     $this->createGraph('foo', 10);
 
+    $id = 'http://example.com/apple';
     /** @var \Drupal\rdf_entity\RdfInterface $apple */
     $apple = $storage->create([
+      'id' => $id,
       'rid' => 'fruit',
       'label' => 'Apple in foo graph',
       'graph' => 'foo',
     ]);
     $apple->save();
-
-    $id = $apple->id();
 
     // Check that, by default, the entity exists only in the foo graph.
     $apple = $storage->load($id);
@@ -113,10 +113,20 @@ class RdfEntityGraphTest extends KernelTestBase {
     // Check that the entity is loaded from an explicitly passed graph even it's
     // a non-default graph.
     $this->assertNotNull($storage->load($id, ['non_default_graph']));
+    // Same for entity query.
+    $ids = $this->getQuery()
+      ->graphs(['non_default_graph'])
+      ->condition('id', $id)
+      ->execute();
+    $this->assertCount(1, $ids);
+    $this->assertEquals($id, reset($ids));
 
     // Even the entity exists in 'non_default_graph' is not returned because
     // this graph is not a default graph.
     $this->assertNull($storage->load($id));
+    // Same for entity query.
+    $ids = $this->getQuery()->condition('id', $id)->execute();
+    $this->assertEmpty($ids);
 
     // Delete the entity.
     $apple->delete();
@@ -146,6 +156,19 @@ class RdfEntityGraphTest extends KernelTestBase {
     RdfEntityMapping::loadByName('rdf_entity', 'fruit')
       ->addGraphs([$id => "http://example.com/fruit/graph/$id"])
       ->save();
+  }
+
+  /**
+   * Returns the entity query.
+   *
+   * @return \Drupal\rdf_entity\Entity\Query\Sparql\SparqlQueryInterface
+   *   The SPARQL entity query.
+   */
+  protected function getQuery() {
+    return $this->container
+      ->get('entity_type.manager')
+      ->getStorage('rdf_entity')
+      ->getQuery();
   }
 
 }
