@@ -63,15 +63,15 @@ interface RdfGraphHandlerInterface {
    * IDs. If the list is missed, the value returned by this method is used. This
    * is not necessary the list of all enabled graphs. Third party modules might
    * restrict this list. For instance, if graphs 'default', 'foo', 'bar' are
-   * enabled, a call such as
-   * @code
-   * RdfEntitySparqlStorage::load('http://example.com', 'bar');
-   * @endcode
+   * enabled, a call such as:
+   * @codingStandardsIgnoreStart
+   * RdfEntitySparqlStorage::load('http://example.com', ['bar']);
+   * @codingStandardsIgnoreEnd
    * will return the entity from the 'bar' graph (if exists). A module might
-   * decide to set the default graphs list to 'default', 'foo'. Then a call such
-   * @code
+   * decide to set the default graphs list to 'default', 'foo'. A call such as:
+   * @codingStandardsIgnoreStart
    * RdfEntitySparqlStorage::load('http://example.com');
-   * @endcode
+   * @codingStandardsIgnoreEnd
    * will search the entity first in 'default' and will fallback to 'foo'. If
    * the entity doesn't exist in 'default' or 'foo', will return NULL because
    * 'bar' graph is not in the list of default graph IDs.

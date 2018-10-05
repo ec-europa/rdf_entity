@@ -108,7 +108,7 @@ class RdfGraphHandler implements RdfGraphHandlerInterface {
   public function getEntityTypeDefaultGraphIds(string $entity_type_id): array {
     if (!isset($this->cache['default_graphs'][$entity_type_id])) {
       $default_graph_ids = $this->getEntityTypeGraphIds($entity_type_id);
-      /** @var DefaultGraphsEvent $event */
+      /** @var \Drupal\rdf_entity\Event\DefaultGraphsEvent $event */
       $event = $this->eventDispatcher->dispatch(
         RdfEntityEvents::DEFAULT_GRAPHS,
         new DefaultGraphsEvent($entity_type_id, $default_graph_ids)
