@@ -59,11 +59,11 @@ interface RdfGraphHandlerInterface {
   /**
    * Returns a list of default graph IDs.
    *
-   * When requesting a RDF entity, callers are passing a list of candidate graph
-   * IDs. If the list is missed, the value returned by this method is used. This
-   * is not necessary the list of all enabled graphs. Third party modules might
-   * restrict this list. For instance, if graphs 'default', 'foo', 'bar' are
-   * enabled, a call such as:
+   * When requesting an RDF entity, callers are passing a list of candidate
+   * graph IDs. If the list is missed, the value returned by this method is
+   * used. This is not necessary the list of all enabled graphs. Third party
+   * modules might restrict this list. For instance, if graphs 'default', 'foo',
+   * 'bar' are enabled, a call such as:
    * @codingStandardsIgnoreStart
    * RdfEntitySparqlStorage::load('http://example.com', ['bar']);
    * @codingStandardsIgnoreEnd
