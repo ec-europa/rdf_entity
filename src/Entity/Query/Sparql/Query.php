@@ -171,7 +171,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
    * @deprecated Use the ::graphs() method instead.
    */
   public function setGraphType(array $graph_ids = NULL) {
-    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated. Please use the ::graphs() method instead.', E_USER_DEPRECATED);
+    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated. Use the ::graphs() method instead.', E_USER_DEPRECATED);
     $graph_ids = $graph_ids ?: [$this->graphHandler->getDefaultGraphId($this->getEntityTypeId())];
     $this->graphs($graph_ids);
   }
@@ -197,9 +197,8 @@ class Query extends QueryBase implements SparqlQueryInterface {
     $this->query .= "\n";
 
     if (!$this->graphIds) {
-      // If no graph IDs were requested, allow all graphs that Drupal is aware
-      // for this entity type.
-      $this->graphIds = $this->graphHandler->getEntityTypeGraphIds($this->getEntityTypeId());
+      // Allow all default graphs for this entity type.
+      $this->graphIds = $this->graphHandler->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
     }
     $graph_uris = $this->graphHandler->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $this->graphIds);
     foreach ($graph_uris as $graph_uri) {

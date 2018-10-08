@@ -18,6 +18,7 @@ interface RdfGraphHandlerInterface {
    */
   const EMPTY_CACHE = [
     'definition' => [],
+    'default_graphs' => [],
     'structure' => [],
   ];
 
@@ -54,6 +55,47 @@ interface RdfGraphHandlerInterface {
    *   A list of RDF entity graph IDs.
    */
   public function getEntityTypeGraphIds(string $entity_type_id, array $limit_to_graph_ids = NULL): array;
+
+  /**
+   * Returns a list of default graph IDs.
+   *
+   * When requesting an RDF entity, callers are passing a list of candidate
+   * graph IDs. If the list is missed, the value returned by this method is
+   * used. This is not necessary the list of all enabled graphs. Third party
+   * modules might restrict this list. For instance, if graphs 'default', 'foo',
+   * 'bar' are enabled, a call such as:
+   * @codingStandardsIgnoreStart
+   * RdfEntitySparqlStorage::load('http://example.com', ['bar']);
+   * @codingStandardsIgnoreEnd
+   * will return the entity from the 'bar' graph (if exists). A module might
+   * decide to set the default graphs list to 'default', 'foo'. A call such as:
+   * @codingStandardsIgnoreStart
+   * RdfEntitySparqlStorage::load('http://example.com');
+   * @codingStandardsIgnoreEnd
+   * will search the entity first in 'default' and will fallback to 'foo'. If
+   * the entity doesn't exist in 'default' or 'foo', will return NULL because
+   * 'bar' graph is not in the list of default graph IDs.
+   *
+   * By default, all enabled graphs are returned. Third party code which intends
+   * to alter this list should subscribe to the RdfEntityEvents::DEFAULT_GRAPHS
+   * event and use the \Drupal\rdf_entity\Event\DefaultGraphsEvent event setter
+   * to set its own preferences.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return array
+   *   A list of default graph IDs.
+   *
+   * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::load()
+   * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::loadMultiple()
+   * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::loadUnchanged()
+   * @see \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage::loadByProperties()
+   * @see \Drupal\rdf_entity\Entity\Query\Sparql\SparqlQueryInterface::graphs()
+   * @see \Drupal\rdf_entity\Event\RdfEntityEvents::DEFAULT_GRAPHS
+   * @see \Drupal\rdf_entity\Event\DefaultGraphsEvent
+   */
+  public function getEntityTypeDefaultGraphIds(string $entity_type_id): array;
 
   /**
    * Gets the default graph ID for an entity type.

@@ -707,8 +707,9 @@ QUERY;
     /** @var \Drupal\Core\Entity\EntityInterface $keyed_entity */
     foreach ($keyed_entities as $keyed_entity) {
       // Determine all possible graphs for the entity.
-      $graphs = $this->getGraphHandler()->getEntityTypeGraphUris($this->getEntityTypeId());
-      foreach ($graphs[$keyed_entity->bundle()] as $graph_name => $graph_uri) {
+      $graphs_by_bundle = $this->getGraphHandler()->getEntityTypeGraphUris($this->getEntityTypeId());
+      $graphs = $graphs_by_bundle[$keyed_entity->bundle()];
+      foreach ($graphs as $graph_name => $graph_uri) {
         $entities_by_graph[$graph_uri][$keyed_entity->id()] = $keyed_entity;
       }
     }
@@ -716,7 +717,7 @@ QUERY;
     foreach ($entities_by_graph as $graph => $entities_to_delete) {
       $this->doDeleteFromGraph($entities_to_delete, $graph);
     }
-    $this->resetCache(array_keys($keyed_entities));
+    $this->resetCache(array_keys($keyed_entities), array_keys($graphs));
 
     // Allow code to run after deleting.
     $entity_class::postDelete($this, $keyed_entities);
@@ -1284,13 +1285,13 @@ QUERY;
    *   If at least one of passed graphs doesn't exist for this entity type.
    */
   protected function checkGraphs(array &$graph_ids = NULL): void {
-    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
-
     if (!$graph_ids) {
-      // No passed graph means "all graphs for this entity type".
-      $graph_ids = $entity_type_graph_ids;
+      // No passed graph means "all default graphs for this entity type".
+      $graph_ids = $this->getGraphHandler()->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
       return;
     }
+
+    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
 
     // Validate each passed graph.
     array_walk($graph_ids, function (string $graph_id) use ($entity_type_graph_ids): void {

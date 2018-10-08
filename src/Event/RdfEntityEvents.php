@@ -40,4 +40,15 @@ final class RdfEntityEvents {
    */
   const OUTBOUND_VALUE = 'rdf_entity.outbound_value';
 
+  /**
+   * The name of the event triggered when building the list of default graphs.
+   *
+   * @Event
+   *
+   * @see \Drupal\rdf_entity\RdfGraphHandler::getEntityTypeDefaultGraphIds()
+   *
+   * @var string
+   */
+  const DEFAULT_GRAPHS = 'rdf_entity.default_graphs';
+
 }
