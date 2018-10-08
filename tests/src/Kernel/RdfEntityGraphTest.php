@@ -136,6 +136,14 @@ class RdfEntityGraphTest extends KernelTestBase {
     $this->assertNull($storage->load($id, ['arbitrary']));
     $this->assertNull($storage->load($id, ['non_default_graph']));
 
+    // Check that the default graph method doesn't return a disabled or an
+    // invalid graph.
+    $this->createGraph('disabled_graph', 20, FALSE);
+    $default_graphs = $this->container->get('sparql.graph_handler')
+      ->getEntityTypeDefaultGraphIds('rdf_entity');
+    $this->assertNotContains('disabled_graph', $default_graphs);
+    $this->assertNotContains('non_existing_graph', $default_graphs);
+
     // Try to request the entity from a non-existing graph.
     $this->setExpectedException(\InvalidArgumentException::class, "Graph 'invalid graph' doesn't exist for entity type 'rdf_entity'.");
     $storage->load($id, ['invalid graph', 'default', 'foo']);
@@ -148,9 +156,12 @@ class RdfEntityGraphTest extends KernelTestBase {
    *   The graph ID.
    * @param int $weight
    *   (optional) The graph weight. Defaults to 0.
+   * @param bool $status
+   *   (optional) If the graph is enabled. Defaults to TRUE.
    */
-  protected function createGraph(string $id, int $weight = 0): void {
+  protected function createGraph(string $id, int $weight = 0, bool $status = TRUE): void {
     RdfEntityGraph::create(['id' => $id, 'label' => ucwords($id)])
+      ->setStatus($status)
       ->setWeight($weight)
       ->save();
     RdfEntityMapping::loadByName('rdf_entity', 'fruit')

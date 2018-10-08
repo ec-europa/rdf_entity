@@ -29,9 +29,15 @@ class DefaultGraphsSubscriber implements EventSubscriberInterface {
   public function limitGraphs(DefaultGraphsEvent $event) {
     $graphs = $event->getDefaultGraphIds();
     if (($index = array_search('non_default_graph', $graphs)) !== FALSE) {
+      // Remove 'non_default_graph' graph.
       unset($graphs[$index]);
-      $event->setDefaultGraphIds($graphs);
     }
+    // Add a disabled graph.
+    $graphs[] = 'disabled_graph';
+    // Add an non-existing graph.
+    $graphs[] = 'non_existing_graph';
+
+    $event->setDefaultGraphIds($graphs);
   }
 
 }
