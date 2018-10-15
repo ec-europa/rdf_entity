@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\rdf_entity\Kernel;
 
+use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\rdf_entity\Entity\RdfEntityGraph;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
@@ -16,41 +17,48 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 class RdfEntityGraphTest extends KernelTestBase {
 
+  use EntityReferenceTestTrait;
   use RdfDatabaseConnectionTrait;
 
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
+    'field',
     'rdf_entity',
     'rdf_entity_graph_test',
     'user',
   ];
 
   /**
+   * The SPARQL storage.
+   *
+   * @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface
+   */
+  protected $storage;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
+
     $this->setUpSparql();
     $this->installConfig(['rdf_entity', 'rdf_entity_graph_test']);
+    /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $this->storage */
+    $this->storage = $this->container->get('entity_type.manager')->getStorage('rdf_entity');
   }
 
   /**
-   * Tests graphs.
+   * Tests loading entities from graphs.
    */
-  public function test() {
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $manager */
-    $manager = $this->container->get('entity_type.manager');
-    /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
-    $storage = $manager->getStorage('rdf_entity');
-
+  public function testEntityLoadFromGraphs() {
     // Create a 2nd graph.
     $this->createGraph('foo', 10);
 
     $id = 'http://example.com/apple';
     /** @var \Drupal\rdf_entity\RdfInterface $apple */
-    $apple = $storage->create([
+    $apple = $this->storage->create([
       'id' => $id,
       'rid' => 'fruit',
       'label' => 'Apple in foo graph',
@@ -59,12 +67,12 @@ class RdfEntityGraphTest extends KernelTestBase {
     $apple->save();
 
     // Check that, by default, the entity exists only in the foo graph.
-    $apple = $storage->load($id);
+    $apple = $this->storage->load($id);
     $this->assertEquals('foo', $apple->graph->target_id);
-    $this->assertFalse($storage->hasGraph($apple, 'default'));
+    $this->assertFalse($this->storage->hasGraph($apple, 'default'));
 
     // Check cascading over the graph candidate list.
-    $apple = $storage->load($id, ['default', 'foo']);
+    $apple = $this->storage->load($id, ['default', 'foo']);
     $this->assertEquals('foo', $apple->graph->target_id);
 
     // Set the 'default' graph.
@@ -74,10 +82,10 @@ class RdfEntityGraphTest extends KernelTestBase {
       ->save();
 
     // Check that, by default, the 'default' graph is loaded.
-    $apple = $storage->load($id);
+    $apple = $this->storage->load($id);
     $this->assertEquals('default', $apple->graph->target_id);
-    $this->assertTrue($storage->hasGraph($apple, 'default'));
-    $this->assertTrue($storage->hasGraph($apple, 'foo'));
+    $this->assertTrue($this->storage->hasGraph($apple, 'default'));
+    $this->assertTrue($this->storage->hasGraph($apple, 'foo'));
 
     // Create a new 'arbitrary' graph and add it to the mapping.
     $this->createGraph('arbitrary');
@@ -87,15 +95,15 @@ class RdfEntityGraphTest extends KernelTestBase {
       ->setName('Apple in arbitrary graph')
       ->save();
 
-    $apple = $storage->load($id, ['arbitrary']);
+    $apple = $this->storage->load($id, ['arbitrary']);
     $this->assertEquals('arbitrary', $apple->graph->target_id);
     $this->assertEquals('Apple in arbitrary graph', $apple->label());
 
     // Delete the foo version.
-    $storage->deleteFromGraph([$apple], 'foo');
-    $this->assertNull($storage->load($id, ['foo']));
-    $this->assertNotNull($storage->load($id, ['default']));
-    $this->assertNotNull($storage->load($id, ['arbitrary']));
+    $this->storage->deleteFromGraph([$apple], 'foo');
+    $this->assertNull($this->storage->load($id, ['foo']));
+    $this->assertNotNull($this->storage->load($id, ['default']));
+    $this->assertNotNull($this->storage->load($id, ['arbitrary']));
 
     // Create a graph that is excluded from the default graphs list.
     // @see \Drupal\rdf_entity_graph_test\DefaultGraphsSubscriber
@@ -107,12 +115,12 @@ class RdfEntityGraphTest extends KernelTestBase {
       ->save();
 
     // Delete the entity from 'default' and 'arbitrary'.
-    $storage->deleteFromGraph([$apple], 'default');
-    $storage->deleteFromGraph([$apple], 'arbitrary');
+    $this->storage->deleteFromGraph([$apple], 'default');
+    $this->storage->deleteFromGraph([$apple], 'arbitrary');
 
     // Check that the entity is loaded from an explicitly passed graph even it's
     // a non-default graph.
-    $this->assertNotNull($storage->load($id, ['non_default_graph']));
+    $this->assertNotNull($this->storage->load($id, ['non_default_graph']));
     // Same for entity query.
     $ids = $this->getQuery()
       ->graphs(['non_default_graph'])
@@ -123,7 +131,7 @@ class RdfEntityGraphTest extends KernelTestBase {
 
     // Even the entity exists in 'non_default_graph' is not returned because
     // this graph is not a default graph.
-    $this->assertNull($storage->load($id));
+    $this->assertNull($this->storage->load($id));
     // Same for entity query.
     $ids = $this->getQuery()->condition('id', $id)->execute();
     $this->assertEmpty($ids);
@@ -131,10 +139,10 @@ class RdfEntityGraphTest extends KernelTestBase {
     // Delete the entity.
     $apple->delete();
     // All versions are gone.
-    $this->assertNull($storage->load($id, ['default']));
-    $this->assertNull($storage->load($id, ['foo']));
-    $this->assertNull($storage->load($id, ['arbitrary']));
-    $this->assertNull($storage->load($id, ['non_default_graph']));
+    $this->assertNull($this->storage->load($id, ['default']));
+    $this->assertNull($this->storage->load($id, ['foo']));
+    $this->assertNull($this->storage->load($id, ['arbitrary']));
+    $this->assertNull($this->storage->load($id, ['non_default_graph']));
 
     // Check that the default graph method doesn't return a disabled or an
     // invalid graph.
@@ -146,7 +154,44 @@ class RdfEntityGraphTest extends KernelTestBase {
 
     // Try to request the entity from a non-existing graph.
     $this->setExpectedException(\InvalidArgumentException::class, "Graph 'invalid graph' doesn't exist for entity type 'rdf_entity'.");
-    $storage->load($id, ['invalid graph', 'default', 'foo']);
+    $this->storage->load($id, ['invalid graph', 'default', 'foo']);
+  }
+
+  public function testValidReferenceConstraint() {
+    // Create an entity reference field.
+    $this->createEntityReferenceField('rdf_entity', 'fruit', 'similar_to', 'Similar fruit', 'rdf_entity', 'default', ['target_bundles' =>['fruit']]);
+
+    $this->createGraph('non_default_graph', 10);
+
+    $this->storage->create([
+      'id' => 'http://example.com/watermelon',
+      'rid' => 'fruit',
+      'label' => 'Watermelon',
+      'graph' => 'non_default_graph',
+    ])->save();
+
+    /** @var \Drupal\rdf_entity\RdfInterface $melon */
+    $melon = $this->storage->create([
+      'id' => 'http://example.com/melon',
+      'rid' => 'fruit',
+      'label' => 'Melon',
+      'graph' => 'non_default_graph',
+      'similar_to' => 'http://example.com/watermelon',
+    ]);
+
+    $this->assertEmpty($melon->validate());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tearDown() {
+    foreach (['melon', 'watermelon'] as $fruit) {
+      if ($entity = $this->storage->load("http://example.com/$fruit", $this->container->get('sparql.graph_handler')->getEntityTypeGraphIds('rdf_entity'))) {
+        $entity->delete();
+      }
+    }
+    parent::tearDown();
   }
 
   /**
@@ -176,10 +221,7 @@ class RdfEntityGraphTest extends KernelTestBase {
    *   The SPARQL entity query.
    */
   protected function getQuery() {
-    return $this->container
-      ->get('entity_type.manager')
-      ->getStorage('rdf_entity')
-      ->getQuery();
+    return $query = $this->storage->getQuery();
   }
 
 }
