@@ -1190,7 +1190,7 @@ QUERY;
       throw new \InvalidArgumentException('Passing a value in $graphs_ids works only when used with non-null $ids.');
     }
 
-    $this->checkGraphs($graph_ids);
+    $this->checkGraphs($graph_ids, TRUE);
 
     if ($ids) {
       $cids = [];
@@ -1280,14 +1280,23 @@ QUERY;
    *
    * @param string[]|null $graph_ids
    *   An ordered list of candidate graph IDs.
+   * @param bool $check_all_graphs
+   *   (optional) If to check all graphs. By default, only the default graphs
+   *   are checked.
    *
    * @throws \InvalidArgumentException
    *   If at least one of passed graphs doesn't exist for this entity type.
    */
-  protected function checkGraphs(array &$graph_ids = NULL): void {
+  protected function checkGraphs(array &$graph_ids = NULL, bool $check_all_graphs = FALSE): void {
     if (!$graph_ids) {
-      // No passed graph means "all default graphs for this entity type".
-      $graph_ids = $this->getGraphHandler()->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
+      if ($check_all_graphs) {
+        // No passed graph means "all graphs for this entity type".
+        $graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
+      }
+      else {
+        // No passed graph means "all default graphs for this entity type".
+        $graph_ids = $this->getGraphHandler()->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
+      }
       return;
     }
 
