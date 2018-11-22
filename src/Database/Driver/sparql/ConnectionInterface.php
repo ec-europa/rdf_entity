@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity\Database\Driver\sparql;
 
 use Drupal\Core\Database\Log;
+use EasyRdf\Graph;
 use EasyRdf\Sparql\Client;
 use EasyRdf\Sparql\Result;
 
@@ -33,6 +34,27 @@ interface ConnectionInterface {
    * @see https://github.com/ec-europa/rdf_entity/issues/55
    */
   public function query(string $query, array $args = [], array $options = []): Result;
+
+  /**
+   * Executes the actual query against the Sparql endpoint.
+   *
+   * @param string $query
+   *   The string query to execute.
+   * @param array $args
+   *   An array of arguments for the query.
+   * @param array $options
+   *   An associative array of options to control how the query is run.
+   *
+   * @return \EasyRdf\Sparql\Result
+   *   The query result.
+   *
+   * @throws \InvalidArgumentException
+   *   If $args value is passed but arguments replacement is not yet
+   *   supported. To be removed in #55.
+   *
+   * @see https://github.com/ec-europa/rdf_entity/issues/55
+   */
+  public function constructQuery(string $query, array $args = [], array $options = []): Graph;
 
   /**
    * Execute the actual update query against the Sparql endpoint.
