@@ -110,12 +110,14 @@ class Connection implements ConnectionInterface {
    * @param array $options
    *   An associative array of options to control how the query is run.
    *
-   * @return \EasyRdf\Sparql\Result | \EasyRdf\Graph
+   * @return \EasyRdf\Sparql\Result|\EasyRdf\Graph
    *   The query result.
    *
    * @throws \InvalidArgumentException
    *   If $args value is passed but arguments replacement is not yet
    *   supported. To be removed in #55.
+   * @throws SparqlQueryException
+   *   Exception during query execution, e.g. timeout.
    *
    * @see https://github.com/ec-europa/rdf_entity/issues/55
    */

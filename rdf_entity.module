@@ -351,7 +351,7 @@ function rdf_entity_type_mapping_submit(array &$form, FormStateInterface $form_s
     /** @var \Drupal\rdf_entity\RdfEntityTypeInterface $entity */
     $bundle_entity = $form_state->getFormObject()->getEntity();
     $mapping = RdfEntityMapping::create([
-      'entity_type_id' => $bundle_entity->getEntityType()->getBundleOf() ,
+      'entity_type_id' => $bundle_entity->getEntityType()->getBundleOf(),
       'bundle' => $form_state->getFormObject()->getEntity()->id(),
     ]);
   }
