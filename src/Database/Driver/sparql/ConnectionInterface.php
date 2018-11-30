@@ -15,7 +15,7 @@ use EasyRdf\Sparql\Result;
 interface ConnectionInterface {
 
   /**
-   * Executes the actual query against the Sparql endpoint.
+   * Execute a select/insert/update query, returning a query result.
    *
    * @param string $query
    *   The string query to execute.
@@ -36,7 +36,7 @@ interface ConnectionInterface {
   public function query(string $query, array $args = [], array $options = []): Result;
 
   /**
-   * Executes the actual query against the Sparql endpoint.
+   * Execute a construct query, returning a graph of triples.
    *
    * @param string $query
    *   The string query to execute.

@@ -121,7 +121,7 @@ class Connection implements ConnectionInterface {
    *
    * @see https://github.com/ec-europa/rdf_entity/issues/55
    */
-  public function doQuery(string $query, array $args = [], array $options = []) {
+  protected function doQuery(string $query, array $args = [], array $options = []) {
     // @todo Remove this in #55.
     // @see https://github.com/ec-europa/rdf_entity/issues/55
     if ($args) {
