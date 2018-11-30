@@ -7,3 +7,32 @@ services:
   rdf_export.serializer:
     class: Drupal\rdf_export\RdfSerializer
     arguments: ['@sparql_endpoint']
+  rdf_export.encoder.jsonld:
+    class: Drupal\rdf_export\Encoder\RdfEncoder
+    tags:
+      - { name: encoder, format: jsonld }
+  rdf_export.encoder.rdfxml:
+    class: Drupal\rdf_export\Encoder\RdfEncoder
+    tags:
+      - { name: encoder, format: rdfxml }
+  rdf_export.encoder.ntriples:
+    class: Drupal\rdf_export\Encoder\RdfEncoder
+    tags:
+      - { name: encoder, format: ntriples }
+  rdf_export.encoder.turtle:
+    class: Drupal\rdf_export\Encoder\RdfEncoder
+    tags:
+      - { name: encoder, format: turtle }
+  rdf_export.encoder.n3:
+    class: Drupal\rdf_export\Encoder\RdfEncoder
+    tags:
+      - { name: encoder, format: n3 }
+  rdf_export.rdfsubscriber:
+    class: Drupal\rdf_export\EventSubscriber\RdfSubscriber
+    tags:
+      - { name: event_subscriber }
+  serializer.normalizer.entity.rdf:
+    class: Drupal\rdf_export\Normalizer\RdfEntityNormalizer
+    arguments: ['@rdf_export.serializer']
+    tags:
+      - { name: normalizer, priority: 10 }

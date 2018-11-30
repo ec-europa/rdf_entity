@@ -45,8 +45,8 @@ interface ConnectionInterface {
    * @param array $options
    *   An associative array of options to control how the query is run.
    *
-   * @return \EasyRdf\Sparql\Result
-   *   The query result.
+   * @return \EasyRdf\Graph
+   *   The set of triples.
    *
    * @throws \InvalidArgumentException
    *   If $args value is passed but arguments replacement is not yet
