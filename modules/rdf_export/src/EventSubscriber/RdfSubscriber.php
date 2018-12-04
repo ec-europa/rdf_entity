@@ -20,7 +20,7 @@ class RdfSubscriber implements EventSubscriberInterface {
    */
   public function onKernelRequest(GetResponseEvent $event) {
     /** @var \EasyRdf\Format $format */
-    foreach (RdfEncoder::supportedFormats() as $format) {
+    foreach (RdfEncoder::getSupportedFormats() as $format) {
       $mime = array_keys($format->getMimeTypes());
       $event->getRequest()->setFormat($format->getName(), $mime);
     }

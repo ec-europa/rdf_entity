@@ -14,7 +14,7 @@ abstract class NormalizerBase extends SerializationNormalizerBase {
    * {@inheritdoc}
    */
   protected function checkFormat($format = NULL) {
-    return in_array($format, RdfEncoder::supportedFormats());
+    return !empty(RdfEncoder::getSupportedFormats()[$format]);
   }
 
 }
