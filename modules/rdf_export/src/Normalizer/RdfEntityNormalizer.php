@@ -2,6 +2,7 @@
 
 namespace Drupal\rdf_export\Normalizer;
 
+use Drupal\rdf_entity\RdfInterface;
 use Drupal\rdf_export\RdfSerializer;
 use Drupal\serialization\Normalizer\FieldableEntityNormalizerTrait;
 
@@ -17,7 +18,7 @@ class RdfEntityNormalizer extends NormalizerBase {
    *
    * @var string
    */
-  protected $supportedInterfaceOrClass = 'Drupal\rdf_entity\RdfInterface';
+  protected $supportedInterfaceOrClass = RdfInterface::class;
 
   /**
    * RdfEntityNormalizer constructor.

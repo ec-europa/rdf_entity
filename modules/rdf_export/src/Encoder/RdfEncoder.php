@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_export\Encoder;
 
 use Drupal\rdf_export\RdfEncoderInterface;
 use EasyRdf\Format;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 /**
  * Adds RDF encoder support for the Serialization API.
@@ -20,18 +23,18 @@ class RdfEncoder implements RdfEncoderInterface {
   /**
    * {@inheritdoc}
    */
-  public function supportsEncoding($format) {
+  public function supportsEncoding($format): bool {
     return !empty(static::getSupportedFormats()[$format]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function encode($data, $format, array $context = []) {
-    if (isset($data['_rdf_entity'])) {
-      return $data['_rdf_entity'];
+  public function encode($data, $format, array $context = []): string {
+    if (!isset($data['_rdf_entity'])) {
+      throw new UnexpectedValueException("Data to be encoded is missing the '_rdf_entity' key.");
     }
-    return NULL;
+    return $data['_rdf_entity'];
   }
 
   /**
