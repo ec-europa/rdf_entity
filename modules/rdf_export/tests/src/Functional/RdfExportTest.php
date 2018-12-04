@@ -50,17 +50,19 @@ class RdfExportTest extends BrowserTestBase {
 
     $this->drupalGet($this->entity->toUrl('rdf-export'));
     $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
     $page->clickLink('Turtle Terse RDF Triple Language');
-    $assert_session->statusCodeEquals(200);
-    $assert_session->responseContains('ns0:fruit "Apple"');
+    $this->assertSession()->statusCodeEquals(200);
+    $actual_content = $page->getContent();
+    $expected_content = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/turtle"));
+    $this->assertEquals($expected_content, $actual_content);
 
     $this->drupalGet($this->entity->toUrl('rdf-export'));
     $page = $this->getSession()->getPage();
-    $assert_session = $this->assertSession();
     $page->clickLink('RDF/XML');
-    $assert_session->statusCodeEquals(200);
-    $assert_session->responseContains('<ns0:fruit>Apple</ns0:fruit>');
+    $this->assertSession()->statusCodeEquals(200);
+    $actual_content = $page->getContent();
+    $expected_content = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/rdfxml"));
+    $this->assertEquals($expected_content, $actual_content);
   }
 
   /**
