@@ -23,11 +23,11 @@ class RdfEntityNormalizer extends NormalizerBase {
   /**
    * RdfEntityNormalizer constructor.
    *
-   * @param \Drupal\rdf_export\RdfSerializer $rdfSerializer
+   * @param \Drupal\rdf_export\RdfSerializer $rdf_serializer
    *   RDF Serializer service.
    */
-  public function __construct(RdfSerializer $rdfSerializer) {
-    $this->rdfSerializer = $rdfSerializer;
+  public function __construct(RdfSerializer $rdf_serializer) {
+    $this->rdfSerializer = $rdf_serializer;
   }
 
   /**
