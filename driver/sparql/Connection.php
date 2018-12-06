@@ -8,6 +8,7 @@ use Drupal\Core\Database\Log;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\Database\Driver\sparql\StatementStub;
 use Drupal\rdf_entity\Exception\SparqlQueryException;
+use EasyRdf\Graph;
 use EasyRdf\Http\Exception as EasyRdfException;
 use EasyRdf\Sparql\Client;
 use EasyRdf\Sparql\Result;
@@ -89,6 +90,38 @@ class Connection implements ConnectionInterface {
    * {@inheritdoc}
    */
   public function query(string $query, array $args = [], array $options = []): Result {
+    return $this->doQuery($query, $args, $options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function constructQuery(string $query, array $args = [], array $options = []): Graph {
+    return $this->doQuery($query, $args, $options);
+  }
+
+  /**
+   * Execute the query against the endpoint.
+   *
+   * @param string $query
+   *   The string query to execute.
+   * @param array $args
+   *   An array of arguments for the query.
+   * @param array $options
+   *   An associative array of options to control how the query is run.
+   *
+   * @return \EasyRdf\Sparql\Result|\EasyRdf\Graph
+   *   The query result.
+   *
+   * @throws \InvalidArgumentException
+   *   If $args value is passed but arguments replacement is not yet
+   *   supported. To be removed in #55.
+   * @throws SparqlQueryException
+   *   Exception during query execution, e.g. timeout.
+   *
+   * @see https://github.com/ec-europa/rdf_entity/issues/55
+   */
+  protected function doQuery(string $query, array $args = [], array $options = []) {
     // @todo Remove this in #55.
     // @see https://github.com/ec-europa/rdf_entity/issues/55
     if ($args) {
