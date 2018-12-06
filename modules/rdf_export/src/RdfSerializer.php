@@ -46,6 +46,7 @@ WHERE {
      VALUES ?o { <{$entity->id()}> }
   }
 }
+ORDER BY ASC (?p), ASC (?o)
 SPARQL;
 
     /** @var \EasyRdf\Graph $graph */
