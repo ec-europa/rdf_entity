@@ -49,7 +49,7 @@ WHERE {
 SPARQL;
 
     /** @var \EasyRdf\Graph $graph */
-    $graph = $this->sparqlEndpoint->query($query);
+    $graph = $this->sparqlEndpoint->constructQuery($query);
     return $graph->serialise($format);
   }
 
