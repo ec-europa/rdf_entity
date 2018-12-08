@@ -8,6 +8,9 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
+use Drupal\rdf_entity\Event\DefaultGraphsEvent;
+use Drupal\rdf_entity\Event\RdfEntityEvents;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Contains helper methods for managing the RDF entity graphs.
@@ -36,13 +39,23 @@ class RdfGraphHandler implements RdfGraphHandlerInterface {
   protected $rdfEntityGraphStorage;
 
   /**
+   * The event dispatcher service.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Constructs a RDF graph handler object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EventDispatcherInterface $event_dispatcher) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -87,6 +100,25 @@ class RdfGraphHandler implements RdfGraphHandlerInterface {
       $graph_ids = array_intersect($graph_ids, $limit_to_graph_ids);
     }
     return $graph_ids;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityTypeDefaultGraphIds(string $entity_type_id): array {
+    if (!isset($this->cache['default_graphs'][$entity_type_id])) {
+      $entity_graph_ids = $this->getEntityTypeGraphIds($entity_type_id);
+      /** @var \Drupal\rdf_entity\Event\DefaultGraphsEvent $event */
+      $event = $this->eventDispatcher->dispatch(
+        RdfEntityEvents::DEFAULT_GRAPHS,
+        new DefaultGraphsEvent($entity_type_id, $entity_graph_ids)
+      );
+      // Do not allow 3rd party code to add invalid or disabled graphs.
+      $default_graph_ids = array_intersect($event->getDefaultGraphIds(), $entity_graph_ids);
+
+      $this->cache['default_graphs'][$entity_type_id] = $default_graph_ids;
+    }
+    return $this->cache['default_graphs'][$entity_type_id];
   }
 
   /**

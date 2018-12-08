@@ -6,6 +6,7 @@ namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\ContentEntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
@@ -17,7 +18,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\rdf_entity\Database\Driver\sparql\Connection;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Exception\DuplicatedIdException;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
@@ -35,9 +36,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEntitySparqlStorageInterface {
 
   /**
+   * The statically cached entities.
+   *
+   * The parent property has been removed in Drupal 8.6.x and replaces with a
+   * service (see https://www.drupal.org/project/drupal/issues/1596472). We add
+   * here the variable to make it available for the storage.
+   *
+   * @var array
+   *
+   * @see https://www.drupal.org/project/drupal/issues/1596472
+   */
+  protected $entities = [];
+
+  /**
    * Sparql database connection.
    *
-   * @var \Drupal\rdf_entity\Database\Driver\sparql\Connection
+   * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
    */
   protected $sparql;
 
@@ -88,7 +102,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type this storage is about.
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\Connection $sparql
+   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparql
    *   The connection object.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
@@ -106,9 +120,11 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager) {
-    parent::__construct($entity_type, $entity_manager, $cache);
+  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
+    parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -132,7 +148,9 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       $container->get('module_handler'),
       $container->get('sparql.graph_handler'),
       $container->get('sparql.field_handler'),
-      $container->get('plugin.manager.rdf_entity.id')
+      $container->get('plugin.manager.rdf_entity.id'),
+      // We support also Drupal 8.5.x.
+      $container->has('entity.memory_cache') ? $container->get('entity.memory_cache') : NULL
     );
   }
 
@@ -363,11 +381,11 @@ QUERY;
             $column = $inbound_map['fields'][$predicate][$bundle]['column'];
             foreach ($field as $lang => $items) {
               $langcode_key = ($lang === $default_language) ? LanguageInterface::LANGCODE_DEFAULT : $lang;
-              foreach ($items as $item) {
+              foreach ($items as $delta => $item) {
                 $item = $this->fieldHandler->getInboundValue($this->getEntityTypeId(), $field_name, $item, $langcode_key, $column, $bundle);
 
                 if (!isset($return[$entity_id][$field_name][$langcode_key]) || !is_string($return[$entity_id][$field_name][$langcode_key])) {
-                  $return[$entity_id][$field_name][$langcode_key][][$column] = $item;
+                  $return[$entity_id][$field_name][$langcode_key][$delta][$column] = $item;
                 }
               }
               if (is_array($return[$entity_id][$field_name][$langcode_key])) {
@@ -689,8 +707,9 @@ QUERY;
     /** @var \Drupal\Core\Entity\EntityInterface $keyed_entity */
     foreach ($keyed_entities as $keyed_entity) {
       // Determine all possible graphs for the entity.
-      $graphs = $this->getGraphHandler()->getEntityTypeGraphUris($this->getEntityTypeId());
-      foreach ($graphs[$keyed_entity->bundle()] as $graph_name => $graph_uri) {
+      $graphs_by_bundle = $this->getGraphHandler()->getEntityTypeGraphUris($this->getEntityTypeId());
+      $graphs = $graphs_by_bundle[$keyed_entity->bundle()];
+      foreach ($graphs as $graph_name => $graph_uri) {
         $entities_by_graph[$graph_uri][$keyed_entity->id()] = $keyed_entity;
       }
     }
@@ -698,7 +717,7 @@ QUERY;
     foreach ($entities_by_graph as $graph => $entities_to_delete) {
       $this->doDeleteFromGraph($entities_to_delete, $graph);
     }
-    $this->resetCache(array_keys($keyed_entities));
+    $this->resetCache(array_keys($keyed_entities), array_keys($graphs));
 
     // Allow code to run after deleting.
     $entity_class::postDelete($this, $keyed_entities);
@@ -1171,7 +1190,7 @@ QUERY;
       throw new \InvalidArgumentException('Passing a value in $graphs_ids works only when used with non-null $ids.');
     }
 
-    $this->checkGraphs($graph_ids);
+    $this->checkGraphs($graph_ids, TRUE);
 
     if ($ids) {
       $cids = [];
@@ -1261,18 +1280,27 @@ QUERY;
    *
    * @param string[]|null $graph_ids
    *   An ordered list of candidate graph IDs.
+   * @param bool $check_all_graphs
+   *   (optional) If to check all graphs. By default, only the default graphs
+   *   are checked.
    *
    * @throws \InvalidArgumentException
    *   If at least one of passed graphs doesn't exist for this entity type.
    */
-  protected function checkGraphs(array &$graph_ids = NULL): void {
-    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
-
+  protected function checkGraphs(array &$graph_ids = NULL, bool $check_all_graphs = FALSE): void {
     if (!$graph_ids) {
-      // No passed graph means "all graphs for this entity type".
-      $graph_ids = $entity_type_graph_ids;
+      if ($check_all_graphs) {
+        // No passed graph means "all graphs for this entity type".
+        $graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
+      }
+      else {
+        // No passed graph means "all default graphs for this entity type".
+        $graph_ids = $this->getGraphHandler()->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
+      }
       return;
     }
+
+    $entity_type_graph_ids = $this->getGraphHandler()->getEntityTypeGraphIds($this->getEntityTypeId());
 
     // Validate each passed graph.
     array_walk($graph_ids, function (string $graph_id) use ($entity_type_graph_ids): void {

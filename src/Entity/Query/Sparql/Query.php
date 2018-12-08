@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\Sql\ConditionAggregate;
-use Drupal\rdf_entity\Database\Driver\sparql\Connection;
+use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
@@ -21,7 +21,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
   /**
    * The connection object.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
    */
   protected $connection;
 
@@ -91,7 +91,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
    * @param string $conjunction
    *   - AND: all of the conditions on the query need to match.
    *   - OR: at least one of the conditions on the query need to match.
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection
+   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection
    *   The database connection to run the query against.
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
@@ -102,7 +102,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
    * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping handler service.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, Connection $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConnectionInterface $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     // Assign the handlers before calling the parent so that they can be passed
     // to the condition class properly.
     $this->graphHandler = $rdf_graph_handler;
@@ -171,7 +171,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
    * @deprecated Use the ::graphs() method instead.
    */
   public function setGraphType(array $graph_ids = NULL) {
-    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated. Please use the ::graphs() method instead.', E_USER_DEPRECATED);
+    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated. Use the ::graphs() method instead.', E_USER_DEPRECATED);
     $graph_ids = $graph_ids ?: [$this->graphHandler->getDefaultGraphId($this->getEntityTypeId())];
     $this->graphs($graph_ids);
   }
@@ -197,9 +197,8 @@ class Query extends QueryBase implements SparqlQueryInterface {
     $this->query .= "\n";
 
     if (!$this->graphIds) {
-      // If no graph IDs were requested, allow all graphs that Drupal is aware
-      // for this entity type.
-      $this->graphIds = $this->graphHandler->getEntityTypeGraphIds($this->getEntityTypeId());
+      // Allow all default graphs for this entity type.
+      $this->graphIds = $this->graphHandler->getEntityTypeDefaultGraphIds($this->getEntityTypeId());
     }
     $graph_uris = $this->graphHandler->getEntityTypeGraphUrisFlatList($this->getEntityTypeId(), $this->graphIds);
     foreach ($graph_uris as $graph_uri) {

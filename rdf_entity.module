@@ -13,14 +13,15 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\FieldStorageConfigInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
 use EasyRdf\Http;
@@ -28,8 +29,8 @@ use EasyRdf\Http;
 /**
  * Implements hook_entity_base_field_info_alter().
  */
-function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
-  if (!(\Drupal::entityManager()->getStorage($entity_type->id()) instanceof RdfEntitySparqlStorage)) {
+function rdf_entity_entity_base_field_info_alter(array &$fields, EntityTypeInterface $entity_type) {
+  if (!in_array(RdfEntitySparqlStorageInterface::class, class_implements($entity_type->getStorageClass()))) {
     return;
   }
 
@@ -37,7 +38,7 @@ function rdf_entity_entity_base_field_info_alter(&$fields, EntityTypeInterface $
     ->setLabel(t('The graph where the entity is stored.'))
     ->setTargetEntityTypeId('rdf_entity')
     ->setName('graph')
-    ->setComputed(TRUE)
+    ->setCustomStorage(TRUE)
     ->setSetting('target_type', 'rdf_entity_graph');
 }
 
@@ -56,13 +57,13 @@ function rdf_entity_entity_type_alter(array &$entity_types) {
  */
 function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Only add mapping form element to fields of entities implementing
-  // RdfEntitySparqlStorage.
+  // RdfEntitySparqlStorageInterface.
   $id = $form_state->get('entity_type_id');
   if (!$id) {
     return;
   }
   $storage = \Drupal::entityManager()->getStorage($id);
-  if (!$storage instanceof RdfEntitySparqlStorage) {
+  if (!$storage instanceof RdfEntitySparqlStorageInterface) {
     return;
   }
 
@@ -76,6 +77,7 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
     '#description' => t('This field uses a Sparql backend. Please map the fields to their corresponding rdf properties.'),
     '#weight' => 99,
   ];
+  $form_state->set('rdf_mapping_columns', array_keys($schema['columns']));
   foreach ($schema['columns'] as $column => $column_desc) {
     $description = isset($column_desc['description']) ? $column_desc['description'] . "<br>" : '';
     foreach (['type', 'length', 'size', 'serialize'] as $key) {
@@ -110,6 +112,38 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
   }
 
   $form['#entity_builders'][] = 'rdf_entity_form_alter_builder';
+  $form['#validate'][] = 'rdf_entity_field_storage_form_validate';
+}
+
+/**
+ * Validation callback for the field storage form.
+ *
+ * @param array $form
+ *   Form definition.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   Form state.
+ */
+function rdf_entity_field_storage_form_validate(array &$form, FormStateInterface $form_state) {
+  $cardinality = (int) $form_state->getValue('cardinality_number');
+  if ($cardinality < 2 && (int) $form_state->getValue('cardinality') !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
+    return;
+  }
+
+  $columns = $form_state->get('rdf_mapping_columns');
+
+  // We can only have 1 predicate mapped if the cardinality is higher than 1.
+  $predicate_count = 0;
+  foreach ($columns as $column) {
+    $predicate = $form_state->getValue('predicate_' . $column);
+    if ($predicate) {
+      $predicate_count++;
+    }
+
+    if ($predicate_count > 1) {
+      $form_state->setErrorByName('rdf_mapping', t('Multiple RDF mapping predicates are not supported with a field cardinality higher than 1.'));
+      break;
+    }
+  }
 }
 
 /**
@@ -178,13 +212,16 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     return;
   }
   $entity_type_id = $bundle_entity->getEntityType()->getBundleOf();
-  /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+  $form_state->set('entity_type_id', $entity_type_id);
+
+  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-  if (!$storage instanceof RdfEntitySparqlStorage) {
+  if (!$storage instanceof RdfEntitySparqlStorageInterface) {
     return;
   }
   $base_fields = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type_id);
-  $idKey = $storage->getEntityType()->getKey('id');
+  $id_key = $storage->getEntityType()->getKey('id');
+  $form_state->set('bundle_id_key', $storage->getEntityType()->getKey('bundle'));
 
   $form['rdf_entity'] = [
     '#type' => 'details',
@@ -195,18 +232,24 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#tree' => TRUE,
   ];
 
-  if (!$mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_entity->id())) {
-    $mapping = RdfEntityMapping::create([
-      'entity_type_id' => $entity_type_id,
-      'bundle' => $bundle_entity->id(),
-    ]);
+  // When creating a new bundle we can't yet use it for creating a mapping. In
+  // this case we defer to the custom submit handler.
+  $mapping = NULL;
+  if (!$bundle_entity->isNew()) {
+    $mapping = RdfEntityMapping::loadByName($entity_type_id, $bundle_entity->id());
+    if (!$mapping) {
+      $mapping = RdfEntityMapping::create([
+        'entity_type_id' => $entity_type_id,
+        'bundle' => !$bundle_entity->isNew() ? $bundle_entity->id() : NULL,
+      ]);
+    }
+    $form_state->set('rdf_entity_mapping', $mapping);
   }
-  $form_state->set('rdf_entity_mapping', $mapping);
 
   $form['rdf_entity']['rdf_type'] = [
     '#type' => 'textfield',
     '#title' => t('RDF type mapping'),
-    '#default_value' => $mapping->getRdfType(),
+    '#default_value' => $mapping ? $mapping->getRdfType() : NULL,
   ];
 
   /** @var \Drupal\rdf_entity\RdfEntityIdPluginManager $id_plugin_manager */
@@ -220,7 +263,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#title' => t('Entity ID generator'),
     '#description' => t("The generator used to create IDs for new entities."),
     '#options' => $plugins,
-    '#default_value' => $mapping->getEntityIdPlugin() ?: $id_plugin_manager->getFallbackPluginId(NULL),
+    '#default_value' => $mapping && $mapping->getEntityIdPlugin() ? $mapping->getEntityIdPlugin() : $id_plugin_manager->getFallbackPluginId(NULL),
   ];
 
   $form['rdf_entity']['graph'] = [
@@ -234,7 +277,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
       '#type' => 'url',
       '#title' => t('@title (@id)', ['@title' => $graph['title'], '@id' => $graph_id]),
       '#description' => $graph['description'],
-      '#default_value' => $mapping->getGraphUri($graph_id),
+      '#default_value' => $mapping ? $mapping->getGraphUri($graph_id) : NULL,
       '#required' => $graph_id === RdfEntityGraphInterface::DEFAULT,
     ];
   }
@@ -248,7 +291,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
   /** @var \Drupal\Core\Field\BaseFieldDefinition $base_field */
   foreach ($base_fields as $field_name => $base_field) {
     // The entity id doesn't need a mapping as it's the subject of the triple.
-    if ($field_name === $idKey) {
+    if ($field_name === $id_key) {
       continue;
     }
     $columns = $base_field->getColumns();
@@ -269,7 +312,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
         '#title' => t('Mapping'),
         '#description' => t('The rdf predicate.'),
         '#weight' => 150,
-        '#default_value' => $mapping->getMapping($field_name, $column_name)['predicate'] ?? NULL,
+        '#default_value' => $mapping ? $mapping->getMapping($field_name, $column_name)['predicate'] : NULL,
       ];
 
       $form['rdf_entity']['base_fields_mapping'][$field_name][$column_name]['format'] = [
@@ -279,20 +322,17 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
         '#options' => RdfFieldHandler::getSupportedDataTypes(),
         '#empty_value' => '',
         '#weight' => 151,
-        '#default_value' => $mapping->getMapping($field_name, $column_name)['format'] ?? NULL,
+        '#default_value' => $mapping ? $mapping->getMapping($field_name, $column_name)['format'] : NULL,
       ];
     }
   }
-  $form['#entity_builders'][] = 'rdf_entity_save_mapping';
+
+  $form['actions']['submit']['#submit'][] = 'rdf_entity_type_mapping_submit';
 }
 
 /**
  * Stores the mapping of base fields and RDF properties.
  *
- * @param string $entity_type_id
- *   The entity type ID.
- * @param \Drupal\Core\Config\Entity\ConfigEntityInterface $bundle_entity
- *   The bundle entity being built.
  * @param array $form
  *   The form API form render array.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
@@ -303,10 +343,19 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
  *
  * @see rdf_entity_form_alter()
  */
-function rdf_entity_save_mapping(string $entity_type_id, ConfigEntityInterface $bundle_entity, array $form, FormStateInterface $form_state): void {
+function rdf_entity_type_mapping_submit(array &$form, FormStateInterface $form_state): void {
   $values = $form_state->getValue('rdf_entity');
   /** @var \Drupal\rdf_entity\RdfEntityMappingInterface $mapping */
   $mapping = $form_state->get('rdf_entity_mapping');
+  if (!$mapping) {
+    /** @var \Drupal\rdf_entity\RdfEntityTypeInterface $entity */
+    $bundle_entity = $form_state->getFormObject()->getEntity();
+    $mapping = RdfEntityMapping::create([
+      'entity_type_id' => $bundle_entity->getEntityType()->getBundleOf(),
+      'bundle' => $form_state->getFormObject()->getEntity()->id(),
+    ]);
+  }
+
   $mapping
     ->setRdfType($values['rdf_type'])
     ->setEntityIdPlugin($values['entity_id_plugin'])
@@ -451,7 +500,7 @@ function rdf_entity_virtuoso_version_requirements() {
     ],
   ];
 
-  /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection */
+  /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection */
   $connection = Database::getConnection('default', 'sparql_default');
   $client = Http::getDefaultHttpClient();
   $client->resetParameters(TRUE);
@@ -502,7 +551,7 @@ function rdf_entity_virtuoso_permission_requirements() {
     CLEAR GRAPH <{$uri}>
 QUERY;
 
-  /** @var \Drupal\rdf_entity\Database\Driver\sparql\Connection $connection */
+  /** @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $connection */
   $connection = Database::getConnection('default', 'sparql_default');
   $requirements = [
     'rdf_entity_virtuoso_query' => [

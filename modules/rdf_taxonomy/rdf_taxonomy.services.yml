@@ -9,3 +9,7 @@ services:
     class: \Drupal\rdf_taxonomy\RdfTaxonomyConfigOverrides
     tags:
       - {name: config.factory.override, priority: 5}
+  rdf_taxonomy.outbound_value.term_parent.subscriber:
+    class: Drupal\rdf_taxonomy\EventSubscriber\OutboundTermParentSubscriber
+    tags:
+    - { name: event_subscriber }

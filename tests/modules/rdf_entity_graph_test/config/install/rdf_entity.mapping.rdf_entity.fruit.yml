@@ -3,7 +3,6 @@ status: true
 dependencies:
   config:
     - rdf_entity.graph.default
-    - rdf_entity.graph.draft
     - rdf_entity.rdfentity.fruit
 third_party_settings: {  }
 id: rdf_entity.fruit
@@ -21,5 +20,4 @@ base_fields_mapping:
       format: t_literal
 graph:
   default: 'http://example.com/fruit/graph/default'
-  draft: 'http://example.com/fruit/graph/draft'
 entity_id_plugin: default

@@ -416,6 +416,14 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function fieldIsMapped(string $entity_type_id, string $field_name): bool {
+    $outbound_map = $this->getOutboundMap($entity_type_id);
+    return isset($outbound_map['fields'][$field_name]);
+  }
+
+  /**
    * Returns the Drupal-to-SPARQL mapping array.
    *
    * @param string $entity_type_id

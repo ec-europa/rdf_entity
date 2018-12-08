@@ -77,10 +77,12 @@ class RdfListBuilder extends EntityListBuilder {
       }
     }
 
+    // If an RDF bundle is specified in the URL, use it in the query if it
+    // exists.
     if ($rid = $request->get('rid') ?: NULL) {
       $rid = in_array($rid, array_keys($bundle_info->getBundleInfo('rdf_entity'))) ? [$rid] : NULL;
+      $query->condition('rid', $rid, 'IN');
     }
-    $query->condition('rid', $rid, 'IN');
 
     // Only add the pager if a limit is specified.
     if ($this->limit) {

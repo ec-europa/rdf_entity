@@ -2,8 +2,8 @@
 
 namespace Drupal\rdf_entity\Form;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\field_ui\Form\FieldStorageConfigEditForm;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 
 /**
  * Provides a form for the "field storage" edit page.
@@ -12,41 +12,16 @@ class RdfFieldStorageConfigEditForm extends FieldStorageConfigEditForm {
 
   /**
    * {@inheritdoc}
-   */
-  protected function getCardinalityForm() {
-    $form = parent::getCardinalityForm();
-    $type = $this->entity->get('entity_type');
-
-    // Skip validation of cardinality for Sparql backend fields if the field
-    // mapping is not provided. If a specific value is entered for the
-    // cardinality, the default field storage validate handler will do a check
-    // if there are any field instances in use in the database with a higher
-    // cardinality. If this is the case it will throw a validation error, so no
-    // data is lost. When a brand new Sparql based field is being created, the
-    // RDF field mapping is not yet stored in the third party settings, so the
-    // database cannot be queried yet. This will cause an exception to be
-    // thrown. Let's avoid this from happening.
-    if ($this->entityTypeManager->getStorage($type) instanceof RdfEntitySparqlStorage) {
-      // Check if the RDF field mapping already exists. If it doesn't skip the
-      // part of the storage form validation that checks the database by
-      // tricking it in thinking the entity is new.
-      if (!$this->hasRdfFieldMapping()) {
-        unset($form['#element_validate']);
-      }
-    }
-  }
-
-  /**
-   * Returns whether the field has a populated RDF field mapping value.
    *
-   * @return bool
-   *   Whether or not the RDF field mapping has been populated.
+   * Override the cardinality validation because the RDF storage is not yet
+   * aware of the %delta "column" as multiple cardinality is not yet supported
+   * with field mappings that contain multiple columns.
    */
-  protected function hasRdfFieldMapping() {
-    /** @var \Drupal\field\FieldStorageConfigInterface $unchanged_entity */
-    $unchanged_entity = $this->entityTypeManager->getStorage('field_storage_config')
-      ->loadUnchanged($this->entity->id());
-    return !empty($unchanged_entity->getThirdPartySetting('rdf_entity', 'mapping', [])['value']);
+  public function validateCardinality(array &$element, FormStateInterface $form_state) {
+    // Validate field cardinality.
+    if ($form_state->getValue('cardinality') === 'number' && !$form_state->getValue('cardinality_number')) {
+      $form_state->setError($element['cardinality_number'], $this->t('Number of values is required.'));
+    }
   }
 
 }

@@ -56,8 +56,14 @@ settings.php file.
       'prefix' => '',
       'host' => '127.0.0.1',
       'port' => '8890',
-      'namespace' => 'Drupal\\rdf_entity\\Database\\Driver\\sparql',
+      'namespace' => 'Drupal\\Driver\\Database\\sparql',
       'driver' => 'sparql',
+      // Optional. This is actually the endpoint path. If omitted, 'sparql' will
+      // be used.
+      'database' => 'data/endpoint',
+      // If the connection to the endpoint should be HTTPS secured. If omitted,
+      // FALSE is assumed.
+      'https' => FALSE,
     ];
 
 ## Content translation

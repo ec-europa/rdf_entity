@@ -160,7 +160,7 @@ class RdfEntityGraph extends ConfigEntityBase implements RdfEntityGraphInterface
    * {@inheritdoc}
    */
   public function delete() {
-    if ($this->id() === static::DEFAULT) {
+    if (!$this->isUninstalling() && ($this->id() === static::DEFAULT)) {
       throw new \RuntimeException("The '" . static::DEFAULT . "' graph cannot be deleted.");
     }
     parent::delete();

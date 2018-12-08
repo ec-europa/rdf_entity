@@ -7,7 +7,7 @@ case "$1" in
         ./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt --ignore='*.md' ${TRAVIS_BUILD_DIR}
         exit $?
         ;;
-    PHPUnit)
+    8.*.x)
         cd ${SITE_DIR}/web
         ../vendor/bin/phpunit
         exit $?

@@ -55,7 +55,9 @@ class RdfDeleteForm extends ContentEntityConfirmFormBase {
         '@type' => $this->entity->bundle(),
         '%title' => $this->entity->label(),
       ]);
-    $form_state->setRedirectUrl(Url::fromRoute('<front>'));
+    if (empty($form_state->getRedirect())) {
+      $form_state->setRedirectUrl(Url::fromRoute('<front>'));
+    }
   }
 
 }
