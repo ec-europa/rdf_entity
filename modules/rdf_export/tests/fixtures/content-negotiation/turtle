@@ -2,5 +2,5 @@
 
 <http://example.com/apple>
   a <http://example.com/type/fruit> ;
-  ns0:uid 0 ;
-  ns0:label "Apple"@en .
+  ns0:label "Apple"@en ;
+  ns0:uid 0 .

@@ -4,8 +4,8 @@
 
   <rdf:Description rdf:about="http://example.com/apple">
     <rdf:type rdf:resource="http://example.com/type/fruit"/>
-    <ns0:uid rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0</ns0:uid>
     <ns0:label xml:lang="en">Apple</ns0:label>
+    <ns0:uid rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0</ns0:uid>
   </rdf:Description>
 
 </rdf:RDF>

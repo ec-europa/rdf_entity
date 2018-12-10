@@ -4,8 +4,10 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_export;
 
+use Drupal\Component\Utility\SortArray;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\RdfInterface;
+use EasyRdf\Graph;
 
 /**
  * Service to serialise RDF entities into various formats.
@@ -48,9 +50,42 @@ WHERE {
 }
 SPARQL;
 
-    /** @var \EasyRdf\Graph $graph */
     $graph = $this->sparqlEndpoint->constructQuery($query);
-    return $graph->serialise($format);
+    return $this->getSortedGraph($graph)->serialise($format);
+  }
+
+  /**
+   * Returns the graph sorted by predicate and object.
+   *
+   * Construct queries are not returning the values in a predictable order even
+   * ORDER BY is used. Thus we have to ensure that the serialized object is
+   * always the same.
+   *
+   * @param \EasyRdf\Graph $graph
+   *   The graph to be sorted.
+   *
+   * @return \EasyRdf\Graph
+   *   The resulting sorted graph.
+   */
+  protected function getSortedGraph(Graph $graph): Graph {
+    $data = $graph->toRdfPhp();
+    $entity_id = key($data);
+
+    // Sort objects inside each predicate.
+    foreach ($data[$entity_id] as $predicate => &$items) {
+      uasort($items, function (array $a, array $b): int {
+        return SortArray::sortByKeyInt($a, $b, 'value');
+      });
+    }
+
+    // Sort by predicate.
+    ksort($data[$entity_id]);
+
+    // But always keep the type on top.
+    $type_key = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+    $data[$entity_id] = [$type_key => $data[$entity_id][$type_key]] + $data[$entity_id];
+
+    return new Graph($entity_id, $data, 'php');
   }
 
 }
