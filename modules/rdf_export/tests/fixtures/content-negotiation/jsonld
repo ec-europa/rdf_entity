@@ -1,1 +1,1 @@
-[{"@id":"http://example.com/apple","@type":["http://example.com/type/fruit"],"http://example.com/fruit/uid":[{"@value":0}],"http://example.com/fruit/label":[{"@value":"Apple","@language":"en"}]},{"@id":"http://example.com/type/fruit"}]
+[{"@id":"http://example.com/apple","@type":["http://example.com/type/fruit"],"http://example.com/fruit/label":[{"@value":"Apple","@language":"en"}],"http://example.com/fruit/uid":[{"@value":0}]},{"@id":"http://example.com/type/fruit"}]
