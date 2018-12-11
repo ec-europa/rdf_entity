@@ -148,7 +148,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       $container->get('module_handler'),
       $container->get('sparql.graph_handler'),
       $container->get('sparql.field_handler'),
-      $container->get('plugin.manager.rdf_entity.id'),
+      $container->get('plugin.manager.sparql_entity_id'),
       $container->get('entity.memory_cache')
     );
   }
