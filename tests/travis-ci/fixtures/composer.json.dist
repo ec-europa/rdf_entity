@@ -7,6 +7,7 @@
     "drupal-composer/drupal-scaffold": "dev-master",
     "drupal/core": "~8",
     "drupal/rdf_entity": "*",
+    "drupal/sparql_entity_storage": "dev-master",
     "drush/drush": "~9",
     "easyrdf/easyrdf": "0.10.0-alpha.1 as 0.9.2",
     "ml/json-ld": "^1.0"
@@ -32,6 +33,10 @@
           "type": "zip"
         }
       }
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/claudiu-cristea/sparql_entity_storage.git"
     }
   ],
   "extra": {

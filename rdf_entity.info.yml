@@ -1,13 +1,10 @@
-name: 'RDF Entity'
 type: module
-description: 'Provides RDF entity.'
-package: Custom
+name: 'RDF Entity'
 php: 7.1
 core: 8.x
+description: 'Provides an entity that uses the SPARQL storage.'
+package: Custom
 
-# These modules are required by the tests, must be available at bootstrap time.
 dependencies:
   - drupal:options
-
-config_devel:
-  - core.entity_view_mode.rdf_entity.compact
+  - sparql_entity_storage:sparql_entity_storage
