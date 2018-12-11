@@ -140,7 +140,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('sparql_endpoint'),
+      $container->get('sparql.endpoint'),
       $container->get('entity.manager'),
       $container->get('entity_type.manager'),
       $container->get('cache.entity'),

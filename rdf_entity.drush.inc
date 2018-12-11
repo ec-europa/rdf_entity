@@ -31,7 +31,7 @@ function rdf_entity_drush_command() {
  */
 function drush_rdf_entity_purge() {
   /** @var Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $endpoint */
-  $endpoint = \Drupal::service('sparql_endpoint');
+  $endpoint = \Drupal::service('sparql.endpoint');
   $query = "SELECT COUNT (?s) AS ?count WHERE {?s ?p ?o}";
 
   $response = $endpoint->query($query);

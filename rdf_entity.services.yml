@@ -4,10 +4,6 @@ services:
     arguments: ['@sparql_endpoint', '@entity_type.manager', '@sparql.graph_handler', '@sparql.field_handler']
     tags:
       - { name: backend_overridable }
-  sparql_endpoint:
-    class: Drupal\Driver\Database\sparql\Connection
-    factory: ['Drupal\Core\Database\Database', getConnection]
-    arguments: [default, sparql_default]
   webprofiler.sparql:
     class: \Drupal\rdf_entity\DataCollector\SparqlDataCollector
     arguments: ['@sparql_endpoint', '@config.factory']
