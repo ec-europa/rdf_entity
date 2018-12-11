@@ -1,10 +1,4 @@
 services:
-  paramconverter.rdf_entity:
-    class: \Drupal\rdf_entity\ParamConverter\RdfEntityConverter
-    tags:
-      # Use a higher priority than EntityConverter.
-      - { name: paramconverter, priority: 6 }
-    arguments: ['@entity.manager']
   route_processor_rdf:
     class: Drupal\rdf_entity\RouteProcessor\RouteProcessorRdf
     arguments: ['@current_route_match']
