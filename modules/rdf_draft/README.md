@@ -36,7 +36,7 @@ version. The default graph can be viewed in the default view.
 ### RDF graphs storage
 
 Graphs are handled by the `GraphHandler` service which is injected in the Query
-and the RdfEntitySparqlStorage classes. There is a number of methods offered to
+and the SparqlEntityStorage classes. There is a number of methods offered to
 handle the graphs. There are three categories of graph variables in the
 following priority sequence:
 1. Target graph: This is saved in the service and is meant to be used in order
@@ -146,7 +146,7 @@ is deleted _only_ from the graph defined in the entity itself. To completely
 delete an entity and all its versions, you can run something like
 
 ```
-/** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+/** @var \Drupal\sparql_entity_storage\SparqlEntityStorage $storage */
 $storage = \Drupal::service('entity_type.manager')->getStorage('rdf_entity');
 // Remove any solutions that were created.
 foreach ($this->solutions as $solution) {

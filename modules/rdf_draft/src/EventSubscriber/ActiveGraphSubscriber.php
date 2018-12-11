@@ -3,8 +3,8 @@
 namespace Drupal\rdf_draft\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\rdf_entity\ActiveGraphEvent;
-use Drupal\rdf_entity\Event\RdfEntityEvents;
+use Drupal\sparql_entity_storage\Event\ActiveGraphEvent;
+use Drupal\sparql_entity_storage\Event\SparqlEntityStorageEvents;
 use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -56,7 +56,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
    * - In any other case, like a 'view draft' tab view, the corresponding graph
    *   is loaded with no fallbacks.
    *
-   * @param \Drupal\rdf_entity\ActiveGraphEvent $event
+   * @param \Drupal\sparql_entity_storage\Event\ActiveGraphEvent $event
    *   The event object to process.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
@@ -69,7 +69,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
       $default_graph_id = $this->sparqlGraphHandler->getDefaultGraphId($entity_type_id);
       $entity_type_has_draft = in_array('draft', $this->sparqlGraphHandler->getEntityTypeGraphIds($entity_type_id));
 
-      /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+      /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
       $storage = $this->entityTypeManager->getStorage($entity_type_id);
       $route_parts = explode('.', $defaults['_route']);
       // On the edit form, load from draft graph, if possible.
@@ -113,7 +113,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      RdfEntityEvents::GRAPH_ENTITY_CONVERT => ['graphForEntityConvert'],
+      SparqlEntityStorageEvents::GRAPH_ENTITY_CONVERT => ['graphForEntityConvert'],
     ];
   }
 

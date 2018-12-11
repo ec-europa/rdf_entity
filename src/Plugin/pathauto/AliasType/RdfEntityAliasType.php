@@ -7,8 +7,8 @@ namespace Drupal\rdf_entity\Plugin\pathauto\AliasType;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\pathauto\PathautoState;
 use Drupal\pathauto\Plugin\pathauto\AliasType\EntityAliasTypeBase;
-use Drupal\rdf_entity\Entity\Query\Sparql\Query;
-use Drupal\rdf_entity\UriEncoder;
+use Drupal\sparql_entity_storage\Entity\Query\Sparql\Query;
+use Drupal\sparql_entity_storage\UriEncoder;
 
 /**
  * A pathauto alias type plugin for RDF entities.
@@ -167,7 +167,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    *   The entity query.
    */
   protected function getRdfEntityQuery() : Query {
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('rdf_entity');
     return $storage->getQuery();
   }

@@ -1,31 +1,22 @@
-# This file brings everything together. Very nifty!
-
-# Route name can be used in several place (links, redirects, local actions etc.)
 entity.rdf_entity.canonical:
   path: '/rdf_entity/{rdf_entity}'
   defaults:
-  # Calls the view controller, defined in the annotation of the rdf entity.
     _entity_view: 'rdf_entity'
     _title_callback: '\Drupal\rdf_entity\Controller\RdfController::rdfTitle'
   requirements:
-  # Calls the access controller of the entity, $operation 'view'.
     _entity_access: 'rdf_entity.view'
 
 entity.rdf_entity.collection:
   path: 'admin/content/rdf'
   defaults:
-  # Calls the list controller, defined in the annotation of the rdf entity.
     _entity_list: 'rdf_entity'
-    _title: 'RDF'
+    _title: 'RDF Entity'
   requirements:
-  # Checks for permission directly.
     _permission: 'view rdf entity overview'
 
 rdf_entity.rdf_add_page:
   path: '/rdf_entity/add'
   defaults:
-  # Calls the form.add controller, defined in the rdf entity.
-    # _entity_form: rdf_entity.add
     _title: 'Add RDF'
     _controller: '\Drupal\rdf_entity\Controller\RdfController::addPage'
   requirements:
@@ -34,8 +25,6 @@ rdf_entity.rdf_add_page:
 rdf_entity.rdf_add:
   path: '/rdf_entity/add/{rdf_type}'
   defaults:
-  # Calls the form.add controller, defined in the rdf entity.
-    # _entity_form: rdf_entity.add
     _title: 'Add RDF'
     _controller: '\Drupal\rdf_entity\Controller\RdfController::add'
   requirements:
@@ -44,7 +33,6 @@ rdf_entity.rdf_add:
 entity.rdf_entity.edit_form:
   path: '/rdf_entity/{rdf_entity}/edit'
   defaults:
-  # Calls the form.edit controller, defined in the rdf entity.
     _entity_form: rdf_entity.edit
     _title: 'Edit Rdf'
   requirements:
@@ -53,7 +41,6 @@ entity.rdf_entity.edit_form:
 entity.rdf_entity.delete_form:
   path: '/rdf_entity/{rdf_entity}/delete'
   defaults:
-    # Calls the form.delete controller, defined in the rdf entity.
     _entity_form: rdf_entity.delete
     _title: 'Delete Rdf'
   requirements:
@@ -90,61 +77,3 @@ entity.rdf_type.delete_form:
     _title: 'Delete Rdf type'
   requirements:
     _entity_access: 'rdf_type.delete'
-
-rdf_entity.admin_index:
-  path: '/admin/config/rdf_entity'
-  defaults:
-    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Rdf entity'
-  requirements:
-    _permission: 'administer rdf entity'
-
-entity.rdf_entity_graph.collection:
-  path: '/admin/config/rdf_entity/graph'
-  defaults:
-    _entity_list: 'rdf_entity_graph'
-    _title: 'RDF Graphs'
-  requirements:
-    _permission: 'administer rdf entity'
-
-rdf_entity_graph.add:
-  path: '/admin/config/rdf_entity/graph/add'
-  defaults:
-    _entity_form: 'rdf_entity_graph.add'
-    _title: 'Add graph'
-  requirements:
-    _entity_create_access: rdf_entity_graph
-
-entity.rdf_entity_graph.edit_form:
-  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}'
-  defaults:
-    _entity_form: 'rdf_entity_graph.edit'
-    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
-  requirements:
-    _entity_access: rdf_entity_graph.update
-
-entity.rdf_entity_graph.delete_form:
-  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/delete'
-  defaults:
-    _entity_form: 'rdf_entity_graph.delete'
-    _title: 'Delete'
-  requirements:
-    _entity_access: rdf_entity_graph.delete
-
-entity.rdf_entity_graph.enable:
-  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/enable'
-  defaults:
-    _controller: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::toggle'
-    _title: Enable
-    toggle_operation: enable
-  requirements:
-    _custom_access: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::access'
-
-entity.rdf_entity_graph.disable:
-  path: '/admin/config/rdf_entity/graph/manage/{rdf_entity_graph}/disable'
-  defaults:
-    _controller: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::toggle'
-    _title: Disable
-    toggle_operation: disable
-  requirements:
-    _custom_access: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::access'

@@ -5,7 +5,8 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
+use Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use EasyRdf\Graph;
 
 /**
@@ -16,26 +17,26 @@ class SparqlSerializer implements SparqlSerializerInterface {
   /**
    * The Sparql connection object.
    *
-   * @var \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface
+   * @var \Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface
    */
   protected $sparqlEndpoint;
 
   /**
    * The SPARQL graph handler service.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
   protected $graphHandler;
 
   /**
    * Instantiates a new RdfSerializer object.
    *
-   * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparqlEndpoint
+   * @param \Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface $sparqlEndpoint
    *   The SPARQL connection object.
-   * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $graph_handler
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    *   The SPARQL graph handler service.
    */
-  public function __construct(ConnectionInterface $sparqlEndpoint, RdfGraphHandlerInterface $graph_handler) {
+  public function __construct(ConnectionInterface $sparqlEndpoint, SparqlEntityStorageGraphHandlerInterface $graph_handler) {
     $this->sparqlEndpoint = $sparqlEndpoint;
     $this->graphHandler = $graph_handler;
   }

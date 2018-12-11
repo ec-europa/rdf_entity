@@ -1,5 +1,3 @@
-# Define the menu links for this module
-
 entity.rdf_entity.collection:
   title: 'RDF listing'
   route_name: entity.rdf_entity.collection
@@ -10,17 +8,3 @@ rdf_entity_rdf.admin.structure.settings:
   description: 'Create RDF bundles and manage their default settings.'
   route_name:  entity.rdf_type.collection
   parent: system.admin_structure
-
-rdf_entity.admin_index:
-  title: RDF
-  route_name: rdf_entity.admin_index
-  parent: system.admin_config
-  description: 'Administer the suite of RDF modules.'
-  position: right
-  weight: -5
-
-entity.rdf_entity_graph.collection:
-  title: 'RDF graphs'
-  parent: rdf_entity.admin_index
-  description: 'Create and manage RDF entity graphs.'
-  route_name: entity.rdf_entity_graph.collection

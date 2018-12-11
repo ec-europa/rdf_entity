@@ -26,6 +26,9 @@
     <testsuites>
         <testsuite name="rdf_entity">
             <directory>./modules/rdf_entity</directory>
+            <!-- @todo Run 'sparql_entity_storage' in its own repo -->
+            <!-- @see https://github.com/ec-europa/sparql_entity_storage/issues/4 -->
+            <directory>./modules/sparql_entity_storage</directory>
         </testsuite>
     </testsuites>
     <listeners>

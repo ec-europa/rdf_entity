@@ -3,7 +3,7 @@
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * A base class for the RDF tests.
@@ -12,7 +12,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 abstract class RdfKernelTestBase extends EntityKernelTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * {@inheritdoc}
@@ -23,6 +23,7 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
     'rdf_entity',
     'rdf_entity_test',
     'link',
+    'sparql_entity_storage',
   ];
 
   /**
@@ -31,7 +32,12 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->setUpSparql();
-    $this->installConfig(['rdf_entity', 'rdf_draft', 'rdf_entity_test']);
+    $this->installConfig([
+      'rdf_entity',
+      'rdf_draft',
+      'rdf_entity_test',
+      'sparql_entity_storage',
+    ]);
     $this->installEntitySchema('rdf_entity');
   }
 
@@ -40,7 +46,7 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
    */
   public function tearDown() {
     // Delete all data produced by testing module.
-    foreach (['dummy', 'with_owner', 'multifield'] as $bundle) {
+    foreach (['dummy', 'with_owner'] as $bundle) {
       foreach (['published', 'draft'] as $graph) {
         $query = <<<EndOfQuery
 DELETE {

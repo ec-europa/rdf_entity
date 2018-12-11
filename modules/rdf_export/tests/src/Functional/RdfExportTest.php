@@ -4,7 +4,7 @@ namespace Drupal\Tests\rdf_export\Functional;
 
 use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests the RDF export functionality.
@@ -13,7 +13,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 class RdfExportTest extends BrowserTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * {@inheritdoc}

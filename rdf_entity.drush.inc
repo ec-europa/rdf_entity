@@ -30,7 +30,7 @@ function rdf_entity_drush_command() {
  * Delete all data from the endpoint.
  */
 function drush_rdf_entity_purge() {
-  /** @var Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $endpoint */
+  /** @var Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface $endpoint */
   $endpoint = \Drupal::service('sparql.endpoint');
   $query = "SELECT COUNT (?s) AS ?count WHERE {?s ?p ?o}";
 

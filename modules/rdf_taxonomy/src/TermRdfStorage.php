@@ -5,8 +5,8 @@ declare(strict_types = 1);
 namespace Drupal\rdf_taxonomy;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\rdf_entity\Entity\RdfEntityMapping;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\taxonomy\VocabularyInterface;
@@ -15,7 +15,7 @@ use EasyRdf\Graph;
 /**
  * Defines a Controller class for taxonomy terms.
  */
-class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterface {
+class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface {
 
   /**
    * Bundle predicate array.
@@ -268,7 +268,7 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
       if (empty($this->treeChildren[$vid])) {
-        $mapping = RdfEntityMapping::loadByName('taxonomy_term', $vid);
+        $mapping = SparqlMapping::loadByName('taxonomy_term', $vid);
         $concept_schema = $mapping->getRdfType();
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];

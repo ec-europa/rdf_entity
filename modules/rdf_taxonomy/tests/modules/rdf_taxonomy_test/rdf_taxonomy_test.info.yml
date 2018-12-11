@@ -7,4 +7,4 @@ dependencies:
   - rdf_entity_test
 
 config_devel:
-  - rdf_entity.mapping.taxonomy_term.taxonomy_test
+  - sparql_entity_storage.mapping.taxonomy_term.taxonomy_test

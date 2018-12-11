@@ -6,5 +6,5 @@ core: 8.x
 
 # These modules are required by the tests, must be available at bootstrap time
 dependencies:
-  - rdf_entity:rdf_entity
-  - drupal:serialization
+- 'drupal:serialization'
+- 'rdf_entity:rdf_entity'
