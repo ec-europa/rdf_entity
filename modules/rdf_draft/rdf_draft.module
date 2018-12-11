@@ -19,7 +19,7 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
     return;
   }
 
-  /** @var \Drupal\rdf_entity\RdfGraphHandlerInterface $graph_handler */
+  /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $graph_handler */
   $graph_handler = \Drupal::service('sparql.graph_handler');
 
   /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */

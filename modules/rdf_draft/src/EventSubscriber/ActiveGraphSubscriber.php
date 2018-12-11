@@ -5,7 +5,7 @@ namespace Drupal\rdf_draft\EventSubscriber;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rdf_entity\ActiveGraphEvent;
 use Drupal\rdf_entity\Event\RdfEntityEvents;
-use Drupal\rdf_entity\RdfGraphHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -23,7 +23,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
   /**
    * The RDF graph handler service.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
   protected $rdfGraphHandler;
 
@@ -32,10 +32,10 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler
    *   The RDF graph handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler) {
     $this->entityTypeManager = $entity_type_manager;
     $this->rdfGraphHandler = $rdf_graph_handler;
   }

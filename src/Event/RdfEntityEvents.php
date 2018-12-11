@@ -45,7 +45,7 @@ final class RdfEntityEvents {
    *
    * @Event
    *
-   * @see \Drupal\rdf_entity\RdfGraphHandler::getEntityTypeDefaultGraphIds()
+   * @see \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandler::getEntityTypeDefaultGraphIds()
    *
    * @var string
    */

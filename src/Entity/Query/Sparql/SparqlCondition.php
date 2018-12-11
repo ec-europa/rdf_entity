@@ -6,7 +6,7 @@ use Drupal\Core\Entity\Query\ConditionFundamentals;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
-use Drupal\rdf_entity\RdfGraphHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
 /**
@@ -34,7 +34,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * The rdf graph handler service object.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
   protected $graphHandler;
 
@@ -190,7 +190,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     $conjunction = strtoupper($conjunction);
     parent::__construct($conjunction, $query, $namespaces);
     $this->graphHandler = $rdf_graph_handler;

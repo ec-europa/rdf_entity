@@ -7,6 +7,7 @@ namespace Drupal\rdf_entity;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 
 /**
  * Provides an interface for RDF entity SPARQL storage.
@@ -22,17 +23,17 @@ interface RdfEntitySparqlStorageInterface extends ContentEntityStorageInterface 
    *   A structured array of graph definitions containing a title and a
    *   description. The array keys are the machine names of the graphs.
    *
-   * @see \Drupal\rdf_entity\RdfGraphHandler::getGraphDefinitions
+   * @see \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandler::getGraphDefinitions
    */
   public function getGraphDefinitions(): array;
 
   /**
    * Returns the graph handler object.
    *
-   * @return \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @return \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    *   The graph handler service.
    */
-  public function getGraphHandler(): RdfGraphHandlerInterface;
+  public function getGraphHandler(): SparqlEntityStorageGraphHandlerInterface;
 
   /**
    * Gets the predicate used to determine the bundle.

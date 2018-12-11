@@ -24,7 +24,7 @@ use Drupal\rdf_entity\Exception\DuplicatedIdException;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
-use Drupal\rdf_entity\RdfGraphHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use EasyRdf\Graph;
 use EasyRdf\Literal;
 use EasyRdf\Sparql\Result;
@@ -79,7 +79,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * The rdf graph helper service object.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
   protected $graphHandler;
 
@@ -114,7 +114,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The language manager service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler
    *   The rdf graph helper service.
    * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping helper service.
@@ -123,7 +123,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
     parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
@@ -177,7 +177,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * {@inheritdoc}
    */
-  public function getGraphHandler(): RdfGraphHandlerInterface {
+  public function getGraphHandler(): SparqlEntityStorageGraphHandlerInterface {
     return $this->graphHandler;
   }
 
