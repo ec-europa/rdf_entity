@@ -10,7 +10,7 @@ the use case you can use graphs to store a draft version of the entity.
 
 ### RDF graphs storage
 
-Graphs are handled by the `RdfGraphHandler` service which is injected in the
+Graphs are handled by the `sparql.endpoint` service which is injected in the
 `Query` and the `RdfEntitySparqlStorage` classes. There are a number of methods
 offered to handle the graphs.
 

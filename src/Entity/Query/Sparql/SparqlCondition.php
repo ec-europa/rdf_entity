@@ -32,7 +32,7 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   ];
 
   /**
-   * The rdf graph handler service object.
+   * The SPARQL graph handler service object.
    *
    * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
@@ -190,10 +190,10 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
   /**
    * {@inheritdoc}
    */
-  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct($conjunction, SparqlQueryInterface $query, array $namespaces, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     $conjunction = strtoupper($conjunction);
     parent::__construct($conjunction, $query, $namespaces);
-    $this->graphHandler = $rdf_graph_handler;
+    $this->graphHandler = $sparql_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
     $this->typePredicate = $query->getEntityStorage()->getBundlePredicates();
     $this->bundleKey = $query->getEntityType()->getKey('bundle');

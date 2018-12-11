@@ -70,7 +70,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
   protected $entityTypeManager;
 
   /**
-   * The rdf graph handler service object.
+   * The SPARQL graph handler service object.
    *
    * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
@@ -97,15 +97,15 @@ class Query extends QueryBase implements SparqlQueryInterface {
    *   List of potential namespaces of the classes belonging to this query.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service object.
-   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler
-   *   The rdf graph handler service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler
+   *   The SPARQL graph handler service.
    * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping handler service.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConnectionInterface $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConnectionInterface $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
     // Assign the handlers before calling the parent so that they can be passed
     // to the condition class properly.
-    $this->graphHandler = $rdf_graph_handler;
+    $this->graphHandler = $sparql_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
     $this->entityTypeManager = $entity_type_manager;
     $this->connection = $connection;

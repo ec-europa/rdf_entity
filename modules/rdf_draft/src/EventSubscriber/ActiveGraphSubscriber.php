@@ -21,23 +21,23 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
   protected $entityTypeManager;
 
   /**
-   * The RDF graph handler service.
+   * The SPARQL graph handler service.
    *
    * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
-  protected $rdfGraphHandler;
+  protected $sparqlGraphHandler;
 
   /**
    * Constructs a new event subscriber object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler
-   *   The RDF graph handler service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler
+   *   The SPARQL graph handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $rdf_graph_handler) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->rdfGraphHandler = $rdf_graph_handler;
+    $this->sparqlGraphHandler = $sparql_graph_handler;
   }
 
   /**
@@ -66,8 +66,8 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
     $defaults = $event->getRouteDefaults();
     if ($defaults['_route']) {
       $entity_type_id = $event->getEntityTypeId();
-      $default_graph_id = $this->rdfGraphHandler->getDefaultGraphId($entity_type_id);
-      $entity_type_has_draft = in_array('draft', $this->rdfGraphHandler->getEntityTypeGraphIds($entity_type_id));
+      $default_graph_id = $this->sparqlGraphHandler->getDefaultGraphId($entity_type_id);
+      $entity_type_has_draft = in_array('draft', $this->sparqlGraphHandler->getEntityTypeGraphIds($entity_type_id));
 
       /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
       $storage = $this->entityTypeManager->getStorage($entity_type_id);
@@ -87,7 +87,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
         // Even an entity type supports a graph, it might have bundles that
         // are not providing support for that graph. In addition to the entity
         // type check, we need to check also the bundle.
-        if ($entity_type_has_draft && $this->rdfGraphHandler->bundleHasGraph($entity_type_id, $entity->bundle(), 'draft')) {
+        if ($entity_type_has_draft && $this->sparqlGraphHandler->bundleHasGraph($entity_type_id, $entity->bundle(), 'draft')) {
           $event->setGraphs(['draft', $default_graph_id]);
         }
         else {
