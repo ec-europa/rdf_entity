@@ -23,7 +23,7 @@ final class RdfEntityEvents {
    *
    * @Event
    *
-   * @see \Drupal\rdf_entity\RdfFieldHandler::getInboundValue()
+   * @see \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandler::getInboundValue()
    *
    * @var string
    */
@@ -34,7 +34,7 @@ final class RdfEntityEvents {
    *
    * @Event
    *
-   * @see \Drupal\rdf_entity\RdfFieldHandler::getOutboundValue()
+   * @see \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandler::getOutboundValue()
    *
    * @var string
    */

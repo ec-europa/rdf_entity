@@ -10,7 +10,7 @@ use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\Sql\ConditionAggregate;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
-use Drupal\rdf_entity\RdfFieldHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 
 /**
@@ -79,7 +79,7 @@ class Query extends QueryBase implements SparqlQueryInterface {
   /**
    * The rdf mapping handler service object.
    *
-   * @var \Drupal\rdf_entity\RdfFieldHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface
    */
   protected $fieldHandler;
 
@@ -99,10 +99,10 @@ class Query extends QueryBase implements SparqlQueryInterface {
    *   The entity type manager service object.
    * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler
    *   The SPARQL graph handler service.
-   * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping handler service.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConnectionInterface $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, RdfFieldHandlerInterface $rdf_field_handler) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConnectionInterface $connection, array $namespaces, EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, SparqlEntityStorageFieldHandlerInterface $rdf_field_handler) {
     // Assign the handlers before calling the parent so that they can be passed
     // to the condition class properly.
     $this->graphHandler = $sparql_graph_handler;

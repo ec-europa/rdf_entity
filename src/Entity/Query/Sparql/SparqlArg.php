@@ -3,7 +3,7 @@
 namespace Drupal\rdf_entity\Entity\Query\Sparql;
 
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\rdf_entity\RdfFieldHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface;
 use EasyRdf\Serialiser\Ntriples;
 
 /**
@@ -62,7 +62,7 @@ class SparqlArg {
     if (preg_match('/^<(.+)>$/', $uri) !== NULL) {
       $uri = trim($uri, '<>');
     }
-    return self::serialize($uri, RdfFieldHandlerInterface::RESOURCE);
+    return self::serialize($uri, SparqlEntityStorageFieldHandlerInterface::RESOURCE);
   }
 
   /**
@@ -106,7 +106,7 @@ class SparqlArg {
    *   The value to be serialized.
    * @param string $format
    *   One of the formats defined in
-   *   \Drupal\rdf_entity\RdfFieldHandler::getSupportedDatatypes().
+   *   \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandler::getSupportedDatatypes().
    * @param string $lang
    *   The lang code.
    *
@@ -116,15 +116,15 @@ class SparqlArg {
   public static function serialize($value, $format, $lang = NULL) {
     $data['value'] = $value;
     switch ($format) {
-      case RdfFieldHandlerInterface::RESOURCE:
+      case SparqlEntityStorageFieldHandlerInterface::RESOURCE:
         $data['type'] = 'uri';
         break;
 
-      case RdfFieldHandlerInterface::NON_TYPE:
+      case SparqlEntityStorageFieldHandlerInterface::NON_TYPE:
         $data['type'] = 'literal';
         break;
 
-      case RdfFieldHandlerInterface::TRANSLATABLE_LITERAL:
+      case SparqlEntityStorageFieldHandlerInterface::TRANSLATABLE_LITERAL:
         $data['lang'] = $lang;
         $data['type'] = 'literal';
         break;

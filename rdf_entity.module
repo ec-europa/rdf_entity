@@ -22,8 +22,8 @@ use Drupal\field\FieldStorageConfigInterface;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\RdfEntityGraphInterface;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
-use Drupal\rdf_entity\RdfFieldHandler;
 use Drupal\rdf_entity\RdfInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandler;
 use EasyRdf\Http;
 
 /**
@@ -104,7 +104,7 @@ function rdf_entity_form_field_storage_config_edit_form_alter(&$form, FormStateI
     $form['rdf_mapping'][$column]['format_' . $column] = [
       '#type' => 'select',
       '#title' => t('Value format'),
-      '#options' => RdfFieldHandler::getSupportedDataTypes(),
+      '#options' => SparqlEntityStorageFieldHandler::getSupportedDataTypes(),
       '#empty_value' => 'no_format',
       '#weight' => 151,
       '#default_value' => isset($settings['format']) ? $settings['format'] : NULL,
@@ -319,7 +319,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
         '#type' => 'select',
         '#title' => t('Value format'),
         '#description' => t('The rdf format. Required if format is filled.'),
-        '#options' => RdfFieldHandler::getSupportedDataTypes(),
+        '#options' => SparqlEntityStorageFieldHandler::getSupportedDataTypes(),
         '#empty_value' => '',
         '#weight' => 151,
         '#default_value' => $mapping ? $mapping->getMapping($field_name, $column_name)['format'] : NULL,
