@@ -1,7 +1,4 @@
 services:
-  sparql.field_handler:
-    class: \Drupal\rdf_entity\RdfFieldHandler
-    arguments: ['@entity_type.manager', '@entity_field.manager', '@event_dispatcher']
   rdf_entity.rdf_entity_route_context:
     class: Drupal\rdf_entity\ContextProvider\RdfEntityRouteContext
     arguments: ['@current_route_match']
