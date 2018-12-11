@@ -21,9 +21,9 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Exception\DuplicatedIdException;
-use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager;
 use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use EasyRdf\Graph;
 use EasyRdf\Literal;
@@ -93,7 +93,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
   /**
    * The RDF entity ID generator plugin manager.
    *
-   * @var \Drupal\rdf_entity\RdfEntityIdPluginManager
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager
    */
   protected $entityIdPluginManager;
 
@@ -118,12 +118,12 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The rdf graph helper service.
    * @param \Drupal\rdf_entity\RdfFieldHandlerInterface $rdf_field_handler
    *   The rdf mapping helper service.
-   * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
-   *   The RDF entity ID generator plugin manager.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager $entity_id_plugin_manager
+   *   The SPARQL entity ID generator plugin manager.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, SparqlEntityStorageEntityIdPluginManager $entity_id_plugin_manager, MemoryCacheInterface $memory_cache = NULL) {
     parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;

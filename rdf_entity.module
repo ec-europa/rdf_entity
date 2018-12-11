@@ -252,7 +252,7 @@ function rdf_entity_form_alter(&$form, FormStateInterface $form_state) {
     '#default_value' => $mapping ? $mapping->getRdfType() : NULL,
   ];
 
-  /** @var \Drupal\rdf_entity\RdfEntityIdPluginManager $id_plugin_manager */
+  /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager $id_plugin_manager */
   $id_plugin_manager = \Drupal::service('plugin.manager.sparql_entity_id');
   $plugins = array_map(function (array $definition) use ($id_plugin_manager) {
     return $definition['name'];
