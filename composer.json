@@ -16,11 +16,6 @@
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master"
   },
-  "autoload": {
-    "classmap": [
-      "web/modules/custom/joinup_sparql/driver/joinup_sparql/Connection.php",
-    ]
-  },
   "repositories": [
     {
       "type": "vcs",
@@ -41,5 +36,10 @@
         }
       }
     }
-  ]
+  ],
+  "autoload": {
+    "psr-4": {
+      "Drupal\\sparql_entity_storage\\": "../sparql_entity_storage/src"
+    }
+  }
 }
