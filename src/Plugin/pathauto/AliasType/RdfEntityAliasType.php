@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity\Plugin\pathauto\AliasType;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\pathauto\PathautoState;
 use Drupal\pathauto\Plugin\pathauto\AliasType\EntityAliasTypeBase;
 use Drupal\rdf_entity\Entity\Query\Sparql\Query;
 use Drupal\rdf_entity\UriEncoder;
@@ -94,6 +95,49 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
     $context['sandbox']['count'] += count($ids);
     $context['results']['updates'] += $updates;
     $context['message'] = $this->t('Updated alias for Rdf entity @id.', ['@id' => end($ids)]);
+
+    if ($context['sandbox']['count'] != $context['sandbox']['total']) {
+      $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function batchDelete(&$context) {
+    if (!isset($context['sandbox']['count'])) {
+      $context['sandbox']['count'] = 0;
+    }
+
+    $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+
+    // Get the total amount of items to process.
+    if (!isset($context['sandbox']['total'])) {
+      $context['sandbox']['total'] = count($aliased_rdf_entity_ids);
+
+      // If there are no entities to delete, then stop immediately.
+      if (!$context['sandbox']['total']) {
+        $context['finished'] = 1;
+        return;
+      }
+    }
+
+    $to_delete = array_slice($aliased_rdf_entity_ids, $context['sandbox']['count'], 100, TRUE);
+    $pids_by_id = array_flip($to_delete);
+
+    PathautoState::bulkDelete($this->getEntityTypeId(), $pids_by_id);
+
+    $context['sandbox']['count'] = min($context['sandbox']['count'] + 100, $context['sandbox']['total']);
+
+    $progress = $context['sandbox']['count'] / $context['sandbox']['total'];
+    $progress = sprintf('%.2f%%', $progress * 100);
+
+    $context['message'] = $this->t('[@progress] Deleted alias for Rdf entity @id.', [
+      '@progress' => $progress,
+      '@id' => end($to_delete),
+    ]);
+
+    $context['results']['deletions'][] = $this->getLabel();
 
     if ($context['sandbox']['count'] != $context['sandbox']['total']) {
       $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
