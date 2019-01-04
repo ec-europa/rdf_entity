@@ -90,12 +90,27 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
     $query->range($context['sandbox']['count'], 25);
     $ids = $query->execute();
 
-    $updates = $this->bulkUpdate($ids);
-    $context['sandbox']['count'] += count($ids);
-    $context['results']['updates'] += $updates;
-    $context['message'] = $this->t('Updated alias for Rdf entity @id.', ['@id' => end($ids)]);
+    $context['sandbox']['count'] = min($context['sandbox']['count'] + 25, $context['sandbox']['total']);
 
-    if ($context['sandbox']['count'] != $context['sandbox']['total']) {
+    $progress = sprintf('%.2f%%', $context['sandbox']['count'] / $context['sandbox']['total'] * 100);
+
+    if (!empty($ids)) {
+      $updates = $this->bulkUpdate($ids);
+      $context['message'] = $this->t('[@progress] Updated alias for Rdf entity @id.', [
+        '@progress' => $progress,
+        '@id' => end($ids),
+      ]);
+    }
+    else {
+      $updates = 0;
+      $context['message'] = $this->t('[@progress] No Rdf entities returned from database. Requested entities are possibly orphaned.', [
+        '@progress' => $progress,
+      ]);
+    }
+
+    $context['results']['updates'] += $updates;
+
+    if ($context['sandbox']['count'] < $context['sandbox']['total']) {
       $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
     }
   }
