@@ -45,71 +45,53 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
   public function batchUpdate($action, &$context) {
     if (!isset($context['sandbox']['count'])) {
       $context['sandbox']['count'] = 0;
-    }
+      $query = $this->getRdfEntityQuery();
+      $query->addTag('rdf_entity_pathauto_bulk_update');
+      $context['sandbox']['rdf_entity_ids'] = $query->execute();
+      $context['sandbox']['updates'] = 0;
 
-    $query = $this->getRdfEntityQuery();
-    $query->addTag('rdf_entity_pathauto_bulk_update');
+      switch ($action) {
+        case 'create':
+          // Process RDF entities that are not in the list of URL aliases.
+          $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+          $context['sandbox']['ids_to_process'] = array_diff($context['sandbox']['rdf_entity_ids'], $aliased_rdf_entity_ids);
+          break;
 
-    switch ($action) {
-      case 'create':
-        // Process RDF entities that are not in the list of URL aliases.
-        $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
-        if (!empty($aliased_rdf_entity_ids)) {
-          $query->condition('id', $aliased_rdf_entity_ids, 'NOT IN');
-        }
-        break;
+        case 'update':
+          // Process RDF entities that are in the list of URL aliases.
+          $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+          $context['sandbox']['ids_to_process'] = array_intersect($context['sandbox']['rdf_entity_ids'], $aliased_rdf_entity_ids);
+          break;
 
-      case 'update':
-        // Process RDF entities that are in the list of URL aliases.
-        $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
-        if (!empty($aliased_rdf_entity_ids)) {
-          $query->condition('id', $aliased_rdf_entity_ids, 'IN');
-        }
-        break;
+        case 'all':
+          $context['sandbox']['ids_to_process'] = $context['sandbox']['rdf_entity_ids'];
+          break;
 
-      case 'all':
-        // Nothing to filter. We want all entities.
-        break;
+        default:
+          $context['sandbox']['ids_to_process'] = [];
 
-      default:
-        // Unknown action. Abort!
-        return;
-    }
-
-    // Keep track of the total amount of items to process.
-    if (!isset($context['sandbox']['total'])) {
-      $count_query = clone $query;
-      $context['sandbox']['total'] = $count_query->count()->execute();
-
-      // If there are no entities to update, then stop immediately.
-      if (!$context['sandbox']['total']) {
-        $context['finished'] = 1;
-        return;
       }
+      $context['sandbox']['total'] = count($context['sandbox']['ids_to_process']);
     }
 
-    $query->range($context['sandbox']['count'], 25);
-    $ids = $query->execute();
+    if (empty($context['sandbox']['ids_to_process'])) {
+      $context['finished'] = 1;
+      return;
+    }
 
-    $context['sandbox']['count'] = min($context['sandbox']['count'] + 25, $context['sandbox']['total']);
+    $ids = array_splice($context['sandbox']['ids_to_process'], 0, 25);
+    $updates = $this->bulkUpdate($ids);
+
+    $context['sandbox']['count'] += count($ids);
+    if ($updates !== 0) {
+      $context['results']['updates'] += $updates;
+    }
 
     $progress = sprintf('%.2f%%', $context['sandbox']['count'] / $context['sandbox']['total'] * 100);
-
-    if (!empty($ids)) {
-      $updates = $this->bulkUpdate($ids);
-      $context['message'] = $this->t('[@progress] Processed Rdf entity @id.', [
-        '@progress' => $progress,
-        '@id' => end($ids),
-      ]);
-    }
-    else {
-      $updates = 0;
-      $context['message'] = $this->t('[@progress] No Rdf entities returned from database. Requested entities are possibly orphaned.', [
-        '@progress' => $progress,
-      ]);
-    }
-
-    $context['results']['updates'] += $updates;
+    $context['message'] = $this->t('[@progress] Processed Rdf entity @id.', [
+      '@progress' => $progress,
+      '@id' => end($ids),
+    ]);
 
     if ($context['sandbox']['count'] < $context['sandbox']['total']) {
       $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
