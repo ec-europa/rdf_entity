@@ -96,7 +96,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
 
     if (!empty($ids)) {
       $updates = $this->bulkUpdate($ids);
-      $context['message'] = $this->t('[@progress] Updated alias for Rdf entity @id.', [
+      $context['message'] = $this->t('[@progress] Processed Rdf entity @id.', [
         '@progress' => $progress,
         '@id' => end($ids),
       ]);
