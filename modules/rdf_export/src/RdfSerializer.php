@@ -69,7 +69,17 @@ SPARQL;
    */
   protected function getSortedGraph(Graph $graph): Graph {
     $data = $graph->toRdfPhp();
-    $entity_id = key($data);
+    $type_key = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+
+    // The sequence of the fetched entries is not guaranteed, yet, the query
+    // will fetch only one full entity, so we can find the main id using the
+    // type.
+    while ($entity_id = key($data)) {
+      if (isset($data[$entity_id][$type_key])) {
+        break;
+      }
+      next($data);
+    }
 
     // Sort objects inside each predicate.
     foreach ($data[$entity_id] as $predicate => &$items) {
@@ -80,9 +90,6 @@ SPARQL;
 
     // Sort by predicate.
     ksort($data[$entity_id]);
-
-    // But always keep the type on top.
-    $type_key = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
     $data[$entity_id] = [$type_key => $data[$entity_id][$type_key]] + $data[$entity_id];
 
     return new Graph($entity_id, $data, 'php');
