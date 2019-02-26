@@ -2,9 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export\Encoder;
+namespace Drupal\rdf_entity\Encoder;
 
-use Drupal\rdf_export\RdfEncoderInterface;
+use Drupal\rdf_entity\RdfEncoderInterface;
 use EasyRdf\Format;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 class RdfEncoder implements RdfEncoderInterface {
 
   /**
-   * Static cache for supported formats.
+   * Memory cache for supported formats.
    *
    * @var \EasyRdf\Serialiser[]
    */
@@ -42,7 +42,7 @@ class RdfEncoder implements RdfEncoderInterface {
    */
   public static function getSupportedFormats(): array {
     if (!isset(static::$supportedFormats)) {
-      $container_registered_formats = \Drupal::getContainer()->getParameter('rdf_export.encoders');
+      $container_registered_formats = \Drupal::getContainer()->getParameter('rdf_entity.encoders');
       $rdf_serializers = Format::getFormats();
       static::$supportedFormats = array_intersect_key($rdf_serializers, $container_registered_formats);
     }

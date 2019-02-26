@@ -2,16 +2,16 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export;
+namespace Drupal\rdf_entity;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderInterface;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 
 /**
- * RDF Export dependency injection container.
+ * RDF Entity dependency injection container.
  */
-class RdfExportServiceProvider implements ServiceProviderInterface {
+class RdfEntityServiceProvider implements ServiceProviderInterface {
 
   /**
    * {@inheritdoc}

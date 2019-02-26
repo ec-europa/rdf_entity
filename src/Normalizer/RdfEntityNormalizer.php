@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\rdf_export\Normalizer;
+namespace Drupal\rdf_entity\Normalizer;
 
 use Drupal\rdf_entity\RdfInterface;
-use Drupal\rdf_export\RdfSerializer;
+use Drupal\rdf_entity\RdfSerializer;
 use Drupal\serialization\Normalizer\FieldableEntityNormalizerTrait;
 
 /**
@@ -21,9 +21,16 @@ class RdfEntityNormalizer extends NormalizerBase {
   protected $supportedInterfaceOrClass = RdfInterface::class;
 
   /**
+   * The serializer service.
+   *
+   * @var \Drupal\rdf_entity\RdfSerializer
+   */
+  protected $rdfSerializer;
+
+  /**
    * RdfEntityNormalizer constructor.
    *
-   * @param \Drupal\rdf_export\RdfSerializer $rdf_serializer
+   * @param \Drupal\rdf_entity\RdfSerializer $rdf_serializer
    *   RDF Serializer service.
    */
   public function __construct(RdfSerializer $rdf_serializer) {

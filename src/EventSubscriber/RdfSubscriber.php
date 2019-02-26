@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\rdf_export\EventSubscriber;
+namespace Drupal\rdf_entity\EventSubscriber;
 
-use Drupal\rdf_export\Encoder\RdfEncoder;
+use Drupal\rdf_entity\Encoder\RdfEncoder;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export;
+namespace Drupal\rdf_entity;
 
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 

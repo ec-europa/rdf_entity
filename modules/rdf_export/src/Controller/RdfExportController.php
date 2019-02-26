@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\rdf_export\RdfSerializerInterface;
+use Drupal\rdf_entity\RdfSerializerInterface;
 use EasyRdf\Format;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,14 +21,14 @@ class RdfExportController extends ControllerBase {
   /**
    * The RDF serializer service.
    *
-   * @var \Drupal\rdf_export\RdfSerializerInterface
+   * @var \Drupal\rdf_entity\RdfSerializerInterface
    */
   protected $rdfSerializer;
 
   /**
    * Instantiates a new RdfExportController object.
    *
-   * @param \Drupal\rdf_export\RdfSerializerInterface $rdf_serializer
+   * @param \Drupal\rdf_entity\RdfSerializerInterface $rdf_serializer
    *   The RDF serializer interface.
    */
   public function __construct(RdfSerializerInterface $rdf_serializer) {
@@ -40,7 +40,7 @@ class RdfExportController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('rdf_export.serializer')
+      $container->get('rdf_entity.serializer')
     );
   }
 

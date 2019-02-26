@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\rdf_export\Normalizer;
+namespace Drupal\rdf_entity\Normalizer;
 
-use Drupal\rdf_export\Encoder\RdfEncoder;
+use Drupal\rdf_entity\Encoder\RdfEncoder;
 use Drupal\serialization\Normalizer\NormalizerBase as SerializationNormalizerBase;
 
 /**

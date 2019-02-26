@@ -2,12 +2,10 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export;
-
-use Drupal\rdf_entity\RdfInterface;
+namespace Drupal\rdf_entity;
 
 /**
- * Interface for classes that serialise RDF entities.
+ * Interface for classes that serialize RDF entities.
  */
 interface RdfSerializerInterface {
 
