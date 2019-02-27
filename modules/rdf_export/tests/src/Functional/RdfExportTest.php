@@ -19,7 +19,7 @@ class RdfExportTest extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
-    'rdf_entity_serializer_test',
+    'sparql_entity_serializer_test',
     'rdf_export',
   ];
 

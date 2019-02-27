@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\rdf_entity\RdfSerializerInterface;
+use Drupal\rdf_entity\SparqlSerializerInterface;
 use EasyRdf\Format;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,20 +19,20 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class RdfExportController extends ControllerBase {
 
   /**
-   * The RDF serializer service.
+   * The SPARQL serializer service.
    *
-   * @var \Drupal\rdf_entity\RdfSerializerInterface
+   * @var \Drupal\rdf_entity\SparqlSerializerInterface
    */
-  protected $rdfSerializer;
+  protected $sparqlSerializer;
 
   /**
    * Instantiates a new RdfExportController object.
    *
-   * @param \Drupal\rdf_entity\RdfSerializerInterface $rdf_serializer
-   *   The RDF serializer interface.
+   * @param \Drupal\rdf_entity\SparqlSerializerInterface $sparql_serializer
+   *   The SPARQL serializer interface.
    */
-  public function __construct(RdfSerializerInterface $rdf_serializer) {
-    $this->rdfSerializer = $rdf_serializer;
+  public function __construct(SparqlSerializerInterface $sparql_serializer) {
+    $this->sparqlSerializer = $sparql_serializer;
   }
 
   /**
@@ -97,7 +97,7 @@ class RdfExportController extends ControllerBase {
     if (!$entity || !$entity instanceof EntityInterface) {
       throw new AccessDeniedHttpException();
     }
-    $output = $this->rdfSerializer->serializeEntity($entity, $export_format);
+    $output = $this->sparqlSerializer->serializeEntity($entity, $export_format);
 
     $response = new Response();
     $response->setContent($output);

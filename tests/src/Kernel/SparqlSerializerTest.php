@@ -7,11 +7,11 @@ use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
 
 /**
- * Tests the RDF serializer.
+ * Tests the SPARQL serializer.
  *
  * @group rdf_entity
  */
-class RdfSerializerTest extends KernelTestBase {
+class SparqlSerializerTest extends KernelTestBase {
 
   use RdfDatabaseConnectionTrait;
 
@@ -20,18 +20,11 @@ class RdfSerializerTest extends KernelTestBase {
    */
   protected static $modules = [
     'rdf_entity',
-    'rdf_entity_serializer_test',
+    'sparql_entity_serializer_test',
     'rest',
     'serialization',
     'user',
   ];
-
-  /**
-   * Testing entity.
-   *
-   * @var \Drupal\rdf_entity\RdfInterface
-   */
-  protected $entity;
 
   /**
    * {@inheritdoc}
@@ -39,25 +32,24 @@ class RdfSerializerTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->setUpSparql();
-
-    $this->installConfig(['rdf_entity', 'rdf_entity_serializer_test']);
-
-    $this->entity = Rdf::create([
-      'rid' => 'fruit',
-      'id' => 'http://example.com/apple',
-      'label' => 'Apple',
-    ]);
-    $this->entity->save();
+    $this->installConfig(['rdf_entity', 'sparql_entity_serializer_test']);
   }
 
   /**
    * Tests content negotiation.
    */
   public function testContentNegotiation() {
-    $encoders = $this->container->getParameter('rdf_entity.encoders');
+    $entity = Rdf::create([
+      'rid' => 'fruit',
+      'id' => 'http://example.com/apple',
+      'label' => 'Apple',
+    ]);
+    $entity->save();
+
+    $encoders = $this->container->getParameter('sparql_entity.encoders');
     $serializer = $this->container->get('rdf_entity.serializer');
     foreach ($encoders as $format => $content_type) {
-      $serialized = trim($serializer->serializeEntity($this->entity, $format));
+      $serialized = trim($serializer->serializeEntity($entity, $format));
       $expected = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/$format"));
       $this->assertEquals($expected, $serialized);
     }

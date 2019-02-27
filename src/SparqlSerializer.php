@@ -4,13 +4,14 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_entity;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use EasyRdf\Graph;
 
 /**
  * Service to serialise RDF entities into various formats.
  */
-class RdfSerializer implements RdfSerializerInterface {
+class SparqlSerializer implements SparqlSerializerInterface {
 
   /**
    * The Sparql connection object.
@@ -30,7 +31,7 @@ class RdfSerializer implements RdfSerializerInterface {
    * Instantiates a new RdfSerializer object.
    *
    * @param \Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface $sparqlEndpoint
-   *   The Sparql connection object.
+   *   The SPARQL connection object.
    * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $graph_handler
    *   The SPARQL graph handler service.
    */
@@ -42,7 +43,7 @@ class RdfSerializer implements RdfSerializerInterface {
   /**
    * {@inheritdoc}
    */
-  public function serializeEntity(RdfInterface $entity, string $format = 'turtle'): string {
+  public function serializeEntity(ContentEntityInterface $entity, string $format = 'turtle'): string {
     $graph_uri = $this->graphHandler->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $entity->graph->target_id);
     $entity_id = $entity->id();
 

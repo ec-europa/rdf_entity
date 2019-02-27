@@ -56,11 +56,11 @@ services:
     tags:
       - { name: event_subscriber }
   rdf_entity.serializer:
-    class: Drupal\rdf_entity\RdfSerializer
+    class: Drupal\rdf_entity\SparqlSerializer
     arguments: ['@sparql_endpoint', '@sparql.graph_handler']
   rdf_entity.encoder_base:
     abstract: true
-    class: Drupal\rdf_entity\Encoder\RdfEncoder
+    class: Drupal\rdf_entity\Encoder\SparqlEncoder
   rdf_entity.encoder.jsonld:
     parent: rdf_entity.encoder_base
     tags:
@@ -81,12 +81,12 @@ services:
     parent: rdf_entity.encoder_base
     tags:
       - { name: encoder, format: n3 }
-  rdf_entity.normalizer:
-    class: Drupal\rdf_entity\Normalizer\RdfEntityNormalizer
-    arguments: ['@rdf_entity.serializer']
+  rdf_entity.sparql_entity_normalizer:
+    class: Drupal\rdf_entity\Normalizer\SparqlEntityNormalizer
+    arguments: ['@rdf_entity.serializer', '@entity_type.manager']
     tags:
       - { name: normalizer, priority: 10 }
-  rdf_entity.rdfsubscriber:
-    class: Drupal\rdf_entity\EventSubscriber\RdfSubscriber
+  rdf_entity.rdf_content_type.subscriber:
+    class: Drupal\rdf_entity\EventSubscriber\RdfContentTypesSubscriber
     tags:
       - { name: event_subscriber }
