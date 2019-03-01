@@ -1,8 +1,10 @@
 <?php
 
-namespace Drupal\rdf_export\Normalizer;
+declare(strict_types = 1);
 
-use Drupal\rdf_export\Encoder\RdfEncoder;
+namespace Drupal\rdf_entity\Normalizer;
+
+use Drupal\rdf_entity\Encoder\SparqlEncoder;
 use Drupal\serialization\Normalizer\NormalizerBase as SerializationNormalizerBase;
 
 /**
@@ -13,8 +15,8 @@ abstract class NormalizerBase extends SerializationNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  protected function checkFormat($format = NULL) {
-    return !empty(RdfEncoder::getSupportedFormats()[$format]);
+  protected function checkFormat($format = NULL): bool {
+    return !empty(SparqlEncoder::getSupportedFormats()[$format]);
   }
 
 }

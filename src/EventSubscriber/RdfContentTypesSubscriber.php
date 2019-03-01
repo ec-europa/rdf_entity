@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\rdf_export\EventSubscriber;
+namespace Drupal\rdf_entity\EventSubscriber;
 
-use Drupal\rdf_export\Encoder\RdfEncoder;
+use Drupal\rdf_entity\Encoder\SparqlEncoder;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Event subscriber for adding RDF content types to the request.
  */
-class RdfSubscriber implements EventSubscriberInterface {
+class RdfContentTypesSubscriber implements EventSubscriberInterface {
 
   /**
    * Register content type formats on the request object.
@@ -20,7 +20,7 @@ class RdfSubscriber implements EventSubscriberInterface {
    */
   public function onKernelRequest(GetResponseEvent $event) {
     /** @var \EasyRdf\Format $format */
-    foreach (RdfEncoder::getSupportedFormats() as $format) {
+    foreach (SparqlEncoder::getSupportedFormats() as $format) {
       $mime = array_keys($format->getMimeTypes());
       $event->getRequest()->setFormat($format->getName(), $mime);
     }

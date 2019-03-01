@@ -2,14 +2,14 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export;
+namespace Drupal\rdf_entity;
 
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 
 /**
- * Provides an interface to RDF encoders.
+ * Provides an interface to SPARQL encoders.
  */
-interface RdfEncoderInterface extends EncoderInterface {
+interface SparqlEncoderInterface extends EncoderInterface {
 
   /**
    * Builds a list of supported formats.

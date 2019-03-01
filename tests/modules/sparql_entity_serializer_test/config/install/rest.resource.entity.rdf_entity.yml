@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   module:
-    - rdf_export
+    - rdf_entity
     - serialization
     - user
 id: entity.rdf_entity

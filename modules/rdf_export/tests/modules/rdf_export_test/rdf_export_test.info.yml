@@ -1,8 +1,0 @@
-name: 'RDF Entity Export test'
-type: module
-description: 'Provides a testing RDF Entity Export module.'
-core: 8.x
-package: Testing
-dependencies:
-- rdf_export
-- rest

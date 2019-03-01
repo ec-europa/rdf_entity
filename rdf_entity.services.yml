@@ -55,3 +55,38 @@ services:
     arguments: ['@typed_data_manager']
     tags:
       - { name: event_subscriber }
+  rdf_entity.serializer:
+    class: Drupal\rdf_entity\SparqlSerializer
+    arguments: ['@sparql_endpoint', '@sparql.graph_handler']
+  rdf_entity.encoder_base:
+    abstract: true
+    class: Drupal\rdf_entity\Encoder\SparqlEncoder
+  rdf_entity.encoder.jsonld:
+    parent: rdf_entity.encoder_base
+    tags:
+      - { name: encoder, format: jsonld }
+  rdf_entity.encoder.rdfxml:
+    parent: rdf_entity.encoder_base
+    tags:
+      - { name: encoder, format: rdfxml }
+  rdf_entity.encoder.ntriples:
+    parent: rdf_entity.encoder_base
+    tags:
+      - { name: encoder, format: ntriples }
+  rdf_entity.encoder.turtle:
+    parent: rdf_entity.encoder_base
+    tags:
+      - { name: encoder, format: turtle }
+  rdf_entity.encoder.n3:
+    parent: rdf_entity.encoder_base
+    tags:
+      - { name: encoder, format: n3 }
+  rdf_entity.sparql_entity_normalizer:
+    class: Drupal\rdf_entity\Normalizer\SparqlEntityNormalizer
+    arguments: ['@rdf_entity.serializer', '@entity_type.manager']
+    tags:
+      - { name: normalizer, priority: 10 }
+  rdf_entity.rdf_content_type.subscriber:
+    class: Drupal\rdf_entity\EventSubscriber\RdfContentTypesSubscriber
+    tags:
+      - { name: event_subscriber }

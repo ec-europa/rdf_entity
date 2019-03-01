@@ -2,19 +2,19 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_export\Encoder;
+namespace Drupal\rdf_entity\Encoder;
 
-use Drupal\rdf_export\RdfEncoderInterface;
+use Drupal\rdf_entity\SparqlEncoderInterface;
 use EasyRdf\Format;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 /**
  * Adds RDF encoder support for the Serialization API.
  */
-class RdfEncoder implements RdfEncoderInterface {
+class SparqlEncoder implements SparqlEncoderInterface {
 
   /**
-   * Static cache for supported formats.
+   * Memory cache for supported formats.
    *
    * @var \EasyRdf\Serialiser[]
    */
@@ -31,10 +31,10 @@ class RdfEncoder implements RdfEncoderInterface {
    * {@inheritdoc}
    */
   public function encode($data, $format, array $context = []): string {
-    if (!isset($data['_rdf_entity'])) {
-      throw new UnexpectedValueException("Data to be encoded is missing the '_rdf_entity' key.");
+    if (!isset($data['_sparql_entity'])) {
+      throw new UnexpectedValueException("Data to be encoded is missing the '_sparql_entity' key.");
     }
-    return $data['_rdf_entity'];
+    return $data['_sparql_entity'];
   }
 
   /**
@@ -42,7 +42,7 @@ class RdfEncoder implements RdfEncoderInterface {
    */
   public static function getSupportedFormats(): array {
     if (!isset(static::$supportedFormats)) {
-      $container_registered_formats = \Drupal::getContainer()->getParameter('rdf_export.encoders');
+      $container_registered_formats = \Drupal::getContainer()->getParameter('sparql_entity.encoders');
       $rdf_serializers = Format::getFormats();
       static::$supportedFormats = array_intersect_key($rdf_serializers, $container_registered_formats);
     }
