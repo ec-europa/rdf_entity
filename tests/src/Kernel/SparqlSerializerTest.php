@@ -20,9 +20,11 @@ class SparqlSerializerTest extends KernelTestBase {
    */
   protected static $modules = [
     'rdf_entity',
-    'sparql_entity_serializer_test',
+    'rdf_taxonomy',
     'rest',
     'serialization',
+    'sparql_entity_serializer_test',
+    'taxonomy',
     'user',
   ];
 
@@ -50,7 +52,7 @@ class SparqlSerializerTest extends KernelTestBase {
     $serializer = $this->container->get('rdf_entity.serializer');
     foreach ($encoders as $format => $content_type) {
       $serialized = trim($serializer->serializeEntity($entity, $format));
-      $expected = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/$format"));
+      $expected = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/rdf_entity/$format"));
       $this->assertEquals($expected, $serialized);
     }
   }

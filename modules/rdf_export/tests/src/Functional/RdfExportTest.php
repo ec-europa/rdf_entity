@@ -19,8 +19,10 @@ class RdfExportTest extends BrowserTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
-    'sparql_entity_serializer_test',
     'rdf_export',
+    'rdf_taxonomy',
+    'sparql_entity_serializer_test',
+    'taxonomy',
   ];
 
   /**
@@ -56,7 +58,7 @@ class RdfExportTest extends BrowserTestBase {
     $page->clickLink('Turtle Terse RDF Triple Language');
     $this->assertSession()->statusCodeEquals(200);
     $actual_content = $page->getContent();
-    $expected_content = trim(file_get_contents(__DIR__ . "/../../../../../tests/fixtures/content-negotiation/turtle"));
+    $expected_content = trim(file_get_contents(__DIR__ . "/../../../../../tests/fixtures/content-negotiation/rdf_entity/turtle"));
     $this->assertEquals($expected_content, $actual_content);
 
     $this->drupalGet($this->entity->toUrl('rdf-export'));
@@ -64,7 +66,7 @@ class RdfExportTest extends BrowserTestBase {
     $page->clickLink('RDF/XML');
     $this->assertSession()->statusCodeEquals(200);
     $actual_content = $page->getContent();
-    $expected_content = trim(file_get_contents(__DIR__ . "/../../../../../tests/fixtures/content-negotiation/rdfxml"));
+    $expected_content = trim(file_get_contents(__DIR__ . "/../../../../../tests/fixtures/content-negotiation/rdf_entity/rdfxml"));
     $this->assertEquals($expected_content, $actual_content);
   }
 
