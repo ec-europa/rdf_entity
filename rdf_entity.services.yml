@@ -55,3 +55,6 @@ services:
     arguments: ['@typed_data_manager']
     tags:
       - { name: event_subscriber }
+  rdf_entity.sparql_result.filter:
+    class: Drupal\rdf_entity\SparqlResultFilter
+    arguments: ['@sparql.graph_handler']
