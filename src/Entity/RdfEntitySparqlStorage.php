@@ -27,7 +27,7 @@ use Drupal\rdf_entity\RdfFieldHandlerInterface;
 use Drupal\rdf_entity\RdfGraphHandlerInterface;
 use Drupal\rdf_entity\RdfInterface;
 use Drupal\rdf_entity\RawEntity;
-use Drupal\rdf_entity\SparqlResultFilter;
+use Drupal\rdf_entity\LayeredGraphPriorityFilter;
 use Drupal\rdf_entity\RawEntityRepository;
 use EasyRdf\Graph;
 use EasyRdf\Literal;
@@ -101,7 +101,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    */
   protected $entityIdPluginManager;
 
-  protected $filter;
+  protected $graphPriorityFilter;
 
   /**
    * Initialize the storage backend.
@@ -126,10 +126,12 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    *   The rdf mapping helper service.
    * @param \Drupal\rdf_entity\RdfEntityIdPluginManager $entity_id_plugin_manager
    *   The RDF entity ID generator plugin manager.
+   * @param \Drupal\rdf_entity\LayeredGraphPriorityFilter
+   *   The entity entity repository filter the
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, SparqlResultFilter $filter, MemoryCacheInterface $memory_cache = NULL) {
+  public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, LayeredGraphPriorityFilter $filter, MemoryCacheInterface $memory_cache = NULL) {
     parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
@@ -138,7 +140,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
     $this->graphHandler = $rdf_graph_handler;
     $this->fieldHandler = $rdf_field_handler;
     $this->entityIdPluginManager = $entity_id_plugin_manager;
-    $this->filter = $filter;
+    $this->graphPriorityFilter = $filter;
   }
 
   /**
@@ -156,10 +158,43 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       $container->get('sparql.graph_handler'),
       $container->get('sparql.field_handler'),
       $container->get('plugin.manager.rdf_entity.id'),
-      $container->get('rdf_entity.sparql_result.filter'),
+      $container->get('rdf_entity.graph_priority.filter'),
       // We support also Drupal 8.5.x.
       $container->has('entity.memory_cache') ? $container->get('entity.memory_cache') : NULL
     );
+  }
+
+  /**
+   * Format the entity select SPARQL query.
+   *
+   * @todo: We should filter per entity per graph and not load the whole
+   * database only to filter later on.
+   * @see https://github.com/ec-europa/rdf_entity/issues/19
+   *
+   * @param array $ids
+   * @param array $graphs
+   *
+   * @return string
+   */
+  protected static function formatEntitySelectQuery(array $ids, array $graphs): string {
+    $ids_string = SparqlArg::serializeUris($ids, ' ');
+    $named_graph = '';
+    foreach ($graphs as $graph) {
+      $named_graph .= 'FROM NAMED ' . SparqlArg::uri($graph) . "\n";
+    }
+
+    // @todo https://github.com/ec-europa/rdf_entity/issues/19
+    $query = <<<QUERY
+SELECT ?graph ?entity_subject ?predicate ?field_value
+$named_graph
+WHERE{
+  GRAPH ?graph {
+    ?entity_subject ?predicate ?field_value .
+    VALUES ?entity_subject { $ids_string } .
+  }
+}
+QUERY;
+    return $query;
   }
 
   /**
@@ -284,30 +319,8 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       return [];
     }
 
-    // @todo: We should filter per entity per graph and not load the whole
-    // database only to filter later on.
-    // @see https://github.com/ec-europa/rdf_entity/issues/19
-    $ids_string = SparqlArg::serializeUris($ids, ' ');
     $graphs = $this->getGraphHandler()->getEntityTypeGraphUrisFlatList($this->getEntityTypeId());
-    $named_graph = '';
-    foreach ($graphs as $graph) {
-      $named_graph .= 'FROM NAMED ' . SparqlArg::uri($graph) . "\n";
-    }
-
-    // @todo Get rid of the language filter. It's here because of eurovoc:
-    // \Drupal\taxonomy\Form\OverviewTerms::buildForm loads full entities
-    // of the whole tree: 7000+ terms in 24 languages is just too much.
-    // @see https://github.com/ec-europa/rdf_entity/issues/19
-    $query = <<<QUERY
-SELECT ?graph ?entity_subject ?predicate ?field_value
-$named_graph
-WHERE{
-  GRAPH ?graph {
-    ?entity_subject ?predicate ?field_value .
-    VALUES ?entity_subject { $ids_string } .
-  }
-}
-QUERY;
+    $query = self::formatEntitySelectQuery($ids, $graphs);
 
     $entity_values = $this->sparql->query($query);
     return $this->processGraphResults($entity_values, $graph_ids);
@@ -339,10 +352,11 @@ QUERY;
   protected function processGraphResults($results, array $graph_ids): ?array {
     $entity_repo = new RawEntityRepository();
     $entity_repo->createFromResult($results);
-    $fileredResultSet = $this->filter->filter($entity_repo, $graph_ids, $this->getEntityTypeId());
+    // Filter down to one result per subject (graph with highest priority).
+    $filtered_result_set = $this->graphPriorityFilter->filter($entity_repo, $graph_ids, $this->getEntityTypeId());
 
     $entity_list = [];
-    foreach ($fileredResultSet as $raw_entity) {
+    foreach ($filtered_result_set as $raw_entity) {
       if ($entity = $this->hydrateEntity($raw_entity)){
         $entity_list[$raw_entity->getSubject()] = $entity;
       }
