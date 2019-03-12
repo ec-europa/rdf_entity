@@ -6,7 +6,6 @@ namespace Drupal\rdf_entity\Encoder;
 
 use Drupal\rdf_entity\SparqlEncoderInterface;
 use EasyRdf\Format;
-use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 /**
  * Adds RDF encoder support for the Serialization API.
@@ -30,11 +29,14 @@ class SparqlEncoder implements SparqlEncoderInterface {
   /**
    * {@inheritdoc}
    */
-  public function encode($data, $format, array $context = []): string {
-    if (!isset($data['_sparql_entity'])) {
-      throw new UnexpectedValueException("Data to be encoded is missing the '_sparql_entity' key.");
+  public function encode($data, $format, array $context = []) {
+    if (isset($data['_sparql_entity'])) {
+      return $data['_sparql_entity'];
     }
-    return $data['_sparql_entity'];
+    // This is an unsupported format. Show the error message.
+    if (count($data) === 1 && isset($data['message'])) {
+      return $data['message'];
+    }
   }
 
   /**
