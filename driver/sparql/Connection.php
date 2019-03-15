@@ -89,6 +89,13 @@ class Connection implements ConnectionInterface {
   /**
    * {@inheritdoc}
    */
+  public function getSparqlClient(): Client {
+    return $this->easyRdfClient;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function query(string $query, array $args = [], array $options = []): Result {
     return $this->doQuery($query, $args, $options);
   }

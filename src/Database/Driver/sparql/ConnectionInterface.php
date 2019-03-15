@@ -15,6 +15,14 @@ use EasyRdf\Sparql\Result;
 interface ConnectionInterface {
 
   /**
+   * Returns the SPARQL client object.
+   *
+   * @return \EasyRdf\Sparql\Client
+   *   The SPARQL client instantiated with the default connection info.
+   */
+  public function getSparqlClient(): Client;
+
+  /**
    * Execute a select/insert/update query, returning a query result.
    *
    * @param string $query
