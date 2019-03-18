@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 
 /**
- * Render controller for taxonomy terms.
+ * Render controller for RDF entities.
  */
 class RdfEntityViewBuilder extends EntityViewBuilder {
 
