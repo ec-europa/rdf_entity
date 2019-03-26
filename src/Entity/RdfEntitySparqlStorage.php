@@ -21,6 +21,8 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\rdf_entity\Database\Driver\sparql\ConnectionInterface;
 use Drupal\rdf_entity\Entity\Query\Sparql\SparqlArg;
 use Drupal\rdf_entity\Exception\DuplicatedIdException;
+use Drupal\rdf_entity\HydratedEntity;
+use Drupal\rdf_entity\HydratedEntityList;
 use Drupal\rdf_entity\RdfEntityIdPluginManager;
 use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
 use Drupal\rdf_entity\RdfFieldHandlerInterface;
@@ -133,6 +135,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
    */
   public function __construct(EntityTypeInterface $entity_type, ConnectionInterface $sparql, EntityManagerInterface $entity_manager, EntityTypeManagerInterface $entity_type_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RdfGraphHandlerInterface $rdf_graph_handler, RdfFieldHandlerInterface $rdf_field_handler, RdfEntityIdPluginManager $entity_id_plugin_manager, LayeredGraphPriorityFilter $filter, MemoryCacheInterface $memory_cache = NULL) {
     parent::__construct($entity_type, $entity_manager, $cache, $memory_cache);
+    $this->revisionKey = $this->entityType->getKey('revision');
     $this->sparql = $sparql;
     $this->languageManager = $language_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -206,7 +209,7 @@ QUERY;
    * @return \EasyRdf\Graph
    *   The EasyRdf graph object.
    */
-  protected static function getGraph($graph_uri) {
+  protected static function createGraph($graph_uri) {
     $graph = new Graph($graph_uri);
     return $graph;
   }
@@ -273,23 +276,8 @@ QUERY;
       foreach ($operation_ids as $k => $v) {
         unset($remaining_ids[$k]);
       }
-      $entities_values = $this->loadFromStorage($operation_ids, $graph_ids);
-      if ($entities_values) {
-        foreach ($entities_values as $id => $entity_values) {
-          $bundle = $this->bundleKey ? $entity_values[$this->bundleKey][LanguageInterface::LANGCODE_DEFAULT] : FALSE;
-          $langcode_key = $this->getEntityType()->getKey('langcode');
-          $translations = [];
-          if (!empty($entities_values[$id][$langcode_key])) {
-            foreach ($entities_values[$id][$langcode_key] as $langcode => $data) {
-              if (!empty(reset($data)['value'])) {
-                $translations[] = reset($data)['value'];
-              }
-            }
-          }
-          $entity = new $this->entityClass($entity_values, $this->entityTypeId, $bundle, $translations);
-          $this->trackOriginalGraph($entity);
-          $entities[$id] = $entity;
-        }
+      $entities = $this->loadFromStorage($operation_ids, $graph_ids);
+      if ($entities) {
         $this->invokeStorageLoadHook($entities);
         $this->setPersistentCache($entities);
       }
@@ -322,8 +310,13 @@ QUERY;
     $graphs = $this->getGraphHandler()->getEntityTypeGraphUrisFlatList($this->getEntityTypeId());
     $query = self::formatEntitySelectQuery($ids, $graphs);
 
-    $entity_values = $this->sparql->query($query);
-    return $this->processGraphResults($entity_values, $graph_ids);
+    $query_result = $this->sparql->query($query);
+    $entities = $this->processGraphResults($query_result, $graph_ids);
+
+    foreach ($entities as $id => $entity) {
+      $this->trackOriginalGraph($entity);
+    }
+    return $entities;
   }
 
   /**
@@ -349,19 +342,12 @@ QUERY;
    * @throws \Exception
    *    Thrown when the entity graph is empty.
    */
-  protected function processGraphResults($results, array $graph_ids): ?array {
-    $entity_repo = new RawEntityRepository();
-    $entity_repo->createFromResult($results);
+  protected function processGraphResults($results, array $graph_ids): array {
+    $entity_repo = RawEntityRepository::createFromResult($results);
     // Filter down to one result per subject (graph with highest priority).
     $filtered_result_set = $this->graphPriorityFilter->filter($entity_repo, $graph_ids, $this->getEntityTypeId());
 
-    $entity_list = [];
-    foreach ($filtered_result_set as $raw_entity) {
-      if ($entity = $this->hydrateEntity($raw_entity)){
-        $entity_list[$raw_entity->getSubject()] = $entity;
-      }
-    }
-    return $entity_list;
+    return $this->hydrateRepository($filtered_result_set);
   }
 
   /**
@@ -370,21 +356,55 @@ QUERY;
    * @return array
    * @throws \Exception
    */
-  protected function hydrateEntity(RawEntity $raw_entity): array {
+  protected function hydrateEntity(RawEntity $raw_entity): ?EntityInterface {
     $entity_array = [];
     $bundle = $this->getActiveBundle($raw_entity);
     if (!$bundle) {
       return NULL;
     }
-    // Map bundle and entity_array id.
-    $entity_array[$this->bundleKey][LanguageInterface::LANGCODE_DEFAULT] = $bundle;
-    $entity_array[$this->idKey][LanguageInterface::LANGCODE_DEFAULT] = $raw_entity->getSubject();
-    $entity_array['graph'][LanguageInterface::LANGCODE_DEFAULT] = $raw_entity->getGraphUri();
+    $entity_array = $this->attachEntityId($entity_array, $bundle, $raw_entity);
+    $entity_array = $this->attachBundle($bundle, $entity_array);
+
+    $entity_array = $this->attachGraph($raw_entity, $entity_array);
 
     foreach ($raw_entity as $predicate => $field) {
       $entity_array = $this->attachField($predicate, $bundle, $field, $entity_array);
     }
-    return $entity_array;
+    $translations = $this->getTranslations($entity_array);
+    return new $this->entityClass($entity_array, $this->entityTypeId, $bundle, $translations);
+  }
+
+  /**
+   * @todo document!
+   */
+  protected function attachEntityId(array $entity_values, string $bundle, RawEntity $raw_entity) {
+    $entity_values[$this->idKey][LanguageInterface::LANGCODE_DEFAULT] = $raw_entity->getSubject();
+    if ($this->fieldHandler->fieldIsMapped($this->entityTypeId, 'vid')) {
+      $rev_uris = $this->fieldHandler->getFieldPredicates($this->entityTypeId, 'vid', NULL, $bundle);
+      if ($rev_uris) {
+        $uri = array_pop($rev_uris);
+        // Loading a revision
+        if ($raw_entity->hasPredicate($uri)) {
+          $id = $raw_entity->getObjectDataByPredicate($uri)[LanguageInterface::LANGCODE_DEFAULT][0];
+          $entity_values[$this->idKey][LanguageInterface::LANGCODE_DEFAULT] = $id;
+          $entity_values[$this->revisionKey][LanguageInterface::LANGCODE_DEFAULT] = $raw_entity->getSubject();
+        }
+      }
+    }
+    return $entity_values;
+  }
+
+  protected function getTranslations($entity_values) {
+    $langcode_key = $this->getEntityType()->getKey('langcode');
+    $translations = [];
+    if (!empty($entity_values[$langcode_key])) {
+      foreach ($entity_values[$langcode_key] as $langcode => $data) {
+        if (!empty(reset($data)['value'])) {
+          $translations[] = reset($data)['value'];
+        }
+      }
+    }
+    return $translations;
   }
 
   /**
@@ -416,7 +436,7 @@ QUERY;
     // modules to handle this.
     $this->moduleHandler->alter('rdf_load_bundle', $entity_values, $bundles);
     if (count($bundles) > 1) {
-      throw new \Exception('More than one bundles are defined for this uri.');
+      throw new \Exception('More than one bundle is defined for this uri.');
     }
     return reset($bundles);
   }
@@ -570,9 +590,7 @@ QUERY;
    * {@inheritdoc}
    */
   public function loadRevision($revision_id) {
-    list($entity_id, $graph) = explode('||', $revision_id);
-
-    return NULL;
+    return $this->load($revision_id);
   }
 
   /**
@@ -769,17 +787,25 @@ QUERY;
    * {@inheritdoc}
    */
   protected function doSave($id, EntityInterface $entity) {
-    $bundle = $entity->bundle();
+    if (!$entity instanceof RdfInterface) {
+      throw new \RuntimeException("Trying to persist an unsupported entity to RDF backend.");
+    }
+    $subject = $id;
     // Generate an ID before saving, if none is available. If the ID generation
     // occurs earlier in the process (like on EntityInterface::create()), the
     // entity might be considered not new by modules that don't strictly use the
     // EntityInterface::isNew() method.
     if (empty($id)) {
-      $id = $this->entityIdPluginManager->getPlugin($entity)->generate();
-      $entity->{$this->idKey} = $id;
+      $subject = $id = $this->entityIdPluginManager->getPlugin($entity)->generate();
     }
     elseif ($entity->isNew() && $this->idExists($id)) {
       throw new DuplicatedIdException("Attempting to create a new entity with the ID '$id' already taken.");
+    }
+
+    $entity->{$this->idKey} = $id;
+    if ($entity->isNewRevision()) {
+      $subject = $this->entityIdPluginManager->getPlugin($entity)->generate();
+      $entity->set('vid', $id);
     }
 
     // If the graph is not specified, fallback to the default one for the entity
@@ -790,8 +816,50 @@ QUERY;
 
     $graph_id = $entity->get('graph')->target_id;
     $graph_uri = $this->getGraphHandler()->getBundleGraphUri($entity->getEntityTypeId(), $entity->bundle(), $graph_id);
-    $graph = self::getGraph($graph_uri);
-    $lang_array = $this->toLangArray($entity);
+    $graph = $this->serialiseEntity(
+      self::createGraph($graph_uri),
+      $this->toLangArray($entity),
+      $entity->bundle(),
+      $subject
+    );
+
+    // Give implementations a chance to alter the graph right before is saved.
+    $this->alterGraph($graph, $entity);
+
+    if (!$entity->isNew()) {
+      $this->deleteBeforeInsert($id, $graph_uri);
+    }
+    try {
+      //
+      if ($entity->isDefaultRevision()) {
+        $rev_id = $entity->getRevisionId();
+        $entity->set('vid', NULL);
+        $graph = $this->serialiseEntity(
+          $graph,
+          $this->toLangArray($entity),
+          $entity->bundle(),
+          $rev_id
+        );
+      }
+      $this->insert($graph, $graph_uri);
+
+      return $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
+    }
+    catch (\Exception $e) {
+      return FALSE;
+    }
+  }
+
+  /**
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param array $lang_array
+   * @param string $bundle
+   * @param \EasyRdf\Graph $graph
+   * @param string $subject
+   *
+   * @throws \Drupal\rdf_entity\Exception\UnmappedFieldException
+   */
+  protected function serialiseEntity(Graph $graph, array $lang_array, string $bundle, string $subject): Graph {
     foreach ($lang_array as $field_name => $langcode_data) {
       foreach ($langcode_data as $langcode => $field_item) {
         foreach ($field_item as $delta => $column_data) {
@@ -804,25 +872,12 @@ QUERY;
             $predicate = $this->fieldHandler->getFieldPredicates($this->getEntityTypeId(), $field_name, $column, $bundle);
             $predicate = reset($predicate);
             $value = $this->fieldHandler->getOutboundValue($this->getEntityTypeId(), $field_name, $value, $langcode, $column, $bundle);
-            $graph->add((string) $id, $predicate, $value);
+            $graph->add($subject, $predicate, $value);
           }
         }
       }
     }
-
-    // Give implementations a chance to alter the graph right before is saved.
-    $this->alterGraph($graph, $entity);
-
-    if (!$entity->isNew()) {
-      $this->deleteBeforeInsert($id, $graph_uri);
-    }
-    try {
-      $this->insert($graph, $graph_uri);
-      return $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
-    }
-    catch (\Exception $e) {
-      return FALSE;
-    }
+    return $graph;
   }
 
   /**
@@ -1277,6 +1332,7 @@ QUERY;
 
   /**
    * Hydrates a field and attaches it to the entity structure.
+   *
    * @param $predicate
    *   The field predicate.
    * @param string $bundle
@@ -1308,6 +1364,54 @@ QUERY;
       }
     }
     return $entity;
+  }
+
+  /**
+   * @param \Drupal\rdf_entity\RawEntityRepository $filtered_result_set
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function hydrateRepository(RawEntityRepository $filtered_result_set): array {
+    $entity_list = [];
+    foreach ($filtered_result_set as $raw_entity) {
+      if ($entity = $this->hydrateEntity($raw_entity)) {
+        $entity_list[$entity->id()] = $entity;
+      }
+    }
+    return $entity_list;
+  }
+
+  /**
+   * @param \Drupal\rdf_entity\RawEntity $raw_entity
+   * @param $entity_array
+   *
+   * @return array
+   */
+  protected function attachGraph(RawEntity $raw_entity, $entity_array): array {
+    $def = $this->getGraphHandler()
+      ->getEntityTypeGraphUris($this->entityTypeId);
+    foreach ($def as $bundle => $bundle_data) {
+      foreach ($bundle_data as $graph_id => $graph_uri) {
+        if ($graph_uri === $raw_entity->getGraphUri()) {
+          $entity_array['graph'][LanguageInterface::LANGCODE_DEFAULT] = $graph_id;
+        }
+      }
+    }
+    return $entity_array;
+  }
+
+  /**
+   * @param string|null $bundle
+   * @param array $entity_array
+   *
+   * @return array
+   */
+  protected function attachBundle(?string $bundle, array $entity_array): array {
+    if ($this->bundleKey) {
+      $entity_array[$this->bundleKey][LanguageInterface::LANGCODE_DEFAULT] = $bundle;
+    }
+    return $entity_array;
   }
 
 }

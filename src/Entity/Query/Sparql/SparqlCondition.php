@@ -295,6 +295,16 @@ class SparqlCondition extends ConditionFundamentals implements ConditionInterfac
    *    Thrown if the value is NULL or the operator is not allowed.
    */
   public function keyCondition($field, $value, $operator) {
+    // Revision handling.
+    $query = $this->query;
+    if ($query instanceof SparqlQueryInterface) {
+      if ($field === 'id' && $query->getAllRevisions()) {
+        $field = 'vid';
+      }
+    }
+
+
+
     // @todo: Add support for loadMultiple with empty Id (load all).
     if ($value == NULL) {
       throw new \Exception('The value cannot be NULL for conditions related to the Id and bundle keys.');

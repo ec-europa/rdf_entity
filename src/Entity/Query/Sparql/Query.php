@@ -352,6 +352,14 @@ class Query extends QueryBase implements SparqlQueryInterface {
     return new $class($conjunction, $this, $this->namespaces, $this->graphHandler, $this->fieldHandler);
   }
 
+  public function getLatestRevision() {
+    return $this->latestRevision;
+  }
+
+  public function getAllRevisions() {
+    return $this->allRevisions;
+  }
+
   /**
    * Return the query string for debugging help.
    *

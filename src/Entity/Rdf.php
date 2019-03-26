@@ -3,6 +3,7 @@
 namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\RevisionLogEntityTrait;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -32,25 +33,35 @@ use Drupal\user\UserInterface;
  *     },
  *     "access" = "Drupal\rdf_entity\RdfAccessControlHandler",
  *   },
+ *   show_revision_ui = TRUE,
  *   list_cache_contexts = { "user" },
  *   base_table = null,
+ *   revision_table = null,
  *   admin_permission = "administer rdf entity",
  *   fieldable = TRUE,
  *   translatable = TRUE,
  *   entity_keys = {
  *     "id" = "id",
+ *     "revision" = "vid",
  *     "uid" = "uid",
  *     "bundle" = "rid",
  *     "langcode" = "langcode",
  *     "label" = "label",
  *     "uuid" = "uuid",
  *   },
+ *   revision_metadata_keys = {
+ *     "revision_user" = "revision_uid",
+ *     "revision_created" = "revision_timestamp",
+ *     "revision_log_message" = "revision_log"
+ *   },
  *   bundle_entity_type = "rdf_type",
  *   links = {
  *     "canonical" = "/rdf_entity/{rdf_entity}",
  *     "edit-form" = "/rdf_entity/{rdf_entity}/edit",
  *     "delete-form" = "/rdf_entity/{rdf_entity}/delete",
- *     "collection" = "/rdf_entity/list"
+ *     "collection" = "/rdf_entity/list",
+ *     "version-history" = "/rdf_entity/{rdf_entity}/revisions",
+ *     "revision" = "/rdf_entity/{rdf_entity}/revisions/{rdf_revision}/view",
  *   },
  *   field_ui_base_route = "entity.rdf_type.edit_form",
  *   permission_granularity = "bundle",
@@ -60,6 +71,7 @@ use Drupal\user\UserInterface;
 class Rdf extends ContentEntityBase implements RdfInterface {
 
   use EntityChangedTrait;
+  use RevisionLogEntityTrait;
 
   /**
    * Entity bundle.
@@ -67,6 +79,8 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * @var string
    */
   protected $rid;
+
+  protected $vid;
 
   /**
    * {@inheritdoc}
@@ -140,6 +154,12 @@ class Rdf extends ContentEntityBase implements RdfInterface {
       ->setLabel(t('ID'))
       ->setTranslatable(FALSE);
 
+    if ($entity_type->hasKey('revision')) {
+      $fields[$entity_type->getKey('revision')] = BaseFieldDefinition::create('uri')
+        ->setLabel(new TranslatableMarkup('Revision ID'))
+        ->setReadOnly(TRUE);
+    }
+
     $fields['rid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Rdf Type'))
       ->setDescription(t('The Rdf type of this entity.'))
@@ -211,6 +231,9 @@ class Rdf extends ContentEntityBase implements RdfInterface {
         'type' => 'language_select',
         'weight' => 2,
       ]);
+
+    // Add the revision metadata fields.
+    $fields += static::revisionLogBaseFieldDefinitions($entity_type);
 
     return $fields;
   }

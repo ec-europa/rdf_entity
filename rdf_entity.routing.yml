@@ -11,6 +11,18 @@ entity.rdf_entity.canonical:
   # Calls the access controller of the entity, $operation 'view'.
     _entity_access: 'rdf_entity.view'
 
+entity.rdf_entity.version_history:
+  path: '/rdf_entity/{rdf_entity}/revisions'
+  defaults:
+    _title: 'Revisions'
+    _controller: '\Drupal\rdf_entity\Controller\RdfController::revisionOverview'
+  requirements:
+    _entity_access: 'rdf_entity.edit'
+  options:
+    parameters:
+      rdf_entity:
+        type: entity:rdf_entity
+
 entity.rdf_entity.collection:
   path: 'admin/content/rdf'
   defaults:
@@ -148,3 +160,54 @@ entity.rdf_entity_graph.disable:
     toggle_operation: disable
   requirements:
     _custom_access: 'Drupal\rdf_entity\Controller\RdfEntityGraphToggle::access'
+
+entity.rdf_entity.revision:
+  path: '/rdf_entity/{rdf_entity}/revisions/{rdf_revision}/view'
+  defaults:
+    _controller: 'Drupal\rdf_entity\Controller\RdfController::revisionShow'
+  options:
+    parameters:
+      rdf_entity:
+        type: entity:rdf_entity
+      rdf_revision:
+        type: entity:rdf_entity
+  requirements:
+    # Calls the access controller of the entity, $operation 'view'.
+    _entity_access: 'rdf_entity.view'
+
+rdf_entity.revision_revert_confirm:
+  path: '/rdf_entity/{rdf_entity}/revisions/{rdf_revision}/revert'
+  defaults:
+    _form: '\Drupal\rdf_entity\Form\RdfRevisionRevertForm'
+    _title: 'Revert to earlier revision'
+  options:
+    parameters:
+      rdf_entity:
+        type: entity:rdf_entity
+      rdf_revision:
+        type: entity:rdf_entity
+  requirements:
+    _entity_access: 'rdf_entity.edit'
+# T
+rdf_entity.revision_revert_translation_confirm:
+  path: '/rdf_entity/{rdf_entity}/revisions/{rdf_revision}/revert/{langcode}'
+  defaults:
+    _form: '\Drupal\rdf_entity\Form\RdfRevisionRevertTranslationForm'
+    _title: 'Revert to earlier revision of a translation'
+  parameters:
+    rdf_entity:
+      type: entity:rdf_entity
+    rdf_revision:
+      type: entity:rdf_entity
+
+rdf_entity.revision_delete_confirm:
+  path: '/rdf_entity/{rdf_entity}/revisions/{rdf_revision}/delete'
+  defaults:
+    _form: '\Drupal\rdf_entity\Form\RdfRevisionDeleteForm'
+    _title: 'Delete earlier revision'
+  options:
+    parameters:
+      rdf_entity:
+       type: entity:rdf_entity
+      rdf_revision:
+       type: entity:rdf_entity

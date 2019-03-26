@@ -25,3 +25,9 @@ entity.rdf_entity.collection:
   title: RDF
   route_name: entity.rdf_entity.collection
   base_route: system.admin_content
+
+entity.rdf_entity.version_history:
+  route_name: entity.rdf_entity.version_history
+  base_route: entity.rdf_entity.canonical
+  title: 'Revisions'
+  weight: 20

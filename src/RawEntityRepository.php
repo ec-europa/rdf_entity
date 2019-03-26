@@ -38,15 +38,17 @@ class RawEntityRepository implements \Iterator {
    * @param \EasyRdf\Sparql\Result $results
    *   The result of the SPARQL query.
    */
-  public function createFromResult(Result $results) {
+  static function createFromResult(Result $results) {
+    $repo = new RawEntityRepository();
     foreach ($results as $result) {
       $graph = (string) $result->graph;
       $subject = (string) $result->entity_subject;
       $predicate = (string) $result->predicate;
       $object = $result->field_value;
 
-      $this->addResult($graph, $subject, $predicate, $object);
+      $repo->addResult($graph, $subject, $predicate, $object);
     }
+    return $repo;
   }
 
   /**

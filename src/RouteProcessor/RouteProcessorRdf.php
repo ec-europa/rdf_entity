@@ -48,7 +48,8 @@ class RouteProcessorRdf implements OutboundRouteProcessorInterface {
    */
   public function processOutbound($route_name, Route $route, array &$parameters, BubbleableMetadata $bubbleable_metadata = NULL) {
     if ($route->hasOption('parameters')) {
-      foreach ($route->getOption('parameters') as $type => $parameter) {
+      $option = $route->getOption('parameters');
+      foreach ($option as $type => $parameter) {
         // If the rdf_entity converter exists in the parameter,
         // then the parameter is of type rdf_entity and needs to be normalized.
         if (isset($parameter['converter']) && $parameter['converter'] == 'paramconverter.rdf_entity' && SparqlArg::isValidResource($parameters[$type])) {

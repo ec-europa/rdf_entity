@@ -5,6 +5,7 @@ namespace Drupal\rdf_entity;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\RevisionLogInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -14,7 +15,7 @@ use Drupal\user\EntityOwnerInterface;
  *
  * @ingroup rdf_entity
  */
-interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface, EntityOwnerInterface, EntityChangedInterface {
+interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface, EntityOwnerInterface, EntityChangedInterface, RevisionLogInterface {
 
   /**
    * Gets the name of the rdf entity.

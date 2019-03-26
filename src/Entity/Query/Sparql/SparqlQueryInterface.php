@@ -44,4 +44,7 @@ interface SparqlQueryInterface extends QueryInterface {
    */
   public function getEntityStorage(): RdfEntitySparqlStorageInterface;
 
+  public function getLatestRevision();
+
+  public function getAllRevisions();
 }
