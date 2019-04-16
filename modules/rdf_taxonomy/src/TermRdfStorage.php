@@ -9,6 +9,7 @@ use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\taxonomy\VocabularyInterface;
 use EasyRdf\Graph;
 
 /**
@@ -406,6 +407,20 @@ QUERY;
       }
     }
     return $terms;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getVocabularyHierarchyType($vid) {
+    return VocabularyInterface::HIERARCHY_SINGLE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTermIdsWithPendingRevisions() {
+    return [];
   }
 
   /**
