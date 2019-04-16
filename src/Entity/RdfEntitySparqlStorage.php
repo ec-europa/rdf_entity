@@ -149,8 +149,7 @@ class RdfEntitySparqlStorage extends ContentEntityStorageBase implements RdfEnti
       $container->get('sparql.graph_handler'),
       $container->get('sparql.field_handler'),
       $container->get('plugin.manager.rdf_entity.id'),
-      // We support also Drupal 8.5.x.
-      $container->has('entity.memory_cache') ? $container->get('entity.memory_cache') : NULL
+      $container->get('entity.memory_cache')
     );
   }
 

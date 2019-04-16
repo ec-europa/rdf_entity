@@ -15,10 +15,7 @@ class RdfTerm extends Term {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $base_fields = parent::baseFieldDefinitions($entity_type);
-    // Support also Drupal 8.5.x.
-    if (isset($base_fields['status'])) {
-      $base_fields['status']->setCustomStorage(TRUE);
-    }
+    $base_fields['status']->setCustomStorage(TRUE);
     return $base_fields;
   }
 
