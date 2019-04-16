@@ -163,23 +163,6 @@ class Query extends QueryBase implements SparqlQueryInterface {
   }
 
   /**
-   * Sets the graph types for the query.
-   *
-   * @param string[]|null $graph_ids
-   *   (optional) An array of graphs ids to be passed into the query.
-   *
-   * @deprecated in rdf_entity:8.x-1.x and will be removed from
-   *   rdf_entity:8.x-1.0. Use the ::graphs() method instead.
-   *
-   * @see https://github.com/ec-europa/rdf_entity/issues
-   */
-  public function setGraphType(array $graph_ids = NULL) {
-    @trigger_error('Drupal\rdf_entity\Entity\Query\Sparql\Query::setGraphType() is deprecated in rdf_entity:8.x-1.x. Use the \Drupal\rdf_entity\Entity\Query\Sparql\Query::graphs() method instead. See https://github.com/ec-europa/rdf_entity/issues', E_USER_DEPRECATED);
-    $graph_ids = $graph_ids ?: [$this->graphHandler->getDefaultGraphId($this->getEntityTypeId())];
-    $this->graphs($graph_ids);
-  }
-
-  /**
    * Initialize the query.
    *
    * @return $this
