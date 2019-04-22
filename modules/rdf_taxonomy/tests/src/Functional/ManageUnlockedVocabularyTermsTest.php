@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\rdf_taxonomy\Functional;
 
+use Drupal\filter\Entity\FilterFormat;
 use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
@@ -17,13 +18,6 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   use RdfDatabaseConnectionTrait;
 
   /**
-   * The testing term.
-   *
-   * @var \Drupal\taxonomy\TermInterface
-   */
-  protected $term;
-
-  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -37,6 +31,8 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   protected function setUp() {
     $this->setUpSparql();
     parent::setUp();
+
+    FilterFormat::create(['format' => 'full_html'])->save();
 
     // Create an unlocked vocabulary and its mapping.
     Vocabulary::create([
@@ -82,20 +78,25 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
       'edit terms in unlocked_vocab',
       'delete terms in unlocked_vocab',
       'access taxonomy overview',
+      'use text format full_html',
     ]));
   }
 
   /**
    * Tests adding, editing and deleting terms from an unlocked vocabulary.
    */
-  public function test() {
+  public function testUnlocked() {
     // Tests creation of a new term via UI.
+    $this->drupalGet('admin/structure/taxonomy/manage/unlocked_vocab/add');
+
+    $assert_session = $this->assertSession();
+    $assert_session->fieldNotExists('Weight');
     $edit = [
       'name[0][value]' => 'Top Level Term',
       'description[0][value]' => $this->randomString(),
     ];
-    $this->drupalPostForm('admin/structure/taxonomy/manage/unlocked_vocab/add', $edit, 'Save');
-    $this->assertSession()->pageTextContains('Created new term Top Level Term.');
+    $this->drupalPostForm(NULL, $edit, 'Save');
+    $assert_session->pageTextContains('Created new term Top Level Term.');
 
     /** @var \Drupal\taxonomy\TermStorageInterface $storage */
     $storage = $this->container->get('entity_type.manager')->getStorage('taxonomy_term');
@@ -103,32 +104,48 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
       'vid' => 'unlocked_vocab',
       'name' => 'Top Level Term',
     ]);
-    $this->term = reset($terms);
+    /** @var \Drupal\taxonomy\TermInterface $term */
+    $term = reset($terms);
 
     // Test term view.
-    $this->drupalGet($this->term->toUrl());
-    $this->assertSession()->statusCodeEquals(200);
+    $this->drupalGet($term->toUrl());
+    $assert_session->statusCodeEquals(200);
 
     // Tests term editing.
+    $this->drupalGet($term->toUrl('edit-form'));
+    $assert_session->fieldNotExists('Weight');
     $edit = [
       'name[0][value]' => 'Changed Term',
     ];
-    $this->drupalPostForm($this->term->toUrl('edit-form'), $edit, 'Save');
-    $this->assertSession()->pageTextContains('Updated term Changed Term.');
+    $this->drupalPostForm(NULL, $edit, 'Save');
+    $assert_session->pageTextContains('Updated term Changed Term.');
+
+    // Test term weight.
+    RdfEntityMapping::loadByName('taxonomy_term', 'unlocked_vocab')
+      ->addMappings([
+        'weight' => [
+          'value' => [
+            'predicate' => 'http://example.com/term/weight',
+            'format' => 'xsd:decimal',
+          ],
+        ],
+      ])
+      ->save();
+    $this->drupalGet('admin/structure/taxonomy/manage/unlocked_vocab/add');
+    $assert_session->fieldExists('Weight');
+
+    $this->drupalGet($term->toUrl('edit-form'));
+    $assert_session->fieldExists('Weight');
+    $page = $this->getSession()->getPage();
+    $page->fillField('Weight', 11.3);
+    $page->pressButton('Save');
+    $assert_session->fieldValueEquals('Weight', 11.3);
 
     // Tests term deletion.
-    $this->getSession()->getPage()->clickLink('Delete');
-    $this->assertSession()->pageTextContains('Are you sure you want to delete the taxonomy term Changed Term?');
-    $this->getSession()->getPage()->pressButton('Delete');
-    $this->assertSession()->pageTextContains('Deleted term Changed Term.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tearDown() {
-    $this->term->delete();
-    parent::tearDown();
+    $page->clickLink('Delete');
+    $assert_session->pageTextContains('Are you sure you want to delete the taxonomy term Changed Term?');
+    $page->pressButton('Delete');
+    $assert_session->pageTextContains('Deleted term Changed Term.');
   }
 
 }
