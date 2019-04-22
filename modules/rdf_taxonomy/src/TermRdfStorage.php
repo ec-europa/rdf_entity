@@ -131,7 +131,7 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
     $this->treeParents = [];
     $this->treeTerms = [];
     $this->trees = [];
-    parent::resetCache($ids);
+    parent::resetCache($ids, $graph_ids);
   }
 
   /**
