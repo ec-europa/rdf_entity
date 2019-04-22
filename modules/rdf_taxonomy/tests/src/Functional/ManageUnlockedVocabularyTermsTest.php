@@ -126,7 +126,7 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
         'weight' => [
           'value' => [
             'predicate' => 'http://example.com/term/weight',
-            'format' => 'xsd:decimal',
+            'format' => 'xsd:integer',
           ],
         ],
       ])
@@ -137,9 +137,9 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
     $this->drupalGet($term->toUrl('edit-form'));
     $assert_session->fieldExists('Weight');
     $page = $this->getSession()->getPage();
-    $page->fillField('Weight', 11.3);
+    $page->fillField('Weight', 11);
     $page->pressButton('Save');
-    $assert_session->fieldValueEquals('Weight', 11.3);
+    $assert_session->fieldValueEquals('Weight', 11);
 
     // Tests term deletion.
     $page->clickLink('Delete');
