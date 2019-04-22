@@ -260,6 +260,14 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
   /**
    * {@inheritdoc}
    */
+  public function isMapped(string $field_name, string $column_name = 'value'): bool {
+    $mapping = $this->getMapping($field_name, $column_name);
+    return $mapping && !empty($mapping['predicate']) && !empty($mapping['format']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function unsetMappings(array $field_names): RdfEntityMappingInterface {
     $this->base_fields_mapping = array_diff_key($this->base_fields_mapping, array_flip($field_names));
     return $this;

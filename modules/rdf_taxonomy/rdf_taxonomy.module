@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_taxonomy\Entity\RdfTerm;
 use Drupal\rdf_taxonomy\RdfTaxonomyTermListBuilder;
 use Drupal\rdf_taxonomy\TermRdfStorage;
@@ -74,16 +75,20 @@ function rdf_taxonomy_taxonomy_term_create_access(AccountInterface $account, arr
  * Implements hook_form_BASE_FORM_ID_alter().
  */
 function rdf_taxonomy_form_taxonomy_term_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // RDF terms have no weight. Set 0 as value and hide weight from UI.
-  $form['relations']['weight'] = [
-    '#type' => 'value',
-    '#value' => 0,
-  ];
+  /** @var \Drupal\taxonomy\TermInterface $term */
+  $term = $form_state->getFormObject()->getEntity();
+
+  $sparql_mapping = RdfEntityMapping::loadByName('taxonomy_term', $term->bundle());
+  if (!$sparql_mapping->isMapped('weight')) {
+    // RDF terms with no weight mapping have 0 weight.
+    $form['relations']['weight'] = [
+      '#type' => 'value',
+      '#value' => 0,
+    ];
+  }
 
   // RDF terms have no language. Set the entity default language to prevent a
   // form validation error.
-  /** @var \Drupal\taxonomy\TermInterface $term */
-  $term = $form_state->getFormObject()->getEntity();
   $form['langcode']['widget'][0]['value']['#default_value'] = $term->language()->getId();
 
   // RDF Taxonomy doesn't support multiple parents yet.
