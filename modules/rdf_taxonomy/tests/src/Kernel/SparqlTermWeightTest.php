@@ -20,7 +20,7 @@ class SparqlTermWeightTest extends KernelTestBase {
   /**
    * Term data as an array keyed by term name and having term weight as value.
    *
-   * @var float[]
+   * @var int[]
    */
   const DATA = [
     'Abc' => 3,
