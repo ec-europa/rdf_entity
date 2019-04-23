@@ -131,7 +131,7 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
     $this->treeParents = [];
     $this->treeTerms = [];
     $this->trees = [];
-    parent::resetCache($ids);
+    parent::resetCache($ids, $graph_ids);
   }
 
   /**
@@ -264,7 +264,6 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
 
     $cache_key = implode(':', func_get_args());
     if (empty($this->trees[$cache_key])) {
-
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
       if (empty($this->treeChildren[$vid])) {
@@ -273,17 +272,26 @@ class TermRdfStorage extends RdfEntitySparqlStorage implements TermStorageInterf
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];
+
+        $weight_where = '';
+        $order_by = 'STR(?label)';
+        if ($mapping->isMapped('weight')) {
+          $weight_where = "OPTIONAL { ?tid <{$mapping->getMapping('weight')['predicate']}> ?weight } .";
+          $order_by = '?weight, ' . $order_by;
+        }
+
         $query = <<<QUERY
-SELECT DISTINCT ?tid ?label ?parent
+SELECT DISTINCT ?tid ?label ?parent ?weight
 WHERE {
   ?tid ?relation <$concept_schema> .
   ?tid <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
   ?tid <http://www.w3.org/2004/02/skos/core#prefLabel> ?label .
   FILTER (?relation IN (<http://www.w3.org/2004/02/skos/core#inScheme>, <http://www.w3.org/2004/02/skos/core#topConceptOf>) ) .
   FILTER (lang(?label) = 'en') .
-  OPTIONAL {?tid <http://www.w3.org/2004/02/skos/core#broaderTransitive> ?parent }
+  OPTIONAL {?tid <http://www.w3.org/2004/02/skos/core#broaderTransitive> ?parent } .
+  {$weight_where}
 }
-ORDER BY (STR(?label))
+ORDER BY {$order_by}
 QUERY;
         $result = $this->sparql->query($query);
         foreach ($result as $term_res) {
@@ -293,7 +301,7 @@ QUERY;
             'vid' => $vid,
             'name' => (string) $term_res->label,
             'parent' => $term_parent,
-            'weight' => 0,
+            'weight' => $term_res->weight ?? 0,
           ];
           $this->treeChildren[$vid][$term_parent][] = $term->tid;
           $this->treeParents[$vid][$term->tid][] = $term_parent;

@@ -424,6 +424,14 @@ class RdfFieldHandler implements RdfFieldHandlerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function clearCache(): void {
+    unset($this->outboundMap);
+    unset($this->inboundMap);
+  }
+
+  /**
    * Returns the Drupal-to-SPARQL mapping array.
    *
    * @param string $entity_type_id

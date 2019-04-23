@@ -260,6 +260,14 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
   /**
    * {@inheritdoc}
    */
+  public function isMapped(string $field_name, string $column_name = 'value'): bool {
+    $mapping = $this->getMapping($field_name, $column_name);
+    return $mapping && !empty($mapping['predicate']) && !empty($mapping['format']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function unsetMappings(array $field_names): RdfEntityMappingInterface {
     $this->base_fields_mapping = array_diff_key($this->base_fields_mapping, array_flip($field_names));
     return $this;
@@ -328,6 +336,8 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
     \Drupal::service('sparql.graph_handler')->clearCache();
+    \Drupal::service('sparql.field_handler')->clearCache();
+    \Drupal::entityTypeManager()->getStorage($this->entity_type_id)->resetCache();
   }
 
   /**
@@ -336,6 +346,11 @@ class RdfEntityMapping extends ConfigEntityBase implements RdfEntityMappingInter
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
     \Drupal::service('sparql.graph_handler')->clearCache();
+    \Drupal::service('sparql.field_handler')->clearCache();
+    /** @var \Drupal\rdf_entity\RdfEntityMappingInterface $sparql_mapping */
+    if ($sparql_mapping = reset($entities)) {
+      \Drupal::entityTypeManager()->getStorage($sparql_mapping->getTargetEntityTypeId())->resetCache();
+    }
   }
 
 }
