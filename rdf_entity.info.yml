@@ -1,4 +1,4 @@
-name: 'Rdf entity'
+name: 'RDF Entity'
 type: module
 description: 'Provides RDF entity.'
 package: Custom
@@ -7,7 +7,7 @@ core: 8.x
 
 # These modules are required by the tests, must be available at bootstrap time.
 dependencies:
-  - options
+  - drupal:options
 
 config_devel:
   - core.entity_view_mode.rdf_entity.compact

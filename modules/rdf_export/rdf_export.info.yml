@@ -1,4 +1,4 @@
-name: Rdf export
+name: RDF Export
 type: module
 description: 'Export RDF entities as RDF'
 package: Custom
