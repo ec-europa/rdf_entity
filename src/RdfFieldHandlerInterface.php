@@ -231,4 +231,9 @@ interface RdfFieldHandlerInterface {
    */
   public function fieldIsMapped(string $entity_type_id, string $field_name): bool;
 
+  /**
+   * Clears the internal memory cache.
+   */
+  public function clearCache(): void;
+
 }
