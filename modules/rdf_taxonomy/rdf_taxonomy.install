@@ -44,7 +44,7 @@ function rdf_taxonomy_install() {
   $graph_field_definition = BaseFieldDefinition::create('entity_reference')
     ->setName('graph')
     ->setLabel(t('The graph where the entity is stored.'))
-    ->setTargetEntityTypeId('rdf_entity')
+    ->setTargetEntityTypeId('taxonomy_term')
     ->setTargetBundle(NULL)
     ->setCustomStorage(TRUE)
     ->setSetting('target_type', 'rdf_entity_graph');
@@ -70,7 +70,7 @@ function rdf_taxonomy_update_8001() {
     'graph' => BaseFieldDefinition::create('entity_reference')
       ->setName('graph')
       ->setLabel(t('The graph where the entity is stored.'))
-      ->setTargetEntityTypeId('rdf_entity')
+      ->setTargetEntityTypeId('taxonomy_term')
       ->setTargetBundle(NULL)
       ->setCustomStorage(TRUE)
       ->setSetting('target_type', 'rdf_entity_graph'),
