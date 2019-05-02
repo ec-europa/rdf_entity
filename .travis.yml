@@ -1,8 +1,9 @@
 language: php
 
 php:
-  - 7.1
-  - 7.2
+  - '7.1'
+  - '7.2'
+  - '7.3'
 
 sudo: required
 
@@ -19,13 +20,16 @@ env:
     - SITE_DIR="$HOME/build/testing_site"
   matrix:
     - TEST=PHP_CodeSniffer
-    - TEST=8.5.x
     - TEST=8.6.x
+    - TEST=8.7.x
+    - TEST=8.8.x
 
 matrix:
   fast_finish: true
   exclude:
-    - php: 7.2
+    - php: '7.2'
+      env: TEST=PHP_CodeSniffer
+    - php: '7.3'
       env: TEST=PHP_CodeSniffer
 
 before_install:

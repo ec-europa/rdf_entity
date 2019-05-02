@@ -15,10 +15,17 @@ class RdfTerm extends Term {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $base_fields = parent::baseFieldDefinitions($entity_type);
-    // Support also Drupal 8.5.x.
-    if (isset($base_fields['status'])) {
-      $base_fields['status']->setCustomStorage(TRUE);
-    }
+    $base_fields['status']->setCustomStorage(TRUE);
+
+    // Don't support taxonomy term revisions.
+    unset(
+      $base_fields['revision_default'],
+      $base_fields['revision_translation_affected'],
+      $base_fields['revision_created'],
+      $base_fields['revision_user'],
+      $base_fields['revision_log_message']
+    );
+
     return $base_fields;
   }
 

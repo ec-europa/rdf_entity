@@ -36,7 +36,7 @@ function rdf_entity_entity_base_field_info_alter(array &$fields, EntityTypeInter
 
   $fields['graph'] = BaseFieldDefinition::create('entity_reference')
     ->setLabel(t('The graph where the entity is stored.'))
-    ->setTargetEntityTypeId('rdf_entity')
+    ->setTargetEntityTypeId($entity_type->id())
     ->setName('graph')
     ->setCustomStorage(TRUE)
     ->setSetting('target_type', 'rdf_entity_graph');
