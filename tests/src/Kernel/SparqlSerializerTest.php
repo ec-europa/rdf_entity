@@ -4,7 +4,7 @@ namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\rdf_entity\Entity\Rdf;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests the SPARQL serializer.
@@ -13,7 +13,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 class SparqlSerializerTest extends KernelTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * {@inheritdoc}
@@ -24,6 +24,7 @@ class SparqlSerializerTest extends KernelTestBase {
     'rest',
     'serialization',
     'sparql_entity_serializer_test',
+    'sparql_entity_storage',
     'taxonomy',
     'user',
   ];
@@ -34,7 +35,7 @@ class SparqlSerializerTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->setUpSparql();
-    $this->installConfig(['rdf_entity', 'sparql_entity_serializer_test']);
+    $this->installConfig(['sparql_entity_storage', 'sparql_entity_serializer_test']);
   }
 
   /**

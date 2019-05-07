@@ -10,17 +10,12 @@
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.1",
-    "drupal/sparql_entity_storage": "dev-master"
+    "php": ">=7.1"
   },
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master"
   },
   "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ec-europa/sparql_entity_storage.git"
-    },
     {
       "type": "composer",
       "url": "https://packages.drupal.org/8"
@@ -38,8 +33,8 @@
     }
   ],
   "autoload": {
-    "psr-4": {
-      "Drupal\\sparql_entity_storage\\": "../sparql_entity_storage/src"
-    }
+    "classmap": [
+      "sparql_entity_storage/driver/sparql/Connection.php"
+    ]
   }
 }

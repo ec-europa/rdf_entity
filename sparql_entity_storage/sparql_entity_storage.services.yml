@@ -1,0 +1,53 @@
+services:
+  entity.query.sparql:
+    class: Drupal\sparql_entity_storage\Entity\Query\Sparql\QueryFactory
+    arguments: ['@sparql.endpoint', '@entity_type.manager', '@sparql.graph_handler', '@sparql.field_handler']
+    tags:
+    - { name: backend_overridable }
+  sparql.endpoint:
+    class: Drupal\Driver\Database\sparql\Connection
+    factory: ['Drupal\Core\Database\Database', getConnection]
+    arguments: [default, sparql_default]
+# @todo: Move the webprofiler integration into a submodule.
+#  webprofiler.sparql:
+#    class: \Drupal\sparql_entity_storage\DataCollector\SparqlDataCollector
+#    arguments: ['@sparql.endpoint', '@config.factory']
+#    tags:
+#      - name: data_collector
+#        template: "@rdf_entity/Collector/sparql.html.twig"
+#        id: sparql
+#        title: Sparql
+#        priority: 60
+  sparql.paramconverter:
+    class: Drupal\sparql_entity_storage\ParamConverter\SparqlEntityStorageConverter
+    arguments: ['@entity.manager']
+    tags:
+    # Use a higher priority than EntityConverter.
+    - { name: paramconverter, priority: 6 }
+  sparql.route_processor:
+    class: Drupal\sparql_entity_storage\RouteProcessor\SparqlEntityStorageRouteProcessor
+    arguments: ['@current_route_match']
+    tags:
+    - { name: route_processor_outbound, priority: 200 }
+  sparql.graph_handler:
+    class: Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandler
+    arguments: ['@entity_type.manager', '@event_dispatcher']
+  sparql.field_handler:
+    class: Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandler
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@event_dispatcher']
+  plugin.manager.sparql_entity_id:
+    class: Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager
+    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler', '@entity_type.manager']
+  sparql.inbound_value.datetime.subscriber:
+    class: Drupal\sparql_entity_storage\EventSubscriber\InboundValueDateTimeSubscriber
+    tags:
+    - { name: event_subscriber }
+  sparql.outbound_value.datetime.subscriber:
+    class: Drupal\sparql_entity_storage\EventSubscriber\OutboundValueDateTimeSubscriber
+    tags:
+    - { name: event_subscriber }
+  sparql.inbound_value.translatable_literal.subscriber:
+    class: Drupal\sparql_entity_storage\EventSubscriber\InboundValueTranslatableLiteralSubscriber
+    arguments: ['@typed_data_manager']
+    tags:
+    - { name: event_subscriber }

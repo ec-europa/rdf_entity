@@ -121,7 +121,7 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
     $assert_session->pageTextContains('Updated term Changed Term.');
 
     // Test term weight.
-    RdfEntityMapping::loadByName('taxonomy_term', 'unlocked_vocab')
+    SparqlMapping::loadByName('taxonomy_term', 'unlocked_vocab')
       ->addMappings([
         'weight' => [
           'value' => [

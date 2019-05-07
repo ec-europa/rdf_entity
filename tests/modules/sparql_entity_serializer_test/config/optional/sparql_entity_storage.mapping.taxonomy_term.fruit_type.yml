@@ -2,7 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
-    - rdf_entity.graph.default
+    - sparql_entity_storage.graph.default
     - taxonomy.vocabulary.fruit_type
 id: taxonomy_term.fruit_type
 entity_type_id: taxonomy_term

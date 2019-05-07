@@ -5,17 +5,17 @@ declare(strict_types = 1);
 namespace web\modules\contrib\rdf_entity\modules\rdf_taxonomy\tests\src\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\rdf_entity\Entity\RdfEntityMapping;
 use Drupal\rdf_taxonomy\Entity\RdfTerm;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests the RdfTerm weight.
  */
 class SparqlTermWeightTest extends KernelTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * Term data as an array keyed by term name and having term weight as value.
@@ -35,6 +35,7 @@ class SparqlTermWeightTest extends KernelTestBase {
   protected static $modules = [
     'rdf_entity',
     'rdf_taxonomy',
+    'sparql_entity_storage',
     'taxonomy',
     'text',
   ];
@@ -45,11 +46,11 @@ class SparqlTermWeightTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->setUpSparql();
-    $this->installConfig(['rdf_entity']);
+    $this->installConfig(['sparql_entity_storage']);
 
     // Create a test vocabulary.
     Vocabulary::create(['vid' => 'test_vocab'])->save();
-    RdfEntityMapping::create([
+    SparqlMapping::create([
       'entity_type_id' => 'taxonomy_term',
       'bundle' => 'test_vocab',
     ])->setRdfType('http://example.com/test_vocab')
@@ -103,7 +104,7 @@ class SparqlTermWeightTest extends KernelTestBase {
     $this->assertSame(['Abc', 'Bcd', 'Cde', 'Xyz'], $get_labels());
 
     // Add the 'weight' mapping.
-    RdfEntityMapping::loadByName('taxonomy_term', 'test_vocab')
+    SparqlMapping::loadByName('taxonomy_term', 'test_vocab')
       ->addMappings([
         'weight' => [
           'value' => [

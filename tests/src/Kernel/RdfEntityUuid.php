@@ -22,7 +22,7 @@ class RdfEntityUuid extends KernelTestBase {
    */
   protected static $modules = [
     'rdf_entity',
-    'rdf_entity_graph_test',
+    'sparql_entity_serializer_test',
     'sparql_entity_storage',
     'user',
   ];
@@ -33,7 +33,11 @@ class RdfEntityUuid extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->setUpSparql();
-    $this->installConfig(['sparql_entity_storage', 'rdf_entity_graph_test']);
+    $this->installConfig([
+      'rdf_entity',
+      'sparql_entity_serializer_test',
+      'sparql_entity_storage',
+    ]);
   }
 
   /**
