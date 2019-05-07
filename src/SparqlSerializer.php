@@ -29,11 +29,11 @@ class SparqlSerializer implements SparqlSerializerInterface {
   protected $graphHandler;
 
   /**
-   * Instantiates a new RdfSerializer object.
+   * Instantiates a new serializer instance.
    *
    * @param \Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface $sparqlEndpoint
    *   The SPARQL connection object.
-   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $graph_handler
    *   The SPARQL graph handler service.
    */
   public function __construct(ConnectionInterface $sparqlEndpoint, SparqlEntityStorageGraphHandlerInterface $graph_handler) {
