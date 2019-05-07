@@ -39,3 +39,11 @@ services:
     class: Drupal\rdf_entity\EventSubscriber\RdfContentTypesSubscriber
     tags:
       - { name: event_subscriber }
+
+  # Deprecated services.
+  sparql_endpoint:
+    alias: sparql.endpoint
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.endpoint' service instead."
+  plugin.manager.rdf_entity.id:
+    alias: plugin.manager.sparql_entity_id
+    deprecated: "Service '%service_id%' is deprecated. Use 'plugin.manager.sparql_entity_id' service instead."
