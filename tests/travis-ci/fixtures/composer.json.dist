@@ -13,7 +13,7 @@
   },
   "require-dev": {
     "behat/mink-goutte-driver": "~1.2",
-    "mikey179/vfsStream": "~1.2",
+    "mikey179/vfsstream": "~1.2",
     "minimaxir/big-list-of-naughty-strings": "dev-master",
     "phpunit/phpunit": "~6.0"
   },
