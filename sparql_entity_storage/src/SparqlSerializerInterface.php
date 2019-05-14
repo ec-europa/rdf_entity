@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_entity;
+namespace Drupal\sparql_entity_storage;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 

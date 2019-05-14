@@ -51,3 +51,39 @@ services:
     arguments: ['@typed_data_manager']
     tags:
     - { name: event_subscriber }
+
+  sparql_entity.serializer:
+    class: Drupal\sparql_entity_storage\SparqlSerializer
+    arguments: ['@sparql.endpoint', '@sparql.graph_handler']
+  sparql_entity.encoder_base:
+    abstract: true
+    class: Drupal\sparql_entity_storage\Encoder\SparqlEncoder
+  sparql_entity.encoder.jsonld:
+    parent: sparql_entity.encoder_base
+    tags:
+      - { name: encoder, format: jsonld }
+  sparql_entity.encoder.rdfxml:
+    parent: sparql_entity.encoder_base
+    tags:
+      - { name: encoder, format: rdfxml }
+  sparql_entity.encoder.ntriples:
+    parent: sparql_entity.encoder_base
+    tags:
+      - { name: encoder, format: ntriples }
+  sparql_entity.encoder.turtle:
+    parent: sparql_entity.encoder_base
+    tags:
+      - { name: encoder, format: turtle }
+  sparql_entity.encoder.n3:
+    parent: sparql_entity.encoder_base
+    tags:
+      - { name: encoder, format: n3 }
+  sparql.entity_normalizer:
+    class: Drupal\rdf_entity\Normalizer\SparqlEntityNormalizer
+    arguments: ['@sparql_entity.serializer', '@entity_type.manager']
+    tags:
+      - { name: normalizer, priority: 10 }
+  sparql.content_type.subscriber:
+    class: Drupal\sparql_entity_storage\EventSubscriber\SparqlContentTypesSubscriber
+    tags:
+      - { name: event_subscriber }

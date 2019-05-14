@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\rdf_entity\Kernel;
+namespace Drupal\Tests\sparql_entity_storage\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\rdf_entity\Entity\Rdf;
@@ -50,7 +50,7 @@ class SparqlSerializerTest extends KernelTestBase {
     $entity->save();
 
     $encoders = $this->container->getParameter('sparql_entity.encoders');
-    $serializer = $this->container->get('rdf_entity.serializer');
+    $serializer = $this->container->get('sparql_entity.serializer');
     foreach ($encoders as $format => $content_type) {
       $serialized = trim($serializer->serializeEntity($entity, $format));
       $expected = trim(file_get_contents(__DIR__ . "/../../fixtures/content-negotiation/rdf_entity/$format"));

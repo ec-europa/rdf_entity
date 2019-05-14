@@ -2,11 +2,10 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_entity;
+namespace Drupal\sparql_entity_storage;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface;
-use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use EasyRdf\Graph;
 
 /**
@@ -15,7 +14,7 @@ use EasyRdf\Graph;
 class SparqlSerializer implements SparqlSerializerInterface {
 
   /**
-   * The Sparql connection object.
+   * The SPARQL connection object.
    *
    * @var \Drupal\sparql_entity_storage\Database\Driver\sparql\ConnectionInterface
    */

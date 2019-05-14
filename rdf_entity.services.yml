@@ -4,41 +4,6 @@ services:
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }
-  rdf_entity.serializer:
-    class: Drupal\rdf_entity\SparqlSerializer
-    arguments: ['@sparql_endpoint', '@sparql.graph_handler']
-  rdf_entity.encoder_base:
-    abstract: true
-    class: Drupal\rdf_entity\Encoder\SparqlEncoder
-  rdf_entity.encoder.jsonld:
-    parent: rdf_entity.encoder_base
-    tags:
-      - { name: encoder, format: jsonld }
-  rdf_entity.encoder.rdfxml:
-    parent: rdf_entity.encoder_base
-    tags:
-      - { name: encoder, format: rdfxml }
-  rdf_entity.encoder.ntriples:
-    parent: rdf_entity.encoder_base
-    tags:
-      - { name: encoder, format: ntriples }
-  rdf_entity.encoder.turtle:
-    parent: rdf_entity.encoder_base
-    tags:
-      - { name: encoder, format: turtle }
-  rdf_entity.encoder.n3:
-    parent: rdf_entity.encoder_base
-    tags:
-      - { name: encoder, format: n3 }
-  rdf_entity.sparql_entity_normalizer:
-    class: Drupal\rdf_entity\Normalizer\SparqlEntityNormalizer
-    arguments: ['@rdf_entity.serializer', '@entity_type.manager']
-    tags:
-      - { name: normalizer, priority: 10 }
-  rdf_entity.rdf_content_type.subscriber:
-    class: Drupal\rdf_entity\EventSubscriber\RdfContentTypesSubscriber
-    tags:
-      - { name: event_subscriber }
 
   # Deprecated services.
   sparql_endpoint:
@@ -47,3 +12,9 @@ services:
   plugin.manager.rdf_entity.id:
     alias: plugin.manager.sparql_entity_id
     deprecated: "Service '%service_id%' is deprecated. Use 'plugin.manager.sparql_entity_id' service instead."
+  rdf_entity.serializer:
+    alias: sparql_entity.serializer
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql_entity.serializer' service instead."
+  rdf_entity.sparql_entity_normalizer:
+    alias: sparql.entity_normalizer
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.entity_normalizer' service instead."

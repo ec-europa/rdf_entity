@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_entity\Encoder;
+namespace Drupal\sparql_entity_storage\Encoder;
 
 use Drupal\rdf_entity\SparqlEncoderInterface;
 use EasyRdf\Format;

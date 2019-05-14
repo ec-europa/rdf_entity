@@ -2,9 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Drupal\rdf_entity\Normalizer;
+namespace Drupal\sparql_entity_storage\Normalizer;
 
-use Drupal\rdf_entity\Encoder\SparqlEncoder;
+use Drupal\sparql_entity_storage\Encoder\SparqlEncoder;
 use Drupal\serialization\Normalizer\NormalizerBase as SerializationNormalizerBase;
 
 /**
