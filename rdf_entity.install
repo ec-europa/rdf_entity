@@ -92,8 +92,22 @@ function rdf_entity_update_8003() {
  * Split out the SPARQL entity storage.
  */
 function rdf_entity_update_8004() {
-  // 1. Rename rdf_entity.graph.* > sparql_entity_storage.graph.*.
-  // 2. Rename third_party.rdf_entity > third_party.sparql_entity_storage in
-  //    each field storage.
-  // 3. Rename rdf_entity.mapping.* > sparql_entity_storage.mapping.*.
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $config_factory = \Drupal::configFactory();
+
+  foreach (['mapping', 'graph'] as $type) {
+    // Install the new entity type definitions.
+    $entity_type = $entity_type_manager->getDefinition("sparql_$type");
+    $definition_update_manager->installEntityType($entity_type);
+
+    // Uninstall the old entity type definitions.
+    $entity_type = $definition_update_manager->getEntityType("rdf_entity_$type");
+    $definition_update_manager->uninstallEntityType($entity_type);
+
+    // Remove potential stale configuration objects.
+    foreach ($config_factory->listAll("rdf_entity.$type.") as $name) {
+      $config_factory->getEditable($name)->delete();
+    }
+  }
 }
