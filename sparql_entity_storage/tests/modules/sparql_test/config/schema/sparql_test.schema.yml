@@ -1,7 +1,0 @@
-sparql_test.type.*:
-  type: config_entity
-  mapping:
-    id:
-      type: string
-    name:
-      type: label

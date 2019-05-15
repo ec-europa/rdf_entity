@@ -1,8 +1,0 @@
-name: 'SPARQL Entity Storage'
-type: module
-description: 'Provides SPARQL entity storage and query for Drupal entities.'
-package: Custom
-php: 7.1
-core: 8.x
-dependencies:
-- options
