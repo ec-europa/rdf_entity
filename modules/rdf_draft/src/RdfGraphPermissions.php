@@ -16,7 +16,7 @@ class RdfGraphPermissions {
    * Returns an array of graph view permissions.
    *
    * @return array
-   *   The sPARQL graph view permissions.
+   *   The SPARQL graph view permissions.
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
