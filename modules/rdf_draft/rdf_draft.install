@@ -6,15 +6,15 @@
  */
 
 use Drupal\Core\Serialization\Yaml;
-use Drupal\rdf_entity\Entity\RdfEntityGraph;
-use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\sparql_entity_storage\Entity\SparqlGraph;
+use Drupal\sparql_entity_storage\SparqlGraphInterface;
 
 /**
  * Implements hook_install().
  */
 function rdf_draft_install() {
   // Change the label of the 'default' graph to 'Published'.
-  if ($default = RdfEntityGraph::load(RdfEntityGraphInterface::DEFAULT)) {
+  if ($default = SparqlGraph::load(SparqlGraphInterface::DEFAULT)) {
     $default->setName('Published')->save();
   }
 }
@@ -27,6 +27,6 @@ function rdf_draft_update_8001() {
   // they run. We don't wait on configuration synchronization, because that runs
   // usually after the database update, so we make this entity available in an
   // early stage of updates.
-  $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/rdf_entity.graph.draft.yml'));
-  RdfEntityGraph::create($values)->save();
+  $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/sparql_entity_storage.graph.draft.yml'));
+  SparqlGraph::create($values)->save();
 }

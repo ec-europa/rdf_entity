@@ -66,7 +66,7 @@ class RdfController extends ControllerBase {
     $parameter_name = $route_match->getRouteObject()->getOption('entity_type_id');
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $route_match->getParameter($parameter_name);
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $this->entityManager->getStorage($entity->getEntityTypeId());
     $graph_name = $route_match->getRouteObject()->getOption('graph_name');
     $draft_entity = $storage->load($entity->id(), [$graph_name]);

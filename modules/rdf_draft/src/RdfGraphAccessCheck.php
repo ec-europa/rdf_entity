@@ -7,8 +7,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
-use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
+use Drupal\sparql_entity_storage\SparqlGraphInterface;
 use Drupal\rdf_entity\RdfInterface;
 use Symfony\Component\Routing\Route;
 
@@ -49,13 +49,13 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
     $graph = $route->getOption('graph_name');
     $entity_type_id = $route->getOption('entity_type_id');
     $storage = $this->entityManager->getStorage($entity_type_id);
-    if (!$storage instanceof RdfEntitySparqlStorage) {
+    if (!$storage instanceof SparqlEntityStorage) {
       throw new \Exception('Storage not supported.');
     }
 
     // The active graph is the published graph. It is handled by the default
     // operation handler.
-    $default_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), RdfEntityGraphInterface::DEFAULT);
+    $default_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), SparqlGraphInterface::DEFAULT);
     $requested_graph = $storage->getGraphHandler()->getBundleGraphUri($rdf_entity->getEntityTypeId(), $rdf_entity->bundle(), $graph);
     if ($requested_graph == $default_graph) {
       return AccessResult::neutral();

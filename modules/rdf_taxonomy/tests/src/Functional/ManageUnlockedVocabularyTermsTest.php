@@ -3,10 +3,10 @@
 namespace Drupal\Tests\rdf_taxonomy\Functional;
 
 use Drupal\filter\Entity\FilterFormat;
-use Drupal\rdf_entity\Entity\RdfEntityMapping;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests adding, editing and deleting terms in an unlocked vocabulary.
@@ -15,7 +15,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * {@inheritdoc}
@@ -40,7 +40,7 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
       'name' => $this->randomString(),
     ])->setThirdPartySetting('rdf_taxonomy', 'locked', FALSE)
       ->save();
-    RdfEntityMapping::create([
+    SparqlMapping::create([
       'entity_type_id' => 'taxonomy_term',
       'bundle' => 'unlocked_vocab',
     ])->setRdfType('http://example.com/unlocked-vocab')
@@ -121,7 +121,7 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
     $assert_session->pageTextContains('Updated term Changed Term.');
 
     // Test term weight.
-    RdfEntityMapping::loadByName('taxonomy_term', 'unlocked_vocab')
+    SparqlMapping::loadByName('taxonomy_term', 'unlocked_vocab')
       ->addMappings([
         'weight' => [
           'value' => [

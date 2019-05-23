@@ -2,14 +2,16 @@
 
 namespace Drupal\rdf_entity\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\rdf_entity\RdfEntityGraphInterface;
-use Drupal\rdf_entity\RdfInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rdf_entity\RdfEntityUuidFieldItemList;
+use Drupal\rdf_entity\RdfInterface;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
+use Drupal\sparql_entity_storage\SparqlGraphInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -21,7 +23,7 @@ use Drupal\user\UserInterface;
  *   id = "rdf_entity",
  *   label = @Translation("Rdf entity"),
  *   handlers = {
- *     "storage" = "\Drupal\rdf_entity\Entity\RdfEntitySparqlStorage",
+ *     "storage" = "\Drupal\sparql_entity_storage\SparqlEntityStorage",
  *     "view_builder" = "Drupal\rdf_entity\RdfEntityViewBuilder",
  *     "list_builder" = "Drupal\rdf_entity\Entity\Controller\RdfListBuilder",
  *     "form" = {
@@ -199,7 +201,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
       ->setTranslatable(FALSE)
       ->setReadOnly(TRUE)
       ->setComputed(TRUE)
-      ->setCustomStorage(TRUE);
+      ->setClass(RdfEntityUuidFieldItemList::class);;
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(new TranslatableMarkup('Langcode'))
@@ -213,24 +215,6 @@ class Rdf extends ContentEntityBase implements RdfInterface {
       ]);
 
     return $fields;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function uuid() {
-    return $this->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createDuplicate() {
-    $duplicate = parent::createDuplicate();
-    // As the ID is NULL, reset also the UUID.
-    $uuid_key = $this->getEntityType()->getKey('uuid');
-    $duplicate->set($uuid_key, NULL);
-    return $duplicate;
   }
 
   /**
@@ -269,9 +253,9 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function isPublished() {
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $this->entityTypeManager()->getStorage($this->getEntityTypeId());
-    $published_graph = $storage->getGraphHandler()->getBundleGraphUri($this->getEntityTypeId(), $this->bundle(), RdfEntityGraphInterface::DEFAULT);
+    $published_graph = $storage->getGraphHandler()->getBundleGraphUri($this->getEntityTypeId(), $this->bundle(), SparqlGraphInterface::DEFAULT);
     $entity_graph_name = $this->get('graph')->target_id;
     // If no graph is yet set, get the default graph for the entity.
     if (empty($entity_graph_name)) {
@@ -344,7 +328,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    */
   public function deleteFromGraph(string $graph_id): void {
     if (!$this->isNew()) {
-      /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+      /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
       $storage = $this->entityTypeManager()->getStorage($this->entityTypeId);
       $storage->deleteFromGraph([$this], $graph_id);
     }
@@ -385,7 +369,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   public static function load($id, array $graph_ids = NULL) {
     $entity_type_repository = \Drupal::service('entity_type.repository');
     $entity_type_manager = \Drupal::entityTypeManager();
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(get_called_class()));
     return $storage->load($id, $graph_ids);
   }
@@ -396,7 +380,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   public static function loadMultiple(array $ids = NULL, array $graph_ids = NULL) {
     $entity_type_repository = \Drupal::service('entity_type.repository');
     $entity_type_manager = \Drupal::entityTypeManager();
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(get_called_class()));
     return $storage->loadMultiple($ids, $graph_ids);
   }
@@ -413,7 +397,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    *   TRUE if the mapping is set, FALSE otherwise.
    */
   protected function hasFieldMapping($field_name, $column = 'value') {
-    $mapping = RdfEntityMapping::loadByName($this->getEntityTypeId(), $this->bundle());
+    $mapping = SparqlMapping::loadByName($this->getEntityTypeId(), $this->bundle());
     return $mapping && !empty($mapping->getMapping($field_name, $column)['predicate']);
   }
 

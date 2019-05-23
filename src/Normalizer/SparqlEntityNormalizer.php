@@ -6,8 +6,9 @@ namespace Drupal\rdf_entity\Normalizer;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
-use Drupal\rdf_entity\SparqlSerializer;
+use Drupal\sparql_entity_storage\Normalizer\NormalizerBase;
+use Drupal\sparql_entity_storage\SparqlSerializer;
+use Drupal\sparql_entity_storage\SparqlEntityStorageInterface;
 
 /**
  * Converts the Drupal entity object structure to a HAL array structure.
@@ -17,7 +18,7 @@ class SparqlEntityNormalizer extends NormalizerBase {
   /**
    * The serializer service.
    *
-   * @var \Drupal\rdf_entity\SparqlSerializer
+   * @var \Drupal\sparql_entity_storage\SparqlSerializerInterface
    */
   protected $sparqlSerializer;
 
@@ -31,7 +32,7 @@ class SparqlEntityNormalizer extends NormalizerBase {
   /**
    * RdfEntityNormalizer constructor.
    *
-   * @param \Drupal\rdf_entity\SparqlSerializer $rdf_serializer
+   * @param \Drupal\sparql_entity_storage\SparqlSerializer $rdf_serializer
    *   RDF Serializer service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
@@ -52,7 +53,7 @@ class SparqlEntityNormalizer extends NormalizerBase {
 
     if ($data instanceof ContentEntityInterface) {
       $storage = $this->entityTypeManager->getStorage($data->getEntityTypeId());
-      return $storage instanceof RdfEntitySparqlStorageInterface;
+      return $storage instanceof SparqlEntityStorageInterface;
     }
     return FALSE;
   }

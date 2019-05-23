@@ -7,31 +7,9 @@
 
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\rdf_entity\Entity\RdfEntityGraph;
-use Drupal\rdf_entity\Entity\RdfEntityMapping;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
-
-/**
- * Implements hook_requirements().
- */
-function rdf_entity_requirements($phase) {
-  $requirements = [];
-  if ($phase !== 'runtime') {
-    return $requirements;
-  }
-
-  $requirements += rdf_entity_virtuoso_version_requirements();
-  // If the endpoint is not available, return early.
-  if (
-    isset($requirements['rdf_entity_endpoint']['severity']) &&
-    $requirements['rdf_entity_endpoint']['severity'] === REQUIREMENT_ERROR
-  ) {
-    return $requirements;
-  }
-
-  $requirements += rdf_entity_virtuoso_permission_requirements();
-  return $requirements;
-}
+use Drupal\sparql_entity_storage\Entity\SparqlGraph;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
 
 /**
  * Move RDF entity mapping data from bundle entities into dedicated entities.
@@ -46,14 +24,14 @@ function rdf_entity_update_8001() {
   // usually after the database update, so we make this entity available in an
   // early stage of updates.
   $values = Yaml::decode(file_get_contents(__DIR__ . '/config/install/rdf_entity.graph.default.yml'));
-  RdfEntityGraph::create($values)->save();
+  SparqlGraph::create($values)->save();
 
   // Iterate over all entities that are bundles of content entities with
-  // RdfEntitySparqlStorage and move their 3rd party settings belonging to
-  // rdf_entity module into their dedicated rdf_entity_mapping config entities.
+  // SparqlEntityStorage and move their 3rd party settings belonging to
+  // rdf_entity module into their dedicated sparql_mapping config entities.
   foreach ($entity_type_manager->getDefinitions() as $entity_type_id => $entity_type) {
     $storage = $entity_type_manager->getStorage($entity_type_id);
-    if (!$storage instanceof RdfEntitySparqlStorage) {
+    if (!$storage instanceof SparqlEntityStorage) {
       continue;
     }
 
@@ -70,8 +48,8 @@ function rdf_entity_update_8001() {
         $values['base_fields_mapping'] = $values['mapping'] ?? [];
         unset($values['mapping']);
 
-        // Create and save the new 'rdf_entity_mapping' entity.
-        RdfEntityMapping::create($values)->save();
+        // Create and save the new 'sparql_mapping' entity.
+        SparqlMapping::create($values)->save();
 
         // Cleanup 3rd party settings from the bundle entity.
         foreach ($third_party_settings as $key => $value) {
@@ -84,7 +62,7 @@ function rdf_entity_update_8001() {
 }
 
 /**
- * Install 'rdf_entity_graph' and 'rdf_entity_mapping' entity types.
+ * Install 'sparql_graph' and 'sparql_mapping' entity types.
  */
 function rdf_entity_update_8002() {
   $entity_type_manager = \Drupal::entityTypeManager();
@@ -108,4 +86,28 @@ function rdf_entity_update_8003() {
     ->setCustomStorage(TRUE)
     ->setSetting('target_type', 'rdf_entity_graph');
   $definition_update_manager->installFieldStorageDefinition('graph', 'rdf_entity', 'rdf_entity', $graph_field_definition);
+}
+
+/**
+ * Split out the SPARQL entity storage.
+ */
+function rdf_entity_update_8004() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $config_factory = \Drupal::configFactory();
+
+  foreach (['mapping', 'graph'] as $type) {
+    // Install the new entity type definitions.
+    $entity_type = $entity_type_manager->getDefinition("sparql_$type");
+    $definition_update_manager->installEntityType($entity_type);
+
+    // Uninstall the old entity type definitions.
+    $entity_type = $definition_update_manager->getEntityType("rdf_entity_$type");
+    $definition_update_manager->uninstallEntityType($entity_type);
+
+    // Remove potential stale configuration objects.
+    foreach ($config_factory->listAll("rdf_entity.$type.") as $name) {
+      $config_factory->getEditable($name)->delete();
+    }
+  }
 }

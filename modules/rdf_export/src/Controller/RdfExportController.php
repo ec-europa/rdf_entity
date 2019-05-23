@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\rdf_entity\SparqlSerializerInterface;
+use Drupal\sparql_entity_storage\SparqlSerializerInterface;
 use EasyRdf\Format;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,14 +21,14 @@ class RdfExportController extends ControllerBase {
   /**
    * The SPARQL serializer service.
    *
-   * @var \Drupal\rdf_entity\SparqlSerializerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlSerializerInterface
    */
   protected $sparqlSerializer;
 
   /**
    * Instantiates a new RdfExportController object.
    *
-   * @param \Drupal\rdf_entity\SparqlSerializerInterface $sparql_serializer
+   * @param \Drupal\sparql_entity_storage\SparqlSerializerInterface $sparql_serializer
    *   The SPARQL serializer interface.
    */
   public function __construct(SparqlSerializerInterface $sparql_serializer) {
@@ -40,7 +40,7 @@ class RdfExportController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('rdf_entity.serializer')
+      $container->get('sparql_entity.serializer')
     );
   }
 
