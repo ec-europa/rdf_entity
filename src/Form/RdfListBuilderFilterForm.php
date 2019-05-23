@@ -23,7 +23,7 @@ class RdfListBuilderFilterForm extends FormBase {
       '#attributes' => ['class' => ['container-inline']],
     ];
 
-    /** @var \Drupal\rdf_entity\Entity\RdfEntitySparqlStorage $storage */
+    /** @var \Drupal\rdf_entity\Entity\SparqlEntityStorage $storage */
     $storage = \Drupal::entityTypeManager()->getStorage('rdf_entity');
     $graphs = array_map(function (array $definition) {
       return $definition['title'];

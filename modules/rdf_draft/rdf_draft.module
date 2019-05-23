@@ -6,8 +6,8 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\rdf_entity\RdfEntitySparqlStorageInterface;
-use Drupal\rdf_entity\RdfEntityGraphInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageInterface;
+use Drupal\sparql_entity_storage\SparqlGraphInterface;
 
 /**
  * Implements hook_entity_type_alter().
@@ -19,7 +19,7 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
     return;
   }
 
-  /** @var \Drupal\rdf_entity\RdfGraphHandlerInterface $graph_handler */
+  /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $graph_handler */
   $graph_handler = \Drupal::service('sparql.graph_handler');
 
   /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
@@ -29,7 +29,7 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
       $graphs = $graph_handler->getGraphDefinitions($entity_type_id);
       $recurse = FALSE;
       foreach ($graphs as $graph_id => $graph) {
-        if ($graph_id !== RdfEntityGraphInterface::DEFAULT) {
+        if ($graph_id !== SparqlGraphInterface::DEFAULT) {
           $entity_type->setLinkTemplate("rdf-draft-$graph_id", "/$entity_type_id/{{$entity_type_id}}/graph/$graph_id");
         }
       }
@@ -43,10 +43,10 @@ function rdf_draft_entity_type_alter(array &$entity_types) {
 function rdf_draft_entity_operation(EntityInterface $entity) {
   $operations = [];
 
-  /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+  /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
 
-  if ($storage instanceof RdfEntitySparqlStorageInterface) {
+  if ($storage instanceof SparqlEntityStorageInterface) {
     foreach ($storage->getGraphDefinitions() as $name => $definition) {
       $link_template = "rdf-draft-$name";
       if ($entity->hasLinkTemplate($link_template) && $storage->hasGraph($entity, $name)) {

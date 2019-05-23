@@ -3,9 +3,9 @@
 namespace Drupal\rdf_draft\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\rdf_entity\ActiveGraphEvent;
-use Drupal\rdf_entity\Event\RdfEntityEvents;
-use Drupal\rdf_entity\RdfGraphHandlerInterface;
+use Drupal\sparql_entity_storage\Event\ActiveGraphEvent;
+use Drupal\sparql_entity_storage\Event\SparqlEntityStorageEvents;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -21,23 +21,23 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
   protected $entityTypeManager;
 
   /**
-   * The RDF graph handler service.
+   * The SPARQL graph handler service.
    *
-   * @var \Drupal\rdf_entity\RdfGraphHandlerInterface
+   * @var \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface
    */
-  protected $rdfGraphHandler;
+  protected $sparqlGraphHandler;
 
   /**
    * Constructs a new event subscriber object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\rdf_entity\RdfGraphHandlerInterface $rdf_graph_handler
-   *   The RDF graph handler service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler
+   *   The SPARQL graph handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RdfGraphHandlerInterface $rdf_graph_handler) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->rdfGraphHandler = $rdf_graph_handler;
+    $this->sparqlGraphHandler = $sparql_graph_handler;
   }
 
   /**
@@ -56,7 +56,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
    * - In any other case, like a 'view draft' tab view, the corresponding graph
    *   is loaded with no fallbacks.
    *
-   * @param \Drupal\rdf_entity\ActiveGraphEvent $event
+   * @param \Drupal\sparql_entity_storage\Event\ActiveGraphEvent $event
    *   The event object to process.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
@@ -66,10 +66,10 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
     $defaults = $event->getRouteDefaults();
     if ($defaults['_route']) {
       $entity_type_id = $event->getEntityTypeId();
-      $default_graph_id = $this->rdfGraphHandler->getDefaultGraphId($entity_type_id);
-      $entity_type_has_draft = in_array('draft', $this->rdfGraphHandler->getEntityTypeGraphIds($entity_type_id));
+      $default_graph_id = $this->sparqlGraphHandler->getDefaultGraphId($entity_type_id);
+      $entity_type_has_draft = in_array('draft', $this->sparqlGraphHandler->getEntityTypeGraphIds($entity_type_id));
 
-      /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+      /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
       $storage = $this->entityTypeManager->getStorage($entity_type_id);
       $route_parts = explode('.', $defaults['_route']);
       // On the edit form, load from draft graph, if possible.
@@ -87,7 +87,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
         // Even an entity type supports a graph, it might have bundles that
         // are not providing support for that graph. In addition to the entity
         // type check, we need to check also the bundle.
-        if ($entity_type_has_draft && $this->rdfGraphHandler->bundleHasGraph($entity_type_id, $entity->bundle(), 'draft')) {
+        if ($entity_type_has_draft && $this->sparqlGraphHandler->bundleHasGraph($entity_type_id, $entity->bundle(), 'draft')) {
           $event->setGraphs(['draft', $default_graph_id]);
         }
         else {
@@ -113,7 +113,7 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      RdfEntityEvents::GRAPH_ENTITY_CONVERT => ['graphForEntityConvert'],
+      SparqlEntityStorageEvents::GRAPH_ENTITY_CONVERT => ['graphForEntityConvert'],
     ];
   }
 

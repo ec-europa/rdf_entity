@@ -4,7 +4,7 @@ namespace Drupal\rdf_draft;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
 
 /**
  * Provides dynamic permissions for rdf graphs.
@@ -16,7 +16,7 @@ class RdfGraphPermissions {
    * Returns an array of graph view permissions.
    *
    * @return array
-   *   The rdf graph view permissions.
+   *   The SPARQL graph view permissions.
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
@@ -24,7 +24,7 @@ class RdfGraphPermissions {
     $perms = [];
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
       $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
-      if ($storage instanceof RdfEntitySparqlStorage) {
+      if ($storage instanceof SparqlEntityStorage) {
         $definitions = $storage->getGraphDefinitions();
         unset($definitions['default']);
         foreach ($definitions as $name => $definition) {

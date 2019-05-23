@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -54,7 +54,7 @@ class RdfDraftLocalTask extends DeriverBase implements ContainerDeriverInterface
     $this->derivatives = [];
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
       $storage = $this->entityManager->getStorage($entity_type_id);
-      if (!$storage instanceof RdfEntitySparqlStorage) {
+      if (!$storage instanceof SparqlEntityStorage) {
         continue;
       }
       $definitions = $storage->getGraphDefinitions();

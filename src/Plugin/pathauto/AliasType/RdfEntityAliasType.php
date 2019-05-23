@@ -5,9 +5,10 @@ declare(strict_types = 1);
 namespace Drupal\rdf_entity\Plugin\pathauto\AliasType;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\pathauto\PathautoState;
 use Drupal\pathauto\Plugin\pathauto\AliasType\EntityAliasTypeBase;
-use Drupal\rdf_entity\Entity\Query\Sparql\Query;
-use Drupal\rdf_entity\UriEncoder;
+use Drupal\sparql_entity_storage\Entity\Query\Sparql\Query;
+use Drupal\sparql_entity_storage\UriEncoder;
 
 /**
  * A pathauto alias type plugin for RDF entities.
@@ -44,56 +45,96 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
   public function batchUpdate($action, &$context) {
     if (!isset($context['sandbox']['count'])) {
       $context['sandbox']['count'] = 0;
+      $query = $this->getRdfEntityQuery();
+      $query->addTag('rdf_entity_pathauto_bulk_update');
+      $context['sandbox']['rdf_entity_ids'] = $query->execute();
+      $context['sandbox']['updates'] = 0;
+
+      switch ($action) {
+        case 'create':
+          // Process RDF entities that are not in the list of URL aliases.
+          $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+          $context['sandbox']['ids_to_process'] = array_diff($context['sandbox']['rdf_entity_ids'], $aliased_rdf_entity_ids);
+          break;
+
+        case 'update':
+          // Process RDF entities that are in the list of URL aliases.
+          $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+          $context['sandbox']['ids_to_process'] = array_intersect($context['sandbox']['rdf_entity_ids'], $aliased_rdf_entity_ids);
+          break;
+
+        case 'all':
+          $context['sandbox']['ids_to_process'] = $context['sandbox']['rdf_entity_ids'];
+          break;
+
+        default:
+          $context['sandbox']['ids_to_process'] = [];
+
+      }
+      $context['sandbox']['total'] = count($context['sandbox']['ids_to_process']);
     }
 
-    $query = $this->getRdfEntityQuery();
-    $query->addTag('rdf_entity_pathauto_bulk_update');
-
-    switch ($action) {
-      case 'create':
-        // Process RDF entities that are not in the list of URL aliases.
-        $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
-        if (!empty($aliased_rdf_entity_ids)) {
-          $query->condition('id', $aliased_rdf_entity_ids, 'NOT IN');
-        }
-        break;
-
-      case 'update':
-        // Process RDF entities that are in the list of URL aliases.
-        $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
-        if (!empty($aliased_rdf_entity_ids)) {
-          $query->condition('id', $aliased_rdf_entity_ids, 'IN');
-        }
-        break;
-
-      case 'all':
-        // Nothing to filter. We want all entities.
-        break;
-
-      default:
-        // Unknown action. Abort!
-        return;
+    if (empty($context['sandbox']['ids_to_process'])) {
+      $context['finished'] = 1;
+      return;
     }
 
-    // Keep track of the total amount of items to process.
+    $ids = array_splice($context['sandbox']['ids_to_process'], 0, 25);
+    $updates = $this->bulkUpdate($ids);
+
+    $context['sandbox']['count'] += count($ids);
+    if ($updates !== 0) {
+      $context['results']['updates'] += $updates;
+    }
+
+    $progress = sprintf('%.2f%%', $context['sandbox']['count'] / $context['sandbox']['total'] * 100);
+    $context['message'] = $this->t('[@progress] Processed Rdf entity @id.', [
+      '@progress' => $progress,
+      '@id' => end($ids),
+    ]);
+
+    if ($context['sandbox']['count'] < $context['sandbox']['total']) {
+      $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function batchDelete(&$context) {
+    if (!isset($context['sandbox']['count'])) {
+      $context['sandbox']['count'] = 0;
+    }
+
+    $aliased_rdf_entity_ids = $this->getAliasedEntityIds($context['sandbox']);
+
+    // Get the total amount of items to process.
     if (!isset($context['sandbox']['total'])) {
-      $count_query = clone $query;
-      $context['sandbox']['total'] = $count_query->count()->execute();
+      $context['sandbox']['total'] = count($aliased_rdf_entity_ids);
 
-      // If there are no entities to update, then stop immediately.
+      // If there are no entities to delete, then stop immediately.
       if (!$context['sandbox']['total']) {
         $context['finished'] = 1;
         return;
       }
     }
 
-    $query->range($context['sandbox']['count'], 25);
-    $ids = $query->execute();
+    $to_delete = array_slice($aliased_rdf_entity_ids, $context['sandbox']['count'], 100, TRUE);
+    $pids_by_id = array_flip($to_delete);
 
-    $updates = $this->bulkUpdate($ids);
-    $context['sandbox']['count'] += count($ids);
-    $context['results']['updates'] += $updates;
-    $context['message'] = $this->t('Updated alias for Rdf entity @id.', ['@id' => end($ids)]);
+    PathautoState::bulkDelete($this->getEntityTypeId(), $pids_by_id);
+
+    $context['sandbox']['count'] = min($context['sandbox']['count'] + 100, $context['sandbox']['total']);
+
+    $progress = $context['sandbox']['count'] / $context['sandbox']['total'];
+    $progress = sprintf('%.2f%%', $progress * 100);
+
+    $context['message'] = $this->t('[@progress] Deleted alias for Rdf entity @id.', [
+      '@progress' => $progress,
+      '@id' => end($to_delete),
+    ]);
+
+    $context['results']['deletions'][] = $this->getLabel();
 
     if ($context['sandbox']['count'] != $context['sandbox']['total']) {
       $context['finished'] = $context['sandbox']['count'] / $context['sandbox']['total'];
@@ -126,7 +167,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    *   The entity query.
    */
   protected function getRdfEntityQuery() : Query {
-    /** @var \Drupal\rdf_entity\RdfEntitySparqlStorageInterface $storage */
+    /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('rdf_entity');
     return $storage->getQuery();
   }

@@ -1,7 +1,0 @@
-type: module
-core: 8.x
-name: 'RDF Graph Test'
-description: 'Testing module for RDF graphs.'
-package: Testing
-dependencies:
-  - rdf_entity

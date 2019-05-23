@@ -2,8 +2,8 @@
 
 namespace Drupal\rdf_taxonomy\EventSubscriber;
 
-use Drupal\rdf_entity\Event\OutboundValueEvent;
-use Drupal\rdf_entity\Event\RdfEntityEvents;
+use Drupal\sparql_entity_storage\Event\OutboundValueEvent;
+use Drupal\sparql_entity_storage\Event\SparqlEntityStorageEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -16,7 +16,7 @@ class OutboundTermParentSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      RdfEntityEvents::OUTBOUND_VALUE => 'fixParentTermId',
+      SparqlEntityStorageEvents::OUTBOUND_VALUE => 'fixParentTermId',
     ];
   }
 
@@ -26,7 +26,7 @@ class OutboundTermParentSubscriber implements EventSubscriberInterface {
    * Drupal core uses taxonomy terms with numeric IDs. If case, we convert the
    * term ID, from a numeric type to string.
    *
-   * @param \Drupal\rdf_entity\Event\OutboundValueEvent $event
+   * @param \Drupal\sparql_entity_storage\Event\OutboundValueEvent $event
    *   The outbound value event.
    */
   public function fixParentTermId(OutboundValueEvent $event) {

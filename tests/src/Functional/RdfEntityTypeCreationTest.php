@@ -3,7 +3,7 @@
 namespace Drupal\Tests\rdf_entity\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
+use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests the creation of RdfEntityType entities (RDF bundles)
@@ -12,7 +12,7 @@ use Drupal\Tests\rdf_entity\Traits\RdfDatabaseConnectionTrait;
  */
 class RdfEntityTypeCreationTest extends BrowserTestBase {
 
-  use RdfDatabaseConnectionTrait;
+  use SparqlConnectionTrait;
 
   /**
    * {@inheritdoc}
@@ -42,12 +42,12 @@ class RdfEntityTypeCreationTest extends BrowserTestBase {
     $edit = [
       'name' => 'Test',
       'rid' => 'test',
-      'rdf_entity[rdf_type]' => 'rdf_entity[rdf_type]',
-      'rdf_entity[graph][default]' => 'http://example.com/graph/event',
-      'rdf_entity[base_fields_mapping][rid][target_id][predicate]' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-      'rdf_entity[base_fields_mapping][rid][target_id][format]' => 'resource',
-      'rdf_entity[base_fields_mapping][label][value][predicate]' => 'https://schema.org/name',
-      'rdf_entity[base_fields_mapping][label][value][format]' => 'resource',
+      'sparql_entity_storage[rdf_type]' => 'sparql_entity_storage[rdf_type]',
+      'sparql_entity_storage[graph][default]' => 'http://example.com/graph/event',
+      'sparql_entity_storage[base_fields_mapping][rid][target_id][predicate]' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+      'sparql_entity_storage[base_fields_mapping][rid][target_id][format]' => 'resource',
+      'sparql_entity_storage[base_fields_mapping][label][value][predicate]' => 'https://schema.org/name',
+      'sparql_entity_storage[base_fields_mapping][label][value][format]' => 'resource',
     ];
 
     $this->drupalPostForm(NULL, $edit, 'op');

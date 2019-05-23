@@ -1,57 +1,20 @@
 services:
-  entity.query.sparql:
-    class: \Drupal\rdf_entity\Entity\Query\Sparql\QueryFactory
-    arguments: ['@sparql_endpoint', '@entity_type.manager', '@sparql.graph_handler', '@sparql.field_handler']
-    tags:
-      - { name: backend_overridable }
-  sparql_endpoint:
-    class: Drupal\Driver\Database\sparql\Connection
-    factory: ['Drupal\Core\Database\Database', getConnection]
-    arguments: [default, sparql_default]
-  webprofiler.sparql:
-    class: \Drupal\rdf_entity\DataCollector\SparqlDataCollector
-    arguments: ['@sparql_endpoint', '@config.factory']
-    tags:
-      - name: data_collector
-        template: "@rdf_entity/Collector/sparql.html.twig"
-        id: sparql
-        title: Sparql
-        priority: 60
-  paramconverter.rdf_entity:
-    class: \Drupal\rdf_entity\ParamConverter\RdfEntityConverter
-    tags:
-    # Use a higher priority than EntityConverter.
-      - { name: paramconverter, priority: 6 }
-    arguments: ['@entity.manager']
-  route_processor_rdf:
-    class: Drupal\rdf_entity\RouteProcessor\RouteProcessorRdf
-    arguments: ['@current_route_match']
-    tags:
-        - { name: route_processor_outbound, priority: 200 }
-  sparql.graph_handler:
-    class: \Drupal\rdf_entity\RdfGraphHandler
-    arguments: ['@entity_type.manager', '@event_dispatcher']
-  sparql.field_handler:
-    class: \Drupal\rdf_entity\RdfFieldHandler
-    arguments: ['@entity_type.manager', '@entity_field.manager', '@event_dispatcher']
-  plugin.manager.rdf_entity.id:
-    class: Drupal\rdf_entity\RdfEntityIdPluginManager
-    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler', '@entity_type.manager']
   rdf_entity.rdf_entity_route_context:
     class: Drupal\rdf_entity\ContextProvider\RdfEntityRouteContext
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }
-  rdf_entity.inbound_value.datetime.subscriber:
-    class: Drupal\rdf_entity\EventSubscriber\InboundValueDateTimeSubscriber
-    tags:
-      - { name: event_subscriber }
-  rdf_entity.outbound_value.datetime.subscriber:
-    class: Drupal\rdf_entity\EventSubscriber\OutboundValueDateTimeSubscriber
-    tags:
-      - { name: event_subscriber }
-  rdf_entity.inbound_value.translatable_literal.subscriber:
-    class: Drupal\rdf_entity\EventSubscriber\InboundValueTranslatableLiteralSubscriber
-    arguments: ['@typed_data_manager']
-    tags:
-      - { name: event_subscriber }
+
+  # Deprecated services.
+  sparql_endpoint:
+    alias: sparql.endpoint
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.endpoint' service instead."
+  plugin.manager.rdf_entity.id:
+    alias: plugin.manager.sparql_entity_id
+    deprecated: "Service '%service_id%' is deprecated. Use 'plugin.manager.sparql_entity_id' service instead."
+  rdf_entity.serializer:
+    alias: sparql_entity.serializer
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql_entity.serializer' service instead."
+  rdf_entity.sparql_entity_normalizer:
+    alias: sparql.entity_normalizer
+    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.entity_normalizer' service instead."

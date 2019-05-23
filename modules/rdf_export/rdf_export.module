@@ -6,7 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\rdf_entity\Entity\RdfEntitySparqlStorage;
+use Drupal\sparql_entity_storage\SparqlEntityStorage;
 
 /**
  * Implements hook_entity_type_alter().
@@ -22,7 +22,7 @@ function rdf_export_entity_type_alter(array &$entity_types) {
       $recurse = TRUE;
       $storage = \Drupal::service('entity.manager')->getStorage($entity_type_id);
       $recurse = FALSE;
-      if ($storage  instanceof RdfEntitySparqlStorage) {
+      if ($storage  instanceof SparqlEntityStorage) {
         $entity_type->setLinkTemplate('rdf-export', "/rdf-export/$entity_type_id/{{$entity_type_id}}");
       }
     }
