@@ -5,7 +5,6 @@ namespace Drupal\rdf_draft;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;
