@@ -96,6 +96,9 @@ function rdf_entity_update_8004() {
   $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
   $config_factory = \Drupal::configFactory();
 
+  $new_config_candidates = [];
+  $extensions_config = $config_factory->get('core.extension');
+
   foreach (['mapping', 'graph'] as $type) {
     // Install the new entity type definitions.
     $entity_type = $entity_type_manager->getDefinition("sparql_$type");
@@ -105,28 +108,29 @@ function rdf_entity_update_8004() {
     $entity_type = $definition_update_manager->getEntityType("rdf_entity_$type");
     $definition_update_manager->uninstallEntityType($entity_type);
 
-    // Rename graph and mapping config entities.
-    foreach ($config_factory->listAll("rdf_entity.$type.") as $old_name) {
-      $new_name = 'sparql_entity_storage' . substr($old_name, 10);
-      $config_factory->rename($old_name, $new_name);
-    }
-  }
-
-  // Rename 'sparql_graph' dependencies inside 'sparql_mapping'.
-  foreach ($config_factory->listAll('sparql_entity_storage.mapping.') as $name) {
-    $config = $config_factory->getEditable($name);
-    if ($actual_config_dependencies = $config->get('dependencies.config')) {
-      $new_config_dependencies = [];
-      foreach ($actual_config_dependencies as $dependency_name) {
-        if (strpos($dependency_name, 'rdf_entity.graph.') === 0) {
-          $dependency_name = 'sparql_entity_storage' . substr($dependency_name, 10);
+    // Scan for new config YAML files of the enabled extensions and build a list
+    // of config candidates.
+    $file_pattern = "#^sparql_entity_storage\.$type\..*\.yml$#";
+    foreach (['module', 'theme'] as $extension_type) {
+      $extensions = array_keys($extensions_config->get($extension_type));
+      foreach ($extensions as $extension_name) {
+        $extension_path = drupal_get_path($extension_type, $extension_name);
+        foreach (['install', 'optional'] as $sub_path) {
+          foreach (file_scan_directory("$extension_path/config/$sub_path", $file_pattern) as $path => $file) {
+            $new_config_candidates[$path] = $file->name;
+          }
         }
-        $new_config_dependencies[] = $dependency_name;
       }
-      if ($new_config_dependencies !== $actual_config_dependencies) {
-        sort($new_config_dependencies);
-        $config->set('dependencies.config', $new_config_dependencies)->save(TRUE);
+    }
+
+    foreach ($config_factory->listAll("rdf_entity.$type.") as $old_config_name) {
+      $new_config_name = 'sparql_entity_storage' . substr($old_config_name, 10);
+      // Only add the new config if there's a related old config.
+      if (($path = array_search($new_config_name, $new_config_candidates)) !== FALSE) {
+        $data = Yaml::decode(file_get_contents($path));
+        $config_factory->getEditable($new_config_name)->setData($data)->save();
       }
+      $config_factory->getEditable($old_config_name)->delete();
     }
   }
 }
