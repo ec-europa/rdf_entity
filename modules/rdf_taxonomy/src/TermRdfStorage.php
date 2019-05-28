@@ -274,15 +274,17 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];
 
+        $select = 'SELECT DISTINCT ?tid ?label ?parent';
         $weight_where = '';
         $order_by = 'STR(?label)';
         if ($mapping->isMapped('weight')) {
+          $select .= ' ?weight';
           $weight_where = "OPTIONAL { ?tid <{$mapping->getMapping('weight')['predicate']}> ?weight } .";
           $order_by = '?weight, ' . $order_by;
         }
 
         $query = <<<QUERY
-SELECT DISTINCT ?tid ?label ?parent ?weight
+{$select}
 WHERE {
   ?tid ?relation <$concept_schema> .
   ?tid <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
