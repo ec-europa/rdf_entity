@@ -34,7 +34,6 @@ use Drupal\user\UserInterface;
  *     },
  *     "access" = "Drupal\rdf_entity\RdfAccessControlHandler",
  *   },
- *   list_cache_contexts = { "user" },
  *   base_table = null,
  *   admin_permission = "administer rdf entity",
  *   fieldable = TRUE,
