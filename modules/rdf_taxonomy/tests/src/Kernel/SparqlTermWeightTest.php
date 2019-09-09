@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace web\modules\contrib\rdf_entity\modules\rdf_taxonomy\tests\src\Kernel;
+namespace Drupal\Tests\rdf_taxonomy\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\rdf_taxonomy\Entity\RdfTerm;
@@ -12,6 +12,8 @@ use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
 
 /**
  * Tests the RdfTerm weight.
+ *
+ * @group rdf_taxonomy
  */
 class SparqlTermWeightTest extends KernelTestBase {
 
