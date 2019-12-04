@@ -38,11 +38,6 @@ before_install:
   - mkdir -p ${SITE_DIR}/web/modules
   - cd ${SITE_DIR}
 
-  ### PHP_CodeSniffer only.
-
-  # We only need the PHP Code Sniffer (and the Drupal coder).
-  - test ${TEST} == "PHP_CodeSniffer" && composer require drupal/coder || true
-
   ### PHPUnit only (till the end).
 
   # Deploy the codebase.

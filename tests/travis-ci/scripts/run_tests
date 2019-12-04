@@ -3,6 +3,7 @@
 case "$1" in
     PHP_CodeSniffer)
         cd ${TRAVIS_BUILD_DIR}
+        composer install
         ./vendor/bin/phpcs
         exit $?
         ;;
