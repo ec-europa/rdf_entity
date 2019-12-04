@@ -8,6 +8,7 @@ php:
 sudo: required
 
 services:
+  - mysql
   - docker
 
 mysql:
