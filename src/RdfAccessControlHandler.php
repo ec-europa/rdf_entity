@@ -34,19 +34,18 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIfHasPermission($account, 'view rdf entity');
 
       case 'update':
-      case 'edit':
-        if ($account->hasPermission('edit ' . $entity_bundle . ' rdf entity')) {
+        if ($account->hasPermission("edit any {$entity_bundle} rdf entity")) {
           return AccessResult::allowed();
         }
 
-        return AccessResult::allowedIf($is_owner && $account->hasPermission('edit own ' . $entity_bundle . ' rdf entity'));
+        return AccessResult::allowedIf($is_owner && $account->hasPermission("edit own {$entity_bundle} rdf entity"));
 
       case 'delete':
-        if ($account->hasPermission('delete ' . $entity_bundle . ' rdf entity')) {
+        if ($account->hasPermission("delete any {$entity_bundle} rdf entity")) {
           return AccessResult::allowed();
         }
 
-        return AccessResult::allowedIf($is_owner && $account->hasPermission('delete own ' . $entity_bundle . ' rdf entity'));
+        return AccessResult::allowedIf($is_owner && $account->hasPermission("delete own {$entity_bundle} rdf entity"));
     }
 
     return AccessResult::neutral();
