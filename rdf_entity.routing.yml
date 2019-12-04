@@ -30,14 +30,6 @@ rdf_entity.rdf_add:
   requirements:
     _entity_create_access: 'rdf_entity:{rdf_type}'
 
-entity.rdf_entity.edit_form:
-  path: '/rdf_entity/{rdf_entity}/edit'
-  defaults:
-    _entity_form: rdf_entity.edit
-    _title: 'Edit Rdf'
-  requirements:
-    _entity_access: 'rdf_entity.edit'
-
 entity.rdf_entity.delete_form:
   path: '/rdf_entity/{rdf_entity}/delete'
   defaults:

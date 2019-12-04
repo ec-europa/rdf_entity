@@ -39,7 +39,7 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIfHasPermission($account, 'view rdf entity');
 
       case 'update':
-        if ($account->hasPermission('edit ' . $entity_bundle . ' rdf entity')) {
+        if ($account->hasPermission('update ' . $entity_bundle . ' rdf entity')) {
           return AccessResult::allowed();
         }
 
