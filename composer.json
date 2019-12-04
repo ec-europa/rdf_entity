@@ -14,7 +14,8 @@
     "drupal/sparql_entity_storage": "dev-8.x-1.x"
   },
   "require-dev": {
-    "minimaxir/big-list-of-naughty-strings": "dev-master"
+    "minimaxir/big-list-of-naughty-strings": "dev-master",
+    "drupal/coder": "^8.3"
   },
   "repositories": [
     {

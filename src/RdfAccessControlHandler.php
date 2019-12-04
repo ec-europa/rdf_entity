@@ -19,6 +19,11 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
    * $operation as defined in the routing.yml file.
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+    if ($operation === 'edit') {
+      trigger_error('Passing in the "edit" operation to RdfAccessControlHandler::checkAccess() is deprecated in RDF Entity 8.x-1.0-alpha19 and will be removed before 8.x-1.0-beta1. Pass in the "update" operation instead. See https://github.com/ec-europa/rdf_entity/issues/110', E_USER_DEPRECATED);
+      $operation = 'update';
+    }
+
     if (!$entity instanceof RdfInterface) {
       throw new \Exception('Can only handle access of Rdf entity instances.');
     }
@@ -34,7 +39,6 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIfHasPermission($account, 'view rdf entity');
 
       case 'update':
-      case 'edit':
         if ($account->hasPermission('edit ' . $entity_bundle . ' rdf entity')) {
           return AccessResult::allowed();
         }
