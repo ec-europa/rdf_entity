@@ -11,7 +11,7 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.1",
-    "drupal/sparql_entity_storage": "dev-8.x-1.x"
+    "drupal/sparql_entity_storage": "dev-easyrdf"
   },
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master",
