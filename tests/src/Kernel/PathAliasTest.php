@@ -16,15 +16,21 @@ class PathAliasTest extends RdfKernelTestBase {
   use RdfEntityCreationTrait;
   use PathautoTestHelperTrait;
 
+  /**
+   * {@inheritdoc}
+   */
   public static $modules = [
     'datetime',
     'path',
     'path_alias',
     'pathauto',
     'system',
-    'token'
+    'token',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('path_alias');
