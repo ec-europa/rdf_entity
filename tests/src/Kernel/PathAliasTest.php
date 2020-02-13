@@ -33,6 +33,13 @@ class PathAliasTest extends RdfKernelTestBase {
    */
   protected function setUp() {
     parent::setUp();
+    // Aliases were turned into entities after Drupal 8.8 so skip testing for
+    // earlier versions.
+    // @see: https://www.drupal.org/node/3013865
+    if (version_compare(\Drupal::VERSION, '8.8', '<')) {
+      return;
+    }
+
     $this->installEntitySchema('path_alias');
     $this->installConfig('system');
     $pattern = PathautoPattern::create([
@@ -48,6 +55,13 @@ class PathAliasTest extends RdfKernelTestBase {
    * Tests rdf_entity owner functionality.
    */
   public function testAliasGeneration() {
+    // Aliases were turned into entities after Drupal 8.8 so skip testing for
+    // earlier versions.
+    // @see: https://www.drupal.org/node/3013865
+    if (version_compare(\Drupal::VERSION, '8.8', '<')) {
+      return;
+    }
+
     $rdf_entity = $this->createRdfEntity([
       'rid' => 'dummy',
       'label' => $this->randomMachineName(),
