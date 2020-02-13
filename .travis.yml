@@ -50,7 +50,8 @@ before_install:
   - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
   - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
   - test ${TEST} == "PHP_CodeSniffer" || perl -i -pe's/\$\{([^}]+)\}/$ENV{$1}/' composer.json
-  - test ${TEST} == "PHP_CodeSniffer" || COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core:${TEST} --no-interaction --prefer-dist
+  - test ${TEST} == "PHP_CodeSniffer" || echo "Fetching drupal/core version ${TEST}"
+  - test ${TEST} == "PHP_CodeSniffer" || COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core:"${TEST}" --no-interaction --prefer-dists
   # Virtuoso setup.
   - test ${TEST} == "PHP_CodeSniffer" || mkdir ${SITE_DIR}/virtuoso
   - test ${TEST} == "PHP_CodeSniffer" || docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
