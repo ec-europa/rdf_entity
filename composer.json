@@ -15,7 +15,9 @@
   },
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master",
-    "drupal/coder": "^8.3"
+    "drupal/coder": "^8.3",
+    "drupal/pathauto": "^1.6",
+    "drupal/token": "^1.6"
   },
   "repositories": [
     {
