@@ -24,10 +24,6 @@
       "url": "${TRAVIS_BUILD_DIR}"
     },
     {
-      "type": "composer",
-      "url": "https://packages.drupal.org/8"
-    },
-    {
       "type": "vcs",
       "url": "https://github.com/ec-europa/sparql_entity_storage.git",
       "no-api": true
@@ -42,6 +38,10 @@
           "type": "zip"
         }
       }
+    },
+    {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
     }
   ],
   "extra": {
