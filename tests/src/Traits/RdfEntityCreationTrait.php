@@ -53,7 +53,7 @@ trait RdfEntityCreationTrait {
    *   The following defaults are provided:
    *   - label: Random string.
    *   - rid: 'dummy'.
-   *   - id: 'http://example.com/<random_string>'
+   *   - id: 'http://example.com/<random_string>'.
    *
    * @return \Drupal\rdf_entity\RdfInterface
    *   The created entity.
