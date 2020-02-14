@@ -6,5 +6,5 @@ description: 'Provides an entity that uses the SPARQL storage.'
 package: Custom
 
 dependencies:
-  - drupal:options
+  - drupal:options (>=8.8)
   - sparql_entity_storage
