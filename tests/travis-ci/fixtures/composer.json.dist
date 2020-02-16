@@ -24,11 +24,6 @@
       "url": "${TRAVIS_BUILD_DIR}"
     },
     {
-      "type": "vcs",
-      "url": "https://github.com/ec-europa/sparql_entity_storage.git",
-      "no-api": true
-    },
-    {
       "type": "package",
       "package": {
         "name": "minimaxir/big-list-of-naughty-strings",
