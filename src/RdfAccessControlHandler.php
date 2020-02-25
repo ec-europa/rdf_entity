@@ -20,7 +20,7 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     if ($operation === 'edit') {
-      trigger_error('Passing in the "edit" operation to RdfAccessControlHandler::checkAccess() is deprecated in RDF Entity 8.x-1.0-alpha19 and will be removed before 8.x-1.0-beta1. Pass in the "update" operation instead. See https://github.com/ec-europa/rdf_entity/issues/110', E_USER_DEPRECATED);
+      @trigger_error('Passing in the "edit" operation to RdfAccessControlHandler::checkAccess() is deprecated in RDF Entity 8.x-1.0-alpha19 and will be removed before 8.x-1.0-beta1. Pass in the "update" operation instead. See https://github.com/ec-europa/rdf_entity/issues/110', E_USER_DEPRECATED);
       $operation = 'update';
     }
 

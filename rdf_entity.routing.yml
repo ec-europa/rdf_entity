@@ -36,7 +36,7 @@ entity.rdf_entity.edit_form:
     _entity_form: rdf_entity.edit
     _title: 'Edit Rdf'
   requirements:
-    _entity_access: 'rdf_entity.edit'
+    _entity_access: 'rdf_entity.update'
 
 entity.rdf_entity.delete_form:
   path: '/rdf_entity/{rdf_entity}/delete'
