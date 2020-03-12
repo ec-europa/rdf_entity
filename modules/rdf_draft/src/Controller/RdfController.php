@@ -3,7 +3,7 @@
 namespace Drupal\rdf_draft\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -14,11 +14,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class RdfController extends ControllerBase {
   /**
-   * The entity manager.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The renderer service.
@@ -30,13 +30,13 @@ class RdfController extends ControllerBase {
   /**
    * Creates an RdfController object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    */
-  public function __construct(EntityManagerInterface $entity_manager, RendererInterface $renderer) {
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
   }
 
@@ -45,7 +45,7 @@ class RdfController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('renderer')
     );
   }
@@ -67,14 +67,14 @@ class RdfController extends ControllerBase {
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $route_match->getParameter($parameter_name);
     /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
-    $storage = $this->entityManager->getStorage($entity->getEntityTypeId());
+    $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
     $graph_name = $route_match->getRouteObject()->getOption('graph_name');
     $draft_entity = $storage->load($entity->id(), [$graph_name]);
     if (!$draft_entity) {
       // Should not occur: RdfGraphAccessCheck validates that the entity exists.
       throw new \Exception('Entity not loaded from graph');
     }
-    $page = $this->entityManager->getViewBuilder($entity->getEntityTypeId())->view($draft_entity, 'rdf_draft');
+    $page = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId())->view($draft_entity, 'rdf_draft');
     $page['#pre_render'][] = [$this, 'buildTitle'];
     $page['#entity_type'] = $entity->getEntityTypeId();
     $page['#' . $page['#entity_type']] = $draft_entity;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_draft;
 
 use Drupal\Core\Access\AccessResult;
@@ -16,11 +18,11 @@ use Symfony\Component\Routing\Route;
  */
 class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   /**
-   * The entity manager.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The module handler service.
@@ -32,11 +34,11 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   /**
    * Constructs a EntityCreateAccessCheck object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager) {
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
     // @todo: EntityHandlerBase is not injecting this service. Why?
     $this->moduleHandler = \Drupal::moduleHandler();
   }
@@ -47,7 +49,7 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   public function access(Route $route, AccountInterface $account, RdfInterface $rdf_entity, $operation = 'view') {
     $graph = $route->getOption('graph_name');
     $entity_type_id = $route->getOption('entity_type_id');
-    $storage = $this->entityManager->getStorage($entity_type_id);
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
     if (!$storage instanceof SparqlEntityStorage) {
       throw new \Exception('Storage not supported.');
     }
