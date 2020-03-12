@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Form;
 
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
@@ -35,7 +37,7 @@ class RdfTypeForm extends BundleEntityFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager')->getStorage('rdf_type')
+      $container->get('entity_type.manager')->getStorage('rdf_type')
     );
   }
 

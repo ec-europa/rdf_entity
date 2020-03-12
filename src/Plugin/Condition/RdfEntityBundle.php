@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
@@ -54,7 +56,7 @@ class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPlu
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity.manager')->getStorage('rdf_type')
+      $container->get('entity_type.manager')->getStorage('rdf_type')
     );
   }
 

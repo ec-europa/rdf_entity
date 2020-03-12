@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_draft\Routing;
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -25,11 +27,11 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * Constructs a new RouteSubscriber object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager) {
-    $this->entityTypeManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -37,7 +39,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      $storage = \Drupal::entityManager()->getStorage($entity_type_id);
+      $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
       if ($storage instanceof SparqlEntityStorage) {
         $definitions = $storage->getGraphDefinitions();
         // Default is already covered by the 'view' operation.

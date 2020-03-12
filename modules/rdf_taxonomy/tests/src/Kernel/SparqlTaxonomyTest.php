@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_taxonomy\Tests;
 
 use Drupal\rdf_entity\Entity\Rdf;
@@ -103,7 +105,7 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
 
     $term = Term::create($values);
     $term->save();
-    $taxonomy_storage = $this->entityManager->getStorage('taxonomy_term');
+    $taxonomy_storage = $this->entityTypeManager->getStorage('taxonomy_term');
     $term = $taxonomy_storage->loadUnchanged($term->id());
     foreach ($values as $field => $expected_value) {
       $actual_value = $term->get($field)->first()->getValue();
