@@ -3,6 +3,7 @@
 namespace Drupal\rdf_entity;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -33,10 +34,18 @@ class RdfAccessControlHandler extends EntityAccessControlHandler {
 
     switch ($operation) {
       case 'view':
-        if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished rdf entity');
+        if ($entity->isPublished()) {
+          $access_result = AccessResult::allowedIfHasPermission($account, 'view rdf entity');
         }
-        return AccessResult::allowedIfHasPermission($account, 'view rdf entity');
+        else {
+          $access_result = AccessResult::allowedIfHasPermission($account, 'view unpublished rdf entity');
+        }
+
+        if ($access_result instanceof RefinableCacheableDependencyInterface) {
+          $access_result->addCacheableDependency($entity);
+        }
+
+        return $access_result;
 
       case 'update':
         if ($account->hasPermission('edit ' . $entity_bundle . ' rdf entity')) {
