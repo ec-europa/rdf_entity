@@ -48,6 +48,8 @@ interface RdfInterface extends ContentEntityInterface, EntityPublishedInterface,
   /**
    * Checks if the entity has a specific graph.
    *
+   * Returns false, if the entity is new.
+   *
    * @param string $graph
    *   The graph to be checked ('draft', etc).
    *
