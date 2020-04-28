@@ -1,26 +1,26 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity;
 
-use Drupal\Core\Routing\UrlGeneratorTrait;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\rdf_entity\Entity\RdfEntityType;
 
 /**
- * Provides dynamic permissions for RdfEntities of different types.
+ * Provides dynamic permissions for RDF entities of different types.
  */
 class RdfPermissions {
 
   use StringTranslationTrait;
-  use UrlGeneratorTrait;
 
   /**
    * Returns an array of node type permissions.
    *
    * @return array
-   *   The RdfEntity type permissions.
+   *   The RDF entity type permissions.
    */
-  public function rdfTypePermissions() {
+  public function rdfTypePermissions(): array {
     $perms = [];
     // Generate node permissions for all node types.
     foreach (RdfEntityType::loadMultiple() as $type) {
@@ -34,12 +34,12 @@ class RdfPermissions {
    * Returns a list of node permissions for a given node type.
    *
    * @param \Drupal\rdf_entity\Entity\RdfEntityType $type
-   *   The RdfEntity type.
+   *   The RDF entity type.
    *
    * @return array
    *   An associative array of permission names and descriptions.
    */
-  protected function buildPermissions(RdfEntityType $type) {
+  protected function buildPermissions(RdfEntityType $type): array {
     $type_id = $type->id();
     $type_params = ['%type_name' => $type->label()];
 
