@@ -94,13 +94,13 @@ class RdfTypeForm extends BundleEntityFormBase {
       case SAVED_NEW:
         drupal_set_message($this->t('Created new rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->logger('taxonomy')->notice('Created new rdf type %name.', ['%name' => $rdf_type->label(), 'link' => $edit_link]);
-        $form_state->setRedirectUrl($rdf_type->urlInfo('overview-form'));
+        $form_state->setRedirectUrl($rdf_type->toUrl('overview-form'));
         break;
 
       case SAVED_UPDATED:
         drupal_set_message($this->t('Updated rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->logger('taxonomy')->notice('Updated rdf type %name.', ['%name' => $rdf_type->label(), 'link' => $edit_link]);
-        $form_state->setRedirectUrl($rdf_type->urlInfo('collection'));
+        $form_state->setRedirectUrl($rdf_type->toUrl('collection'));
         break;
     }
 
