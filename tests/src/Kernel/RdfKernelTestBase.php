@@ -29,9 +29,16 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
+  protected function bootEnvironment() {
+    parent::bootEnvironment();
+    $this->setUpSparql();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
-    $this->setUpSparql();
     $this->installConfig([
       'rdf_entity',
       'rdf_draft',
