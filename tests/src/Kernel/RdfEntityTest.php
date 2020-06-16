@@ -12,12 +12,12 @@ use Drupal\rdf_entity\Entity\Rdf;
 class RdfEntityTest extends RdfKernelTestBase {
 
   /**
-   * Covers ::hasGraph
+   * @covers \Drupal\rdf_entity\Entity\Rdf::hasGraph.
    */
   public function testHasGraph() {
     $rdf_entity = Rdf::create([
       'rid' => 'dummy',
-      'label' => $this->randomMachineName()
+      'label' => $this->randomMachineName(),
     ]);
     $this->assertFalse($rdf_entity->hasGraph('default'));
 
