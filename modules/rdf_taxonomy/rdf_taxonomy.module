@@ -10,10 +10,13 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\sparql_entity_storage\Entity\Query\Sparql\SparqlArg;
 use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\rdf_taxonomy\Entity\RdfTerm;
 use Drupal\rdf_taxonomy\RdfTaxonomyTermListBuilder;
 use Drupal\rdf_taxonomy\TermRdfStorage;
+use Drupal\sparql_entity_storage\UriEncoder;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\VocabularyInterface;
@@ -97,4 +100,41 @@ function rdf_taxonomy_form_taxonomy_term_form_alter(&$form, FormStateInterface $
 
   // Visual enhancements.
   $form['relations']['#open'] = TRUE;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Resets the 'page' variable since the ID of an RDF entity is encoded when
+ * retrieved as a raw parameter from the route.
+ *
+ * The canonical implementation at template_preprocess_taxonomy_term() doesn't
+ * know how to deal with the encoded entity IDs found in the URL.
+ *
+ * @see template_preprocess_taxonomy_term()
+ */
+function rdf_taxonomy_preprocess_taxonomy_term(&$variables) {
+  /** @var \Drupal\taxonomy\TermInterface $term */
+  $term = $variables['term'];
+  $variables['page'] = $variables['view_mode'] == 'full' && rdf_taxonomy_term_is_page($term);
+}
+
+/**
+ * Returns whether the current page is the page of the passed-in term.
+ *
+ * Adapted from taxonomy_term_is_page().
+ *
+ * @param \Drupal\taxonomy\Entity\Term $term
+ *   A taxonomy term entity.
+ *
+ * @see taxonomy_term_is_page()
+ */
+function rdf_taxonomy_term_is_page(Term $term) {
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical' && $page_term_id = \Drupal::routeMatch()->getRawParameter('taxonomy_term')) {
+    if (!SparqlArg::isValidResource($page_term_id)) {
+      $page_term_id = UriEncoder::decodeUrl($page_term_id);
+    }
+    return $page_term_id === $term->id();
+  }
+  return FALSE;
 }
