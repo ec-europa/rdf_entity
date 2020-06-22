@@ -11,13 +11,12 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.1",
-    "drupal/core": "~8.8",
-    "drupal/sparql_entity_storage": "^1.0"
+    "drupal/core": "^8 || ^9",
+    "drupal/sparql_entity_storage": "dev-easy-rdf"
   },
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master",
-    "drupal/coder": "^8.3",
-    "easyrdf/easyrdf": "0.10.0-alpha.1 as 0.9.2"
+    "drupal/coder": "^8.3"
   },
   "repositories": [
     {
