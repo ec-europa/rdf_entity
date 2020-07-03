@@ -8,10 +8,10 @@
     "source": "https://cgit.drupalcode.org/rdf_entity"
   },
   "license": "GPL-2.0+",
-  "minimum-stability": "dev",
+  "minimum-stability": "alpha",
   "require": {
     "php": ">=7.1",
-    "drupal/core": "~8.8",
+    "drupal/core": "~8.9",
     "drupal/sparql_entity_storage": "^1.0"
   },
   "require-dev": {
