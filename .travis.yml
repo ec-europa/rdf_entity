@@ -21,7 +21,6 @@ env:
     - SITE_DIR="$HOME/build/testing_site"
   matrix:
     - TEST=PHP_CodeSniffer
-    - TEST=8.8.x
     - TEST=8.9.x
 
 matrix:

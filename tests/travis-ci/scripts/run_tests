@@ -9,7 +9,7 @@ case "$1" in
         ;;
     8.*.x)
         cd ${SITE_DIR}/web
-        ../vendor/bin/phpunit --testdox --verbose
+        ../vendor/bin/phpunit --verbose
         exit $?
         ;;
     *)
