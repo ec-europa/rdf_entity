@@ -6,4 +6,4 @@ package: Custom
 
 dependencies:
   - drupal:options
-  - sparql_entity_storage:sparql_entity_storage
+  - sparql_entity_storage:sparql_entity_storage (>=8.x-1.0-alpha4)
