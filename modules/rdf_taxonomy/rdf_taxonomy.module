@@ -52,7 +52,7 @@ function rdf_taxonomy_entity_base_field_info_alter(array &$fields, EntityTypeInt
     ->setTargetBundle($original_tid->getTargetBundle())
     ->setLabel($original_tid->getLabel())
     ->setDescription($original_tid->getDescription())
-    ->setProvider($original_tid->getProvider())
+    ->setProvider('rdf_taxonomy')
     ->setReadOnly($original_tid->isReadOnly());
 }
 
