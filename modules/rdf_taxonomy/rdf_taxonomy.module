@@ -37,16 +37,23 @@ function rdf_taxonomy_entity_type_alter(array &$entity_types) {
 /**
  * Implements hook_entity_base_field_info_alter().
  */
-function rdf_taxonomy_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
+function rdf_taxonomy_entity_base_field_info_alter(array &$fields, EntityTypeInterface $entity_type): void {
   if ($entity_type->id() != 'taxonomy_term') {
     return;
   }
+
+  /** @var \Drupal\Core\Field\BaseFieldDefinition $original_tid */
+  $original_tid = $fields['tid'];
+
   // Change the tid type to string (RDF uri).
   $fields['tid'] = BaseFieldDefinition::create('string')
-    ->setLabel(t('Term ID'))
-    ->setDescription(t('The term ID.'))
-    ->setReadOnly(TRUE);
-  $fields['tid']->setTargetEntityTypeId('taxonomy_term');
+    ->setName($original_tid->getName())
+    ->setTargetEntityTypeId($original_tid->getTargetEntityTypeId())
+    ->setTargetBundle($original_tid->getTargetBundle())
+    ->setLabel($original_tid->getLabel())
+    ->setDescription($original_tid->getDescription())
+    ->setProvider('rdf_taxonomy')
+    ->setReadOnly($original_tid->isReadOnly());
 }
 
 /**
