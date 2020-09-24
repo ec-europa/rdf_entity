@@ -23,6 +23,7 @@ follow the next steps in order to update a server in production:
    ```
    $ composer require drupal/sparql_entity_storage:dev-empty-module
    ```
+
 1. Enable the module.
 1. Deploy to production.
 1. Require `drupal/rdf_entity` with the new `1.0-alpha17` version and
