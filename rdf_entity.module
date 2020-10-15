@@ -53,7 +53,7 @@ function template_preprocess_rdf_entity(array &$variables) {
   $variables['author_name'] = $renderer->render($variables['elements']['uid']);
   unset($variables['elements']['uid']);
 
-  $variables['url'] = $rdf_entity->url('canonical', [
+  $variables['url'] = $rdf_entity->toUrl('canonical', [
     'language' => $rdf_entity->language(),
   ]);
   $variables['label'] = !empty($variables['elements']['label']) ? $variables['elements']['label'] : ['#markup' => $rdf_entity->label()];
