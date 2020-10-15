@@ -41,15 +41,16 @@ function rdf_entity_theme() {
  *   - view_mode: View mode; e.g., 'full', 'teaser', etc.
  */
 function template_preprocess_rdf_entity(array &$variables) {
+  $renderer = \Drupal::getContainer()->get('renderer');
   $variables['view_mode'] = $variables['elements']['#view_mode'];
   // Provide a distinct $teaser boolean.
   $variables['teaser'] = $variables['view_mode'] == 'teaser';
   $variables['rdf_entity'] = $variables['elements']['#rdf_entity'];
   /** @var \Drupal\rdf_entity\RdfInterface $rdf_entity */
   $rdf_entity = $variables['rdf_entity'];
-  $variables['date'] = drupal_render($variables['elements']['created']);
+  $variables['date'] = $renderer->render($variables['elements']['created']);
   unset($variables['elements']['created']);
-  $variables['author_name'] = drupal_render($variables['elements']['uid']);
+  $variables['author_name'] = $renderer->render($variables['elements']['uid']);
   unset($variables['elements']['uid']);
 
   $variables['url'] = $rdf_entity->url('canonical', [
@@ -71,13 +72,13 @@ function template_preprocess_rdf_entity(array &$variables) {
 }
 
 /**
- * Prepares variables for list of available rdf type templates.
+ * Prepares variables for list of available RDF type templates.
  *
  * Default template: rdf-add-list.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
- *   - content: An array of rdf bundles.
+ *   - content: An array of RDF entity bundles.
  */
 function template_preprocess_rdf_add_list(array &$variables) {
   $variables['types'] = [];
