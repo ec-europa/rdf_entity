@@ -200,7 +200,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
       ->setTranslatable(FALSE)
       ->setReadOnly(TRUE)
       ->setComputed(TRUE)
-      ->setClass(RdfEntityUuidFieldItemList::class);;
+      ->setClass(RdfEntityUuidFieldItemList::class);
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(new TranslatableMarkup('Langcode'))

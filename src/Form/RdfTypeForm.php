@@ -45,6 +45,7 @@ class RdfTypeForm extends BundleEntityFormBase {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\rdf_entity\RdfEntityTypeInterface $rdf_type */
     $rdf_type = $this->entity;
     if ($rdf_type->isNew()) {
       $form['#title'] = $this->t('Add rdf type');
@@ -93,13 +94,21 @@ class RdfTypeForm extends BundleEntityFormBase {
     switch ($status) {
       case SAVED_NEW:
         drupal_set_message($this->t('Created new rdf type %name.', ['%name' => $rdf_type->label()]));
-        $this->logger('taxonomy')->notice('Created new rdf type %name.', ['%name' => $rdf_type->label(), 'link' => $edit_link]);
+        $this->messenger()->addStatus($this->t('Created new rdf type %name.', ['%name' => $rdf_type->label()]));
+        $this->logger('taxonomy')->notice('Created new rdf type %name.', [
+          '%name' => $rdf_type->label(),
+          'link' => $edit_link,
+        ]);
         $form_state->setRedirectUrl($rdf_type->toUrl('overview-form'));
         break;
 
       case SAVED_UPDATED:
         drupal_set_message($this->t('Updated rdf type %name.', ['%name' => $rdf_type->label()]));
-        $this->logger('taxonomy')->notice('Updated rdf type %name.', ['%name' => $rdf_type->label(), 'link' => $edit_link]);
+        $this->messenger()->addStatus($this->t('Updated rdf type %name.', ['%name' => $rdf_type->label()]));
+        $this->logger('taxonomy')->notice('Updated rdf type %name.', [
+          '%name' => $rdf_type->label(),
+          'link' => $edit_link,
+        ]);
         $form_state->setRedirectUrl($rdf_type->toUrl('collection'));
         break;
     }

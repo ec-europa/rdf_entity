@@ -69,12 +69,9 @@ class RdfDraftLocalTask extends DeriverBase implements ContainerDeriverInterface
             'title' => $this->t('View @graph', ['@graph' => $name]),
             'base_route' => "entity.$entity_type_id.canonical",
             'weight' => 100,
-          ];
+          ] + $base_plugin_definition;
         }
       }
-    }
-    foreach ($this->derivatives as &$entry) {
-      $entry += $base_plugin_definition;
     }
     return $this->derivatives;
   }

@@ -64,12 +64,8 @@ class RdfExportLocalTask extends DeriverBase implements ContainerDeriverInterfac
           'title' => $this->t('Metadata'),
           'base_route' => "entity.$entity_type_id.canonical",
           'weight' => 100,
-        ];
+        ] + $base_plugin_definition;
       }
-    }
-
-    foreach ($this->derivatives as &$entry) {
-      $entry += $base_plugin_definition;
     }
 
     return $this->derivatives;

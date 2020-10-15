@@ -102,7 +102,10 @@ class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPlu
       $bundles = $this->configuration['bundles'];
       $last = array_pop($bundles);
       $bundles = implode(', ', $bundles);
-      return $this->t('The rdf entity bundle is @bundles or @last', ['@bundles' => $bundles, '@last' => $last]);
+      return $this->t('The rdf entity bundle is @bundles or @last', [
+        '@bundles' => $bundles,
+        '@last' => $last,
+      ]);
     }
     $bundle = reset($this->configuration['bundles']);
     return $this->t('The rdf entity bundle is @bundle', ['@bundle' => $bundle]);
