@@ -7,6 +7,7 @@ namespace Drupal\rdf_draft;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;
@@ -32,15 +33,16 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   protected $moduleHandler;
 
   /**
-   * Constructs a EntityCreateAccessCheck object.
+   * Constructs a new access checker instance.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
     $this->entityTypeManager = $entity_type_manager;
-    // @todo: EntityHandlerBase is not injecting this service. Why?
-    $this->moduleHandler = \Drupal::moduleHandler();
+    $this->moduleHandler = $module_handler;
   }
 
   /**
