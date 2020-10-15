@@ -26,6 +26,11 @@ class RdfExportTest extends BrowserTestBase {
   ];
 
   /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * Testing entity.
    *
    * @var \Drupal\rdf_entity\RdfInterface

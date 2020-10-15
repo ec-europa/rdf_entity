@@ -17,17 +17,22 @@ class RdfEntityTypeCreationTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
-    $this->setUpSparql();
-    parent::setUp();
-  }
+  protected static $modules = [
+    'rdf_entity',
+  ];
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-    'rdf_entity',
-  ];
+  protected $defaultTheme = 'stark';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    $this->setUpSparql();
+    parent::setUp();
+  }
 
   /**
    * Tests that we can create and edit RDF entity types.
