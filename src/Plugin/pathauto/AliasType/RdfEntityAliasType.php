@@ -18,9 +18,9 @@ use Drupal\sparql_entity_storage\UriEncoder;
  *   label = @Translation("Rdf entity"),
  *   types = {"rdf_entity"},
  *   provider = "rdf_entity",
- *   context = {
- *     "rdf_entity" = @ContextDefinition("entity:rdf_entity")
- *   }
+ *   context_definitions = {
+ *     "rdf_entity" = @ContextDefinition("entity:rdf_entity"),
+ *   },
  * )
  */
 class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactoryPluginInterface {

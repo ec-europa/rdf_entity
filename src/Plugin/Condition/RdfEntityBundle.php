@@ -16,9 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Condition(
  *   id = "rdf_entity_bundle",
  *   label = @Translation("RDF entity bundle"),
- *   context = {
- *     "rdf_entity" = @ContextDefinition("entity:rdf_entity", label = @Translation("RDF entity"))
- *   }
+ *   context_definitions = {
+ *     "rdf_entity" = @ContextDefinition("entity:rdf_entity", label = @Translation("RDF entity")),
+ *   },
  * )
  */
 class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPluginInterface {
