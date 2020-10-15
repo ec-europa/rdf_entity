@@ -2,15 +2,43 @@
 
 namespace Drupal\rdf_draft;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides dynamic permissions for rdf graphs.
+ * Provides dynamic permissions for RDF graphs.
  */
-class RdfGraphPermissions {
+class RdfGraphPermissions implements ContainerInjectionInterface {
+
   use StringTranslationTrait;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a new dynamic permissions instance.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
+  }
 
   /**
    * Returns an array of graph view permissions.
@@ -22,8 +50,8 @@ class RdfGraphPermissions {
    */
   public function getRdfGraphPermissions() {
     $perms = [];
-    foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
-      $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+    foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
+      $storage = $this->entityTypeManager->getStorage($entity_type_id);
       if ($storage instanceof SparqlEntityStorage) {
         $definitions = $storage->getGraphDefinitions();
         unset($definitions['default']);
