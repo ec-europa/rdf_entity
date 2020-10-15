@@ -93,7 +93,6 @@ class RdfTypeForm extends BundleEntityFormBase {
     $edit_link = $this->entity->toLink($this->t('Edit'), 'edit-form')->toString();
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created new rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->messenger()->addStatus($this->t('Created new rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->logger('taxonomy')->notice('Created new rdf type %name.', [
           '%name' => $rdf_type->label(),
@@ -103,7 +102,6 @@ class RdfTypeForm extends BundleEntityFormBase {
         break;
 
       case SAVED_UPDATED:
-        drupal_set_message($this->t('Updated rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->messenger()->addStatus($this->t('Updated rdf type %name.', ['%name' => $rdf_type->label()]));
         $this->logger('taxonomy')->notice('Updated rdf type %name.', [
           '%name' => $rdf_type->label(),
