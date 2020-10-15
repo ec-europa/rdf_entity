@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_taxonomy\Tests;
 
-use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\Tests\rdf_entity\Kernel\RdfKernelTestBase;
 
@@ -36,13 +35,6 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
    * @var array
    */
   protected $queryResults;
-
-  /**
-   * The query factory service.
-   *
-   * @var \Drupal\Core\Entity\Query\QueryFactory
-   */
-  protected $factory;
 
   /**
    * A list of bundle machine names created for this test.
@@ -85,8 +77,9 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
       Term::create($values)->save();
     }
 
-    $this->factory = \Drupal::service('entity.query');
-    $results = $this->factory->get('taxonomy_term')
+    $results = $this->container->get('entity_type.manager')
+      ->getStorage('taxonomy_term')
+      ->getQuery()
       ->condition('vid', 'taxonomy_test')
       ->execute();
     $this->assertCount($i, $results, "${i} terms were loaded successfully.");
@@ -123,24 +116,24 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
    * Tests that an entity can reference a taxonomy and can be queried normally.
    */
   public function testTaxonomyReference() {
+    $storage = $this->container->get('entity_type.manager')->getStorage('rdf_entity');
     $entity_multi_label = $this->randomMachineName();
-    $entity_multi = Rdf::create([
+    $storage->create([
       'label' => $entity_multi_label,
       'rid' => 'dummy',
       'field_taxonomy' => [
         'http://taxonomy_test/009',
       ],
-    ]);
-    $entity_multi->save();
+    ])->save();
 
-    $results = $this->factory->get('rdf_entity')
+    $results = $storage->getQuery()
       ->condition('field_taxonomy', 'http://taxonomy_test/009')
       ->execute();
     $id = reset($results);
-    $entity = Rdf::load($id);
+    $entity = $storage->load($id);
 
     $actual_value = $entity->get('field_taxonomy')->first()->target_id;
-    $this->assertEquals('http://taxonomy_test/009', $actual_value);
+    $this->assertSame('http://taxonomy_test/009', $actual_value);
   }
 
   /**

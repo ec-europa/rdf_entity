@@ -60,8 +60,7 @@ class PathAliasTest extends RdfKernelTestBase {
       'label' => $this->randomMachineName(),
     ]);
 
-    /** @var \Drupal\path_alias\AliasManagerInterface $alias_manager */
-    $alias_manager = \Drupal::service('path_alias.manager');
+    $alias_manager = $this->container->get('path_alias.manager');
     $internal_path = '/' . $rdf_entity->toUrl()->getInternalPath();
     $alias = $alias_manager->getAliasByPath($internal_path);
 
