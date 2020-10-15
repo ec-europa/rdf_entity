@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="core/tests/bootstrap.php"
+<phpunit bootstrap="web/core/tests/bootstrap.php"
          colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
-         checkForUnintentionallyCoveredCode="false"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
 >
     <php>
@@ -15,9 +14,9 @@
         <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
         <env name="SIMPLETEST_BASE_URL" value="http://localhost:8888"/>
         <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/databasename#table_prefix -->
-        <env name="SIMPLETEST_DB" value="sqlite://localhost//tmp/test.sqlite"/>
+        <env name="SIMPLETEST_DB" value="mysql://root:@127.0.0.1/rdf_entity_test_phpunit"/>
         <!-- Example SIMPLETEST_SPARQL_DB value: sparql://127.0.0.1:8890/ -->
-        <env name="SIMPLETEST_SPARQL_DB" value="sparql://127.0.0.1:8890/sparql"/>
+        <env name="SIMPLETEST_SPARQL_DB" value="sparql://127.0.0.1:8890?module=sparql_entity_storage"/>
         <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /path/to/webroot/sites/simpletest/browser_output -->
         <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="/tmp"/>
         <!-- Example BROWSERTEST_OUTPUT_FILE value: /path/to/webroot/sites/simpletest/browser_output/outputfile.txt -->
@@ -25,12 +24,10 @@
     </php>
     <testsuites>
         <testsuite name="rdf_entity">
-            <directory>./modules/rdf_entity</directory>
+            <directory>./web/modules/rdf_entity</directory>
             <!-- @todo Run 'sparql_entity_storage' in its own repo -->
             <!-- @see https://github.com/ec-europa/sparql_entity_storage/issues/4 -->
-            <directory>./modules/sparql_entity_storage</directory>
+            <directory>./web/modules/sparql_entity_storage</directory>
         </testsuite>
     </testsuites>
-    <listeners>
-    </listeners>
 </phpunit>
