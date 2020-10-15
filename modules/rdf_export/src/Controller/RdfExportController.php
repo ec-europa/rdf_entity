@@ -60,11 +60,15 @@ class RdfExportController extends ControllerBase {
     $entity = $route_match->getParameter($parameter_name);
     $list = ['#theme' => 'item_list'];
     foreach ($this->getSerializerFormats() as $format_type => $format) {
-      $link = Url::fromRoute("entity.$parameter_name.rdf_export_download", [
+      $url = Url::fromRoute("entity.$parameter_name.rdf_export_download", [
         'export_format' => $format_type,
         $parameter_name => $entity->id(),
       ]);
-      $list['#items'][] = ['#markup' => $this->l($format->getLabel(), $link)];
+      $list['#items'][] = [
+        '#type' => 'link',
+        '#title' => $format->getLabel(),
+        '#url' => $url,
+      ];
     }
 
     $output = [

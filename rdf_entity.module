@@ -85,7 +85,11 @@ function template_preprocess_rdf_add_list(array &$variables) {
     foreach ($variables['content'] as $type) {
       $variables['types'][$type->id()] = [
         'type' => $type->id(),
-        'add_link' => \Drupal::l($type->label(), new Url('rdf_entity.rdf_add', ['rdf_type' => $type->id()])),
+        'add_link' => [
+          '#type' => 'link',
+          '#title' => $type->label(),
+          '#url' => new Url('rdf_entity.rdf_add', ['rdf_type' => $type->id()]),
+        ],
         'description' => [
           '#markup' => $type->getDescription(),
         ],
