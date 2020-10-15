@@ -74,7 +74,7 @@ class RdfTypeForm extends BundleEntityFormBase {
     $form['description'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Description'),
-      '#default_value' => isset($rdf_type->description) ? $rdf_type->description : '',
+      '#default_value' => $rdf_type->get('description'),
     ];
     $form = parent::form($form, $form_state);
     return $this->protectBundleIdElement($form);
