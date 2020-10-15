@@ -175,8 +175,8 @@ class RdfListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\rdf_entity\Entity\Rdf */
-    $row['id'] = $entity->link();
+    /** @var \Drupal\rdf_entity\RdfInterface $entity */
+    $row['id'] = $entity->toLink();
     $row['rid'] = $entity->bundle();
     $row['status'] = $entity->isPublished() ? $this->t('Published') : $this->t('Unpublished');
     return $row + parent::buildRow($entity);
