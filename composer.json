@@ -11,8 +11,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=7.1",
-    "drupal/sparql_entity_storage": "dev-deprecated-code"
+    "drupal/sparql_entity_storage": "^1.0"
   },
   "require-dev": {
     "minimaxir/big-list-of-naughty-strings": "dev-master",
@@ -22,11 +21,6 @@
     "phpstan/phpstan-deprecation-rules": "^0.12.5"
   },
   "repositories": [
-    {
-      "type": "github",
-      "url": "https://github.com/ec-europa/sparql_entity_storage.git",
-      "no-api": true
-    },
     {
       "type": "composer",
       "url": "https://packages.drupal.org/8"

@@ -31,7 +31,7 @@ class PathAliasTest extends RdfKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     // Aliases were turned into entities after Drupal 8.8 so skip testing for
     // earlier versions.
     // @see: https://www.drupal.org/node/3013865

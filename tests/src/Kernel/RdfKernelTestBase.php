@@ -37,7 +37,7 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->installConfig([
       'rdf_entity',
@@ -51,7 +51,7 @@ abstract class RdfKernelTestBase extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public function tearDown() {
+  public function tearDown(): void {
     // Delete all data produced by testing module.
     foreach (['dummy', 'with_owner'] as $bundle) {
       foreach (['published', 'draft'] as $graph) {

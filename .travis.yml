@@ -21,26 +21,29 @@ env:
     - SITE_DIR="$HOME/build/testing_site"
   matrix:
     - TEST=PHPCodeSniffer
-    - TEST=PHPStan DRUPAL=~8.9 PHPUNIT=^7
-    - TEST=PHPUnit DRUPAL=~8.9 PHPUNIT=^7
-    - TEST=PHPUnit DRUPAL=~9.0 PHPUNIT=^8
-    - TEST=PHPUnit DRUPAL=~9.1 PHPUNIT=^8
+    - TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
+    - TEST=PHPUnit DRUPAL=~8.9.0 PHPUNIT=^7
+    - TEST=PHPUnit DRUPAL=~9.0.0 PHPUNIT=^8
+    - TEST=PHPUnit DRUPAL=~9.1.0 PHPUNIT=^8
+    - TEST=PHPUnit DRUPAL=~9.2.0 PHPUNIT=^8
 
 matrix:
   fast_finish: true
   exclude:
     - php: '7.2'
-      env: TEST=PHPUnit DRUPAL=~9.0 PHPUNIT=^8
+      env: TEST=PHPUnit DRUPAL=~9.0.0 PHPUNIT=^8
     - php: '7.2'
-      env: TEST=PHPUnit DRUPAL=~9.1 PHPUNIT=^8
+      env: TEST=PHPUnit DRUPAL=~9.1.0 PHPUNIT=^8
+    - php: '7.2'
+      env: TEST=PHPUnit DRUPAL=~9.2.0 PHPUNIT=^8
     - php: '7.3'
       env: TEST=PHPCodeSniffer
     - php: '7.3'
-      env: TEST=PHPStan DRUPAL=~8.9 PHPUNIT=^7
+      env: TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
     - php: '7.4'
       env: TEST=PHPCodeSniffer
     - php: '7.4'
-      env: TEST=PHPStan DRUPAL=~8.9 PHPUNIT=^7
+      env: TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
 
 before_install:
   # Remove this line to run with Xdebug enabled.
