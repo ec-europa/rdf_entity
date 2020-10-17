@@ -50,11 +50,11 @@ class RdfDeleteForm extends ContentEntityConfirmFormBase {
     $entity = $this->getEntity();
     $entity->delete();
 
-    \Drupal::logger('rdf_entity')->notice('@type: deleted %title.',
-      [
-        '@type' => $this->entity->bundle(),
-        '%title' => $this->entity->label(),
-      ]);
+    $this->logger('rdf_entity')->notice('@type: deleted %title.', [
+      '@type' => $this->entity->bundle(),
+      '%title' => $this->entity->label(),
+    ]);
+
     if (empty($form_state->getRedirect())) {
       $form_state->setRedirectUrl(Url::fromRoute('<front>'));
     }

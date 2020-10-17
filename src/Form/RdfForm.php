@@ -17,7 +17,7 @@ class RdfForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    /* @var $entity \Drupal\rdf_entity\Entity\Rdf */
+    /** @var \Drupal\rdf_entity\RdfInterface $entity */
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
@@ -29,7 +29,10 @@ class RdfForm extends ContentEntityForm {
       }
       // Edit.
       else {
-        $form['#title'] = $this->t('<em>Edit @type</em> @title', ['@type' => $type->label(), '@title' => $entity->label()]);
+        $form['#title'] = $this->t('<em>Edit @type</em> @title', [
+          '@type' => $type->label(),
+          '@title' => $entity->label(),
+        ]);
       }
     }
     return $form;

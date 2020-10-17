@@ -12,7 +12,7 @@ use Drupal\rdf_entity\Entity\Rdf;
 class RdfEntityTest extends RdfKernelTestBase {
 
   /**
-   * @covers \Drupal\rdf_entity\Entity\Rdf::hasGraph.
+   * @covers \Drupal\rdf_entity\Entity\Rdf::hasGraph
    */
   public function testHasGraph() {
     $rdf_entity = Rdf::create([

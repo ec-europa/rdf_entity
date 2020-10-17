@@ -27,7 +27,12 @@ function rdf_taxonomy_install() {
   $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
 
   $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions('taxonomy_term');
-  foreach (['revision_created', 'revision_user', 'revision_log_message'] as $field_name) {
+  $revision_fields = [
+    'revision_created',
+    'revision_user',
+    'revision_log_message',
+  ];
+  foreach ($revision_fields as $field_name) {
     // This check is just to ensure Drupal 8.6.x compatibility as those fields
     // were added in Drupal 8.7.x.
     // @todo Drop Drupal 8.6.x support in #92.

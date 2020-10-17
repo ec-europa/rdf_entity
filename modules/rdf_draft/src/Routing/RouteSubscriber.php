@@ -39,7 +39,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+      $storage = $this->entityTypeManager->getStorage($entity_type_id);
       if ($storage instanceof SparqlEntityStorage) {
         $definitions = $storage->getGraphDefinitions();
         // Default is already covered by the 'view' operation.

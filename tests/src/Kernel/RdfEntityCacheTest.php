@@ -16,8 +16,7 @@ class RdfEntityCacheTest extends RdfKernelTestBase {
    * Tests RDF entity cache tags.
    */
   public function testCacheTags() {
-    /** @var \Drupal\Core\Cache\CacheBackendInterface $cache */
-    $cache = \Drupal::cache();
+    $cache = $this->container->get('cache.default');
 
     // Create a rdf_entity.
     $rdf = Rdf::create([
