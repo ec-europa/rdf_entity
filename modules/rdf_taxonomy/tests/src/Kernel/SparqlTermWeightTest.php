@@ -45,7 +45,7 @@ class SparqlTermWeightTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->setUpSparql();
     $this->installConfig(['sparql_entity_storage']);

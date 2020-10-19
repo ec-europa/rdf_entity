@@ -60,7 +60,7 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->installConfig(['rdf_taxonomy_test']);
 
@@ -139,7 +139,7 @@ class SparqlTaxonomyTest extends RdfKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public function tearDown() {
+  public function tearDown(): void {
     // Delete all data produced by testing module.
     foreach (['published', 'draft'] as $graph) {
       $query = <<<EndOfQuery

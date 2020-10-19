@@ -1,10 +1,8 @@
 {
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
     "composer/installers": "^1.5.0",
     "drupal/core": "${DRUPAL}",
-    "drupal/core-composer-scaffold": "${DRUPAL}",
+    "drupal/core-composer-scaffold": "*",
     "drupal/pathauto": "*",
     "drupal/rdf_entity": "*",
     "drupal/token": "*",
@@ -17,15 +15,14 @@
     "mikey179/vfsstream": "~1.2",
     "minimaxir/big-list-of-naughty-strings": "dev-master",
     "mglaman/phpstan-drupal": "^0.12.6",
+    "phpspec/prophecy": "^1.7",
     "phpstan/phpstan-deprecation-rules": "^0.12.5",
-    "phpunit/phpunit": "${PHPUNIT}"
+    "phpunit/phpunit": "${PHPUNIT}",
+    "symfony/phpunit-bridge": "^5.1.4"
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "repositories": [
-    {
-      "type": "github",
-      "url": "https://github.com/ec-europa/sparql_entity_storage.git",
-      "no-api": true
-    },
     {
       "type": "path",
       "url": "${TRAVIS_BUILD_DIR}"
