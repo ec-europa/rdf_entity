@@ -28,7 +28,12 @@ class ManageUnlockedVocabularyTermsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected $defaultTheme = 'stark';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
     $this->setUpSparql();
     parent::setUp();
 

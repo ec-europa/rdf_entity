@@ -13,8 +13,8 @@ Storage](https://www.drupal.org/project/sparql_entity_storage) module.
 With `1.0-alpha17`, the SPARQL storage has been [split out, as a standalone
 module](https://github.com/ec-europa/rdf_entity/issues/17). Moving services from
 one module to the other is impossible with the actual Drupal core. See the
-[related Drupal core issue]
-(https://www.drupal.org/project/drupal/issues/2863986) for details. As the
+[related Drupal core issue](https://www.drupal.org/project/drupal/issues/2863986)
+for details. As the
 module is in alpha, we're not providing any update path but we recommend to
 follow the next steps in order to update a server in production:
 
@@ -25,5 +25,5 @@ follow the next steps in order to update a server in production:
    ```
 1. Enable the module.
 1. Deploy to production.
-1. Require `drupal/sparql_entity_storage` with the new `1.0-alpha17` version and
+1. Require `drupal/rdf_entity` with the new `1.0-alpha17` version and
 perform a second deployment.

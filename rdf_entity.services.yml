@@ -4,17 +4,3 @@ services:
     arguments: ['@current_route_match']
     tags:
       - { name: 'context_provider' }
-
-  # Deprecated services.
-  sparql_endpoint:
-    alias: sparql.endpoint
-    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.endpoint' service instead."
-  plugin.manager.rdf_entity.id:
-    alias: plugin.manager.sparql_entity_id
-    deprecated: "Service '%service_id%' is deprecated. Use 'plugin.manager.sparql_entity_id' service instead."
-  rdf_entity.serializer:
-    alias: sparql_entity.serializer
-    deprecated: "Service '%service_id%' is deprecated. Use 'sparql_entity.serializer' service instead."
-  rdf_entity.sparql_entity_normalizer:
-    alias: sparql.entity_normalizer
-    deprecated: "Service '%service_id%' is deprecated. Use 'sparql.entity_normalizer' service instead."

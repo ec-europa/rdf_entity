@@ -4,18 +4,39 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_taxonomy;
 
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\sparql_entity_storage\Driver\Database\sparql\ConnectionInterface;
 use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
+use Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager;
+use Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface;
+use Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\taxonomy\VocabularyInterface;
 use EasyRdf\Graph;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines a Controller class for taxonomy terms.
  */
 class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface {
+
+  /**
+   * The active database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
   /**
    * Bundle predicate array.
@@ -90,6 +111,89 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
    * @var \Drupal\taxonomy\TermInterface[][]
    */
   protected $ancestors;
+
+  /**
+   * Constructs a new term storage instance.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type this storage is about.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend to be used.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
+   *   The memory cache backend.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info.
+   * @param \Drupal\sparql_entity_storage\Driver\Database\sparql\ConnectionInterface $sparql
+   *   The connection object.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler
+   *   The sPARQL graph helper service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageFieldHandlerInterface $sparql_field_handler
+   *   The SPARQL field mapping service.
+   * @param \Drupal\sparql_entity_storage\SparqlEntityStorageEntityIdPluginManager $entity_id_plugin_manager
+   *   The entity ID generator plugin manager.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The active database connection.
+   */
+  public function __construct(
+    EntityTypeInterface $entity_type,
+    EntityFieldManagerInterface $entity_field_manager,
+    CacheBackendInterface $cache,
+    MemoryCacheInterface $memory_cache,
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
+    ConnectionInterface $sparql,
+    EntityTypeManagerInterface $entity_type_manager,
+    LanguageManagerInterface $language_manager,
+    ModuleHandlerInterface $module_handler,
+    SparqlEntityStorageGraphHandlerInterface $sparql_graph_handler,
+    SparqlEntityStorageFieldHandlerInterface $sparql_field_handler,
+    SparqlEntityStorageEntityIdPluginManager $entity_id_plugin_manager,
+    Connection $database
+  ) {
+    parent::__construct(
+      $entity_type,
+      $entity_field_manager,
+      $cache,
+      $memory_cache,
+      $entity_type_bundle_info,
+      $sparql,
+      $entity_type_manager,
+      $language_manager,
+      $module_handler,
+      $sparql_graph_handler,
+      $sparql_field_handler,
+      $entity_id_plugin_manager
+    );
+    $this->database = $database;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): SparqlEntityStorage {
+    return new static(
+      $entity_type,
+      $container->get('entity_field.manager'),
+      $container->get('cache.entity'),
+      $container->get('entity.memory_cache'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('sparql.endpoint'),
+      $container->get('entity_type.manager'),
+      $container->get('language_manager'),
+      $container->get('module_handler'),
+      $container->get('sparql.graph_handler'),
+      $container->get('sparql.field_handler'),
+      $container->get('plugin.manager.sparql_entity_id'),
+      $container->get('database')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -183,9 +287,7 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
     }
 
     if ($ids) {
-      $query = \Drupal::entityQuery('taxonomy_term')
-        ->condition('tid', $ids, 'IN');
-
+      $query = $this->getQuery()->condition('tid', $ids, 'IN');
       return static::loadMultiple($query->execute());
     }
 
@@ -244,8 +346,7 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
    * @todo Refactor away when TreeInterface is introduced.
    */
   public function getChildren(TermInterface $term) {
-    $query = \Drupal::entityQuery('taxonomy_term')
-      ->condition('parent', $term->id());
+    $query = $this->getQuery()->condition('parent', $term->id());
     return static::loadMultiple($query->execute());
   }
 
@@ -274,15 +375,17 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
         $this->treeParents[$vid] = [];
         $this->treeTerms[$vid] = [];
 
+        $select = 'SELECT DISTINCT ?tid ?label ?parent';
         $weight_where = '';
         $order_by = 'STR(?label)';
         if ($mapping->isMapped('weight')) {
+          $select .= ' ?weight';
           $weight_where = "OPTIONAL { ?tid <{$mapping->getMapping('weight')['predicate']}> ?weight } .";
           $order_by = '?weight, ' . $order_by;
         }
 
         $query = <<<QUERY
-SELECT DISTINCT ?tid ?label ?parent ?weight
+{$select}
 WHERE {
   ?tid ?relation <$concept_schema> .
   ?tid <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
@@ -395,7 +498,7 @@ QUERY;
    */
   public function getNodeTerms(array $nids, array $vocabs = [], $langcode = NULL) {
     // @todo Test this.
-    $query = db_select('taxonomy_index', 'tn');
+    $query = $this->database->select('taxonomy_index', 'tn');
     $query->fields('tn', ['tid']);
     $query->addField('tn', 'nid', 'node_nid');
     $query->condition('tn.nid', $nids, 'IN');

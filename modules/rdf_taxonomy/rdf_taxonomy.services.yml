@@ -1,7 +1,7 @@
 services:
   rdf_taxonomy.subscriber:
     class: \Drupal\rdf_taxonomy\Routing\RouteSubscriber
-    arguments: ['@entity.manager']
+    arguments: ['@entity_type.manager']
     tags:
      - { name: event_subscriber }
 
