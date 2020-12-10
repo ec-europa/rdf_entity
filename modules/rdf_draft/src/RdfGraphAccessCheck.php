@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_draft;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;
@@ -16,11 +19,11 @@ use Symfony\Component\Routing\Route;
  */
 class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   /**
-   * The entity manager.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The module handler service.
@@ -30,15 +33,16 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   protected $moduleHandler;
 
   /**
-   * Constructs a EntityCreateAccessCheck object.
+   * Constructs a new access checker instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_manager) {
-    $this->entityManager = $entity_manager;
-    // @todo: EntityHandlerBase is not injecting this service. Why?
-    $this->moduleHandler = \Drupal::moduleHandler();
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
+    $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -47,7 +51,7 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
   public function access(Route $route, AccountInterface $account, RdfInterface $rdf_entity, $operation = 'view') {
     $graph = $route->getOption('graph_name');
     $entity_type_id = $route->getOption('entity_type_id');
-    $storage = $this->entityManager->getStorage($entity_type_id);
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
     if (!$storage instanceof SparqlEntityStorage) {
       throw new \Exception('Storage not supported.');
     }

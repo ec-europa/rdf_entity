@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
@@ -14,9 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Condition(
  *   id = "rdf_entity_bundle",
  *   label = @Translation("RDF entity bundle"),
- *   context = {
- *     "rdf_entity" = @ContextDefinition("entity:rdf_entity", label = @Translation("RDF entity"))
- *   }
+ *   context_definitions = {
+ *     "rdf_entity" = @ContextDefinition("entity:rdf_entity", label = @Translation("RDF entity")),
+ *   },
  * )
  */
 class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPluginInterface {
@@ -54,7 +56,7 @@ class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPlu
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity.manager')->getStorage('rdf_type')
+      $container->get('entity_type.manager')->getStorage('rdf_type')
     );
   }
 
@@ -100,7 +102,10 @@ class RdfEntityBundle extends ConditionPluginBase implements ContainerFactoryPlu
       $bundles = $this->configuration['bundles'];
       $last = array_pop($bundles);
       $bundles = implode(', ', $bundles);
-      return $this->t('The rdf entity bundle is @bundles or @last', ['@bundles' => $bundles, '@last' => $last]);
+      return $this->t('The rdf entity bundle is @bundles or @last', [
+        '@bundles' => $bundles,
+        '@last' => $last,
+      ]);
     }
     $bundle = reset($this->configuration['bundles']);
     return $this->t('The rdf entity bundle is @bundle', ['@bundle' => $bundle]);

@@ -18,9 +18,9 @@ use Drupal\sparql_entity_storage\UriEncoder;
  *   label = @Translation("Rdf entity"),
  *   types = {"rdf_entity"},
  *   provider = "rdf_entity",
- *   context = {
- *     "rdf_entity" = @ContextDefinition("entity:rdf_entity")
- *   }
+ *   context_definitions = {
+ *     "rdf_entity" = @ContextDefinition("entity:rdf_entity"),
+ *   },
  * )
  */
 class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactoryPluginInterface {
@@ -185,10 +185,10 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    */
   protected function getSourcePaths(array &$sandbox) : array {
     if (!isset($sandbox['source_paths'])) {
-      $query = $this->database->select('url_alias', 'ua');
-      $query->fields('ua', ['pid', 'source']);
-      $query->condition('source', '/rdf_entity/%', 'LIKE');
-      $query->orderBy('ua.pid');
+      $query = $this->database->select('path_alias', 'pa');
+      $query->fields('pa', ['id', 'path']);
+      $query->condition('path', '/rdf_entity/%', 'LIKE');
+      $query->orderBy('pa.id');
       $source_paths = $query->execute()->fetchAllKeyed();
 
       // Filter out any source paths that point to subpaths of RDF entities.

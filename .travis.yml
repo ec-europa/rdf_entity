@@ -1,13 +1,14 @@
 language: php
 
 php:
-  - '7.1'
   - '7.2'
   - '7.3'
+  - '7.4'
 
 sudo: required
 
 services:
+  - mysql
   - docker
 
 mysql:
@@ -19,56 +20,36 @@ env:
   global:
     - SITE_DIR="$HOME/build/testing_site"
   matrix:
-    - TEST=PHP_CodeSniffer
-    - TEST=8.6.x
-    - TEST=8.7.x
-    - TEST=8.8.x
+    - TEST=PHPCodeSniffer
+    - TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
+    - TEST=PHPUnit DRUPAL=~8.9.0 PHPUNIT=^7
+    - TEST=PHPUnit DRUPAL=~9.0.0 PHPUNIT=^8
+    - TEST=PHPUnit DRUPAL=~9.1.0 PHPUNIT=^8
+    - TEST=PHPUnit DRUPAL=~9.2.0 PHPUNIT=^8
 
 matrix:
   fast_finish: true
   exclude:
     - php: '7.2'
-      env: TEST=PHP_CodeSniffer
+      env: TEST=PHPUnit DRUPAL=~9.0.0 PHPUNIT=^8
+    - php: '7.2'
+      env: TEST=PHPUnit DRUPAL=~9.1.0 PHPUNIT=^8
+    - php: '7.2'
+      env: TEST=PHPUnit DRUPAL=~9.2.0 PHPUNIT=^8
     - php: '7.3'
-      env: TEST=PHP_CodeSniffer
+      env: TEST=PHPCodeSniffer
+    - php: '7.3'
+      env: TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
+    - php: '7.4'
+      env: TEST=PHPCodeSniffer
+    - php: '7.4'
+      env: TEST=PHPStan DRUPAL=~8.9.0 PHPUNIT=^7
 
 before_install:
-  - composer --verbose self-update
-  - mkdir -p ${SITE_DIR}/web/modules
-  - cd ${SITE_DIR}
+  # Remove this line to run with Xdebug enabled.
+  - phpenv config-rm xdebug.ini || true
 
-  ### PHP_CodeSniffer only.
-
-  # We only need the PHP Code Sniffer (and the Drupal coder).
-  - test ${TEST} == "PHP_CodeSniffer" && composer require drupal/coder || true
-
-  ### PHPUnit only (till the end).
-
-  # Deploy the codebase.
-  - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/composer.json.dist ${SITE_DIR}/composer.json
-  - test ${TEST} == "PHP_CodeSniffer" || cp ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/phpunit.xml.dist ${SITE_DIR}/web/phpunit.xml
-  - test ${TEST} == "PHP_CodeSniffer" || perl -i -pe's/\$\{([^}]+)\}/$ENV{$1}/' composer.json
-  - test ${TEST} == "PHP_CodeSniffer" || composer require drupal/core:${TEST} --no-interaction
-  # Virtuoso setup.
-  - test ${TEST} == "PHP_CodeSniffer" || mkdir ${SITE_DIR}/virtuoso
-  - test ${TEST} == "PHP_CodeSniffer" || docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
-  # Create the MySQL database.
-  - test ${TEST} == "PHP_CodeSniffer" || mysql -e 'CREATE DATABASE rdf_entity_test'
-  # Install Drupal.
-  - test ${TEST} == "PHP_CodeSniffer" || ./vendor/bin/drush site:install testing --yes --root=${SITE_DIR}/web --db-url=mysql://root:@127.0.0.1/rdf_entity_test
-  # Add the SPARQL connection to settings.php.
-  - test ${TEST} == "PHP_CodeSniffer" || chmod 0775 ${SITE_DIR}/web/sites/default/settings.php
-  - test ${TEST} == "PHP_CodeSniffer" || cat ${TRAVIS_BUILD_DIR}/tests/travis-ci/fixtures/connection.txt >> ${SITE_DIR}/web/sites/default/settings.php
-  # Enable the 'rdf_entity' module.
-  - test ${TEST} == "PHP_CodeSniffer" || ./vendor/bin/drush pm:enable rdf_entity --yes --root=${SITE_DIR}/web
-  # Start the webserver for browser tests.
-  - cd ${SITE_DIR}/web
-  - test ${TEST} == "PHP_CodeSniffer" || nohup php -S localhost:8888 > /dev/null 2>&1 &
-  # Wait until the web server is responding.
-  - test ${TEST} == "PHP_CodeSniffer" || until curl -s localhost:8888; do true; done > /dev/null
-  - cd ..
-
-script: ${TRAVIS_BUILD_DIR}/tests/travis-ci/scripts/run_tests ${TEST}
+script: ${TRAVIS_BUILD_DIR}/tests/travis-ci/scripts/run_tests.sh
 
 notifications:
   email: false

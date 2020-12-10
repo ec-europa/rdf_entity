@@ -17,7 +17,7 @@ class RdfOwnerTest extends RdfKernelTestBase {
   public function testOwner() {
     $owner = $this->createUser();
     $another_owner = $this->createUser();
-    \Drupal::currentUser()->setAccount($owner);
+    $this->container->get('current_user')->setAccount($owner);
 
     // The 'dummy' bundle does not have the owner mapping. The 'with_owner'
     // does.

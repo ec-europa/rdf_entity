@@ -74,7 +74,9 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
       $route_parts = explode('.', $defaults['_route']);
       // On the edit form, load from draft graph, if possible.
       if (array_search('edit_form', $route_parts)) {
-        $graph_ids = $entity_type_has_draft ? ['draft', $default_graph_id] : [$default_graph_id];
+        $graph_ids = $entity_type_has_draft ? ['draft', $default_graph_id] : [
+          $default_graph_id,
+        ];
         $entity = $storage->load($event->getEntityId(), $graph_ids);
 
         // If the entity is empty, it means the user tried to access the edit
@@ -102,7 +104,9 @@ class ActiveGraphSubscriber implements EventSubscriberInterface {
       }
       // On the canonical route, the default entity is preferred.
       elseif (isset($route_parts[2]) && $route_parts[2] === 'canonical') {
-        $graph_ids = $entity_type_has_draft ? [$default_graph_id, 'draft'] : [$default_graph_id];
+        $graph_ids = $entity_type_has_draft ? [$default_graph_id, 'draft'] : [
+          $default_graph_id,
+        ];
         $event->setGraphs($graph_ids);
       }
     }

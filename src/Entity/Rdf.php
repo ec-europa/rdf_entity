@@ -200,7 +200,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
       ->setTranslatable(FALSE)
       ->setReadOnly(TRUE)
       ->setComputed(TRUE)
-      ->setClass(RdfEntityUuidFieldItemList::class);;
+      ->setClass(RdfEntityUuidFieldItemList::class);
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(new TranslatableMarkup('Langcode'))
@@ -359,6 +359,9 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function hasGraph($graph) {
+    if ($this->isNew()) {
+      return FALSE;
+    }
     return $this->entityTypeManager()->getStorage($this->getEntityTypeId())->hasGraph($this, $graph);
   }
 

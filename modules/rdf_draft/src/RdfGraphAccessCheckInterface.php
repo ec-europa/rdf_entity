@@ -9,9 +9,7 @@ use Drupal\rdf_entity\RdfInterface;
 use Symfony\Component\Routing\Route;
 
 /**
- * Interface RdfGraphAccessCheckInterface.
- *
- * @todo: Needs better documentation.
+ * Provides an interface for the 'rdf_draft.access_checker' service.
  */
 interface RdfGraphAccessCheckInterface extends AccessInterface {
 
