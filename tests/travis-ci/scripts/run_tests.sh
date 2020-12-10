@@ -12,9 +12,6 @@ case "${TEST}" in
     PHPCodeSniffer)
         cd ${TRAVIS_BUILD_DIR}
         composer install
-        # This is a temporary hack until the tests for SPARQL Entity Storage
-        # module are enable din their project repo.
-        mv ./vendor/drupal/sparql_entity_storage ./modules/
         ./vendor/bin/phpcs
         exit $?
         ;;
