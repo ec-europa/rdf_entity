@@ -1,0 +1,11 @@
+entity.rdf_taxonomy_vocabulary.add_form:
+  route_name: entity.rdf_taxonomy_vocabulary.add_form
+  title: 'Add RDF vocabulary'
+  appears_on:
+    - entity.rdf_taxonomy_vocabulary.collection
+
+entity.rdf_taxonomy_term.add_form:
+  route_name: entity.rdf_taxonomy_term.add_form
+  title: 'Add RDF term'
+  appears_on:
+    - entity.rdf_taxonomy_vocabulary.overview_form

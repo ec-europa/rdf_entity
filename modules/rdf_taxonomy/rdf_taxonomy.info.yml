@@ -5,4 +5,3 @@ package: Custom
 core_version_requirement: ^8 || ^9
 dependencies:
   - rdf_entity:rdf_entity
-  - drupal:taxonomy

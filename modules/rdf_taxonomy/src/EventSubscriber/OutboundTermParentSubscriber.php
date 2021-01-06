@@ -30,7 +30,7 @@ class OutboundTermParentSubscriber implements EventSubscriberInterface {
    *   The outbound value event.
    */
   public function fixParentTermId(OutboundValueEvent $event) {
-    if ($event->getEntityTypeId() === 'taxonomy_term' && $event->getField() === 'parent') {
+    if ($event->getEntityTypeId() === 'rdf_taxonomy_term' && $event->getField() === 'parent') {
       $event->setValue((string) $event->getValue());
     }
   }
