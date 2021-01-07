@@ -1,0 +1,17 @@
+entity.rdf_taxonomy_term.edit_form:
+  title: Edit
+  group: rdf_taxonomy_term
+  route_name: entity.rdf_taxonomy_term.edit_form
+  weight: 10
+
+entity.rdf_taxonomy_term.delete_form:
+  title: Delete
+  group: rdf_taxonomy_term
+  route_name: entity.rdf_taxonomy_term.delete_form
+  weight: 20
+
+entity.rdf_taxonomy_vocabulary.delete_form:
+  title: Delete
+  group: rdf_taxonomy_vocabulary
+  route_name: entity.rdf_taxonomy_vocabulary.delete_form
+  weight: 20

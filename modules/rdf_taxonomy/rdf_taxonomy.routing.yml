@@ -1,0 +1,39 @@
+entity.rdf_taxonomy_term.add_form:
+  path: '/admin/structure/rdf-taxonomy/manage/{rdf_taxonomy_vocabulary}/add'
+  defaults:
+    _controller: '\Drupal\rdf_taxonomy\Controller\RdfTaxonomyController::addForm'
+    _title: 'Add term'
+  requirements:
+    _entity_create_access: 'rdf_taxonomy_term:{rdf_taxonomy_vocabulary}'
+
+entity.rdf_taxonomy_term.edit_form:
+  path: '/rdf-taxonomy/term/{rdf_taxonomy_term}/edit'
+  defaults:
+    _entity_form: 'rdf_taxonomy_term.default'
+    _title: 'Edit term'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _entity_access: 'rdf_taxonomy_term.update'
+    taxonomy_term: \d+
+
+entity.rdf_taxonomy_term.delete_form:
+  path: '/rdf-taxonomy/term/{rdf_taxonomy_term}/delete'
+  defaults:
+    _entity_form: 'rdf_taxonomy_term.delete'
+    _title: 'Delete term'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _entity_access: 'rdf_taxonomy_term.delete'
+    taxonomy_term: \d+
+
+entity.rdf_taxonomy_term.canonical:
+  path: '/rdf-taxonomy/term/{rdf_taxonomy_term}'
+  defaults:
+    _entity_view: 'rdf_taxonomy_term.full'
+    _title: 'Taxonomy term'
+    _title_callback: '\Drupal\rdf_taxonomy\Controller\RdfTaxonomyController::termTitle'
+  requirements:
+    _entity_access: 'rdf_taxonomy_term.view'
+    taxonomy_term: \d+

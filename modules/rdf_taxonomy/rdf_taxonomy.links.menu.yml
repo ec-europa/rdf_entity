@@ -1,0 +1,5 @@
+entity.rdf_taxonomy_vocabulary.collection:
+  title: RDF taxonomy
+  parent: system.admin_structure
+  description: 'Manage tagging, categorization, and classification of your content.'
+  route_name: entity.rdf_taxonomy_vocabulary.collection

@@ -1,4 +1,4 @@
-taxonomy.vocabulary.*.third_party.rdf_taxonomy:
+taxonomy.rdf_taxonomy_vocabulary.*.third_party.rdf_taxonomy:
   type: mapping
   label: 'RDF Taxonomy third party settings'
   mapping:

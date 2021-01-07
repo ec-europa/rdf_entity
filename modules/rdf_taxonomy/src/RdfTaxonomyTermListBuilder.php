@@ -119,7 +119,7 @@ class RdfTaxonomyTermListBuilder extends EntityListBuilder {
    */
   protected function getVocabulary() {
     if (!isset($this->vocabulary)) {
-      if (!$this->vocabulary = $this->routeMatch->getParameter('taxonomy_vocabulary')) {
+      if (!$this->vocabulary = $this->routeMatch->getParameter('rdf_taxonomy_vocabulary')) {
         throw new \Exception("Valid vocabulary missed from URL.");
       }
     }

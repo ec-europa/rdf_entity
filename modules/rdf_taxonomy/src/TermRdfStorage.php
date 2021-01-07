@@ -369,7 +369,7 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
       if (empty($this->treeChildren[$vid])) {
-        $mapping = SparqlMapping::loadByName('taxonomy_term', $vid);
+        $mapping = SparqlMapping::loadByName('rdf_taxonomy_term', $vid);
         $concept_schema = $mapping->getRdfType();
         $this->treeChildren[$vid] = [];
         $this->treeParents[$vid] = [];
