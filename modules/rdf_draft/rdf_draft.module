@@ -5,6 +5,8 @@
  * Procedural lumps of code for the rdf_draft module.
  */
 
+declare(strict_types = 1);
+
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorageInterface;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;

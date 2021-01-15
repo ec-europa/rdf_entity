@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\rdf_entity\Traits\DrupalTestTraits;
 
-use Drupal\rdf_entity\RdfInterface;
 use Drupal\Tests\rdf_entity\Traits\RdfEntityCreationTrait as ModuleCreationTrait;
+use Drupal\rdf_entity\RdfInterface;
 
 /**
  * Adds Drupal Test Traits (DTT) support for RDF Entity.

@@ -152,7 +152,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    * @return array
    *   An array of RDF entity IDs.
    */
-  protected function getRdfEntityIds(array &$sandbox) : array {
+  protected function getRdfEntityIds(array &$sandbox): array {
     if (empty($sandbox['rdf_entity_ids'])) {
       $sandbox['rdf_entity_ids'] = $this->getRdfEntityQuery()->execute();
     }
@@ -166,7 +166,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    * @return \Drupal\Core\Entity\Query\QueryInterface
    *   The entity query.
    */
-  protected function getRdfEntityQuery() : Query {
+  protected function getRdfEntityQuery(): Query {
     /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('rdf_entity');
     return $storage->getQuery();
@@ -183,7 +183,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    * @return array
    *   An associative array of source paths, keyed by url alias ID.
    */
-  protected function getSourcePaths(array &$sandbox) : array {
+  protected function getSourcePaths(array &$sandbox): array {
     if (!isset($sandbox['source_paths'])) {
       $query = $this->database->select('path_alias', 'pa');
       $query->fields('pa', ['id', 'path']);
@@ -210,7 +210,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    * @return array
    *   The converted RDF entity IDs.
    */
-  protected function convertPathsToEntityIds(array $source_paths) : array {
+  protected function convertPathsToEntityIds(array $source_paths): array {
     return array_map(function ($source_path) {
       // Strip off the leading '/rdf_entity/' from the path and decode it.
       return UriEncoder::decodeUrl(substr($source_path, 12));
@@ -228,7 +228,7 @@ class RdfEntityAliasType extends EntityAliasTypeBase implements ContainerFactory
    * @return array
    *   An array of RDF entity IDs.
    */
-  protected function getAliasedEntityIds(array &$sandbox) : array {
+  protected function getAliasedEntityIds(array &$sandbox): array {
     // Get a list of all source paths that start with '/rdf_entity/' from the
     // URL alias table.
     $source_paths = $this->getSourcePaths($sandbox);

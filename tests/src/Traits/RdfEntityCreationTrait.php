@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\Tests\rdf_entity\Traits;
 
 use Drupal\rdf_entity\Entity\Rdf;

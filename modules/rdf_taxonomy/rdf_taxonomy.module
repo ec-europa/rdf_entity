@@ -5,16 +5,18 @@
  * Main functions and hook implementations of the RDF Taxonomy module.
  */
 
+declare(strict_types = 1);
+
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\sparql_entity_storage\Entity\Query\Sparql\SparqlArg;
-use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\rdf_taxonomy\Entity\RdfTerm;
 use Drupal\rdf_taxonomy\RdfTaxonomyTermListBuilder;
 use Drupal\rdf_taxonomy\TermRdfStorage;
+use Drupal\sparql_entity_storage\Entity\Query\Sparql\SparqlArg;
+use Drupal\sparql_entity_storage\Entity\SparqlMapping;
 use Drupal\sparql_entity_storage\UriEncoder;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;

@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace Drupal\rdf_taxonomy\Tests;
 
-use Drupal\taxonomy\Entity\Term;
 use Drupal\Tests\rdf_entity\Kernel\RdfKernelTestBase;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Tests Entity Query functionality of the Sparql backend.

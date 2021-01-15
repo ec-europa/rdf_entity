@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_draft\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;

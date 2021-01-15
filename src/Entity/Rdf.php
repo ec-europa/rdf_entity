@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
@@ -268,14 +270,14 @@ class Rdf extends ContentEntityBase implements RdfInterface {
    * {@inheritdoc}
    */
   public function setPublished($published = NULL) {
-    // TODO: Implement setPublished() method.
+    // @todo Implement setPublished() method.
   }
 
   /**
    * {@inheritdoc}
    */
   public function setUnpublished() {
-    // TODO: Implement setUnpublished() method.
+    // @todo Implement setUnpublished() method.
   }
 
   /**
@@ -368,7 +370,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * {@inheritdoc}
    */
-  public static function load($id, array $graph_ids = NULL) {
+  public static function load($id, ?array $graph_ids = NULL) {
     $entity_type_repository = \Drupal::service('entity_type.repository');
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */
@@ -379,7 +381,7 @@ class Rdf extends ContentEntityBase implements RdfInterface {
   /**
    * {@inheritdoc}
    */
-  public static function loadMultiple(array $ids = NULL, array $graph_ids = NULL) {
+  public static function loadMultiple(?array $ids = NULL, ?array $graph_ids = NULL) {
     $entity_type_repository = \Drupal::service('entity_type.repository');
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\sparql_entity_storage\SparqlEntityStorageInterface $storage */

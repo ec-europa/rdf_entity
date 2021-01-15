@@ -5,6 +5,8 @@
  * Includes installation functions for the rdf_draft module.
  */
 
+declare(strict_types = 1);
+
 use Drupal\Core\Serialization\Yaml;
 use Drupal\sparql_entity_storage\Entity\SparqlGraph;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;
