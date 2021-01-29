@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -16,6 +17,8 @@ use Symfony\Component\Routing\RouteCollection;
  * Subscriber for rdf export routes.
  */
 class RouteSubscriber extends RouteSubscriberBase {
+
+  use StringTranslationTrait;
 
   /**
    * The entity type manager service.
@@ -73,7 +76,7 @@ class RouteSubscriber extends RouteSubscriberBase {
       $route
         ->addDefaults([
           '_controller' => '\Drupal\rdf_draft\Controller\RdfController::view',
-          '_title' => (string) t('View @title', ['@title' => (string) $graph_definition['title']]),
+          '_title' => (string) $this->t('View @title', ['@title' => (string) $graph_definition['title']]),
         ])
         ->addRequirements([
           '_access_rdf_graph' => 'TRUE',

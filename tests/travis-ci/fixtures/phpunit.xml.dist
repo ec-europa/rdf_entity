@@ -18,10 +18,7 @@
     </php>
     <testsuites>
         <testsuite name="rdf_entity">
-            <directory>./web/modules/rdf_entity</directory>
-            <!-- @todo Run 'sparql_entity_storage' in its own repo -->
-            <!-- @see https://github.com/ec-europa/sparql_entity_storage/issues/4 -->
-            <directory>./web/modules/sparql_entity_storage</directory>
+            <directory>./modules/rdf_entity</directory>
         </testsuite>
     </testsuites>
     <listeners>

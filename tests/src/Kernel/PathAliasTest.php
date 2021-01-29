@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\Tests\rdf_entity\Kernel;
 
-use Drupal\pathauto\Entity\PathautoPattern;
 use Drupal\Tests\pathauto\Functional\PathautoTestHelperTrait;
 use Drupal\Tests\rdf_entity\Traits\RdfEntityCreationTrait;
+use Drupal\pathauto\Entity\PathautoPattern;
 
 /**
  * Tests rdf_entity url alias assignment.

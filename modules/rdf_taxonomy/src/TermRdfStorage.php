@@ -227,7 +227,7 @@ class TermRdfStorage extends SparqlEntityStorage implements TermStorageInterface
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL, array $graph_ids = NULL): void {
+  public function resetCache(?array $ids = NULL, ?array $graph_ids = NULL): void {
     drupal_static_reset('taxonomy_term_count_nodes');
     $this->parents = [];
     $this->parentsAll = [];

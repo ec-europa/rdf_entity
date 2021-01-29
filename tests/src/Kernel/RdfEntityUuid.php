@@ -5,8 +5,8 @@ declare(strict_types = 1);
 namespace Drupal\Tests\rdf_entity\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
+use Drupal\rdf_entity\Entity\Rdf;
 
 /**
  * Tests the UUID computed field.

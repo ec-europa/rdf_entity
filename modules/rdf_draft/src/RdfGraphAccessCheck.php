@@ -9,9 +9,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\rdf_entity\RdfInterface;
 use Drupal\sparql_entity_storage\SparqlEntityStorage;
 use Drupal\sparql_entity_storage\SparqlGraphInterface;
-use Drupal\rdf_entity\RdfInterface;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -67,7 +67,7 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
     // Check if there is an entity saved in the passed graph.
     $entity = $storage->load($rdf_entity->id(), [$graph]);
 
-    // @todo: When the requested graph is the only one and it is not the
+    // @todo When the requested graph is the only one and it is not the
     // default, it is loaded in the default view, so maybe there is no need
     // to also show a separate tab.
     return AccessResult::allowedIf($entity && $this->checkAccess($rdf_entity, $route, $account, $operation, $graph))->cachePerPermissions()->addCacheableDependency($rdf_entity);
@@ -92,9 +92,9 @@ class RdfGraphAccessCheck implements RdfGraphAccessCheckInterface {
       return FALSE;
     }
 
-    // @todo: This probably needs to be cached manually creating a cid.
+    // @todo This probably needs to be cached manually creating a cid.
     // @see: \Drupal\node\Access\NodeRevisionAccessCheck::checkAccess().
-    // @todo: This needs also to check cache for cached permission.
+    // @todo This needs also to check cache for cached permission.
     // @see: \Drupal\Core\Entity\EntityAccessControlHandler::access().
     $has_permission = $account->hasPermission($map[$operation]) || $account->hasPermission($type_map[$operation]);
     $access = $has_permission ? AccessResult::allowed() : AccessResult::neutral();

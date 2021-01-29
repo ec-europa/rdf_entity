@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_entity;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;

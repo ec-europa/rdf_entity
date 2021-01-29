@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\Tests\rdf_export\Functional;
 
-use Drupal\rdf_entity\Entity\Rdf;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\sparql_entity_storage\Traits\SparqlConnectionTrait;
+use Drupal\rdf_entity\Entity\Rdf;
 
 /**
  * Tests the RDF export functionality.

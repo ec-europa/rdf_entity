@@ -13,7 +13,6 @@
   "require-dev": {
     "behat/mink-goutte-driver": "~1.2",
     "mikey179/vfsstream": "~1.2",
-    "minimaxir/big-list-of-naughty-strings": "dev-master",
     "mglaman/phpstan-drupal": "^0.12.6",
     "phpspec/prophecy": "^1.7",
     "phpstan/phpstan-deprecation-rules": "^0.12.5",
@@ -26,17 +25,6 @@
     {
       "type": "path",
       "url": "${TRAVIS_BUILD_DIR}"
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "minimaxir/big-list-of-naughty-strings",
-        "version": "dev-master",
-        "dist": {
-          "url": "https://github.com/minimaxir/big-list-of-naughty-strings/archive/master.zip",
-          "type": "zip"
-        }
-      }
     },
     {
       "type": "composer",

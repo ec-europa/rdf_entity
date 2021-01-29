@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_taxonomy\EventSubscriber;
 
 use Drupal\sparql_entity_storage\Event\OutboundValueEvent;

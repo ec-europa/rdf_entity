@@ -12,9 +12,6 @@ case "${TEST}" in
     PHPCodeSniffer)
         cd ${TRAVIS_BUILD_DIR}
         composer install
-        # This is a temporary hack until the tests for SPARQL Entity Storage
-        # module are enable din their project repo.
-        mv ./vendor/drupal/sparql_entity_storage ./modules/
         ./vendor/bin/phpcs
         exit $?
         ;;
@@ -37,6 +34,9 @@ case "${TEST}" in
         # Virtuoso setup.
         mkdir ${SITE_DIR}/virtuoso
         docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
+
+        # Sleep to ensure that docker services are available.
+        sleep 15
 
         # Create the MySQL database.
         mysql -e 'CREATE DATABASE rdf_entity_test'

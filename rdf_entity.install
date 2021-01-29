@@ -5,6 +5,8 @@
  * Includes installation functions for the rdf_entity module.
  */
 
+declare(strict_types = 1);
+
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\sparql_entity_storage\Entity\SparqlGraph;

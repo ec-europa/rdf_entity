@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\rdf_export\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -32,7 +34,7 @@ class SettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $export_types = $this->config('rdf_export.settings')->get('export_types');
-    // @todo: Check which format are supported by the server?
+    // @todo Check which format are supported by the server?
     $formats = Format::getFormats();
     $list = [];
     /** @var \EasyRdf\Format $format */
@@ -44,11 +46,11 @@ class SettingsForm extends ConfigFormBase {
 
     $form['export_types'] = [
       '#type' => 'select',
-      '#title' => t('Export types'),
+      '#title' => $this->t('Export types'),
       '#options' => $list,
       '#multiple' => TRUE,
       '#default_value' => empty($export_types) ? [] : $export_types,
-      '#description' => t('Select the export types for rdf entities.'),
+      '#description' => $this->t('Select the export types for rdf entities.'),
     ];
 
     return parent::buildForm($form, $form_state);
