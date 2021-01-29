@@ -35,6 +35,9 @@ case "${TEST}" in
         mkdir ${SITE_DIR}/virtuoso
         docker run --name virtuoso -p 8890:8890 -p 1111:1111 -e SPARQL_UPDATE=true -v ${SITE_DIR}/virtuoso:/data -d tenforce/virtuoso
 
+        # Sleep to ensure that docker services are available.
+        sleep 15
+
         # Create the MySQL database.
         mysql -e 'CREATE DATABASE rdf_entity_test'
         mysql -e 'CREATE DATABASE rdf_entity_test_phpunit'
