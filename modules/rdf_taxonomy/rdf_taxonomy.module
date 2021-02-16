@@ -60,7 +60,7 @@ function rdf_taxonomy_entity_base_field_info_alter(array &$fields, EntityTypeInt
  * Implements hook_ENTITY_TYPE_access().
  */
 function rdf_taxonomy_taxonomy_vocabulary_access(VocabularyInterface $vocabulary, $operation, AccountInterface $account) {
-  $locked = ($operation !== 'view') && $vocabulary->getThirdPartySetting('rdf_taxonomy', 'locked', TRUE);
+  $locked = (!in_array($operation, ['view', 'access taxonomy overview'])) && $vocabulary->getThirdPartySetting('rdf_taxonomy', 'locked', TRUE);
   return AccessResult::forbiddenIf($locked);
 }
 
