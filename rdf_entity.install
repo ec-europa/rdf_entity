@@ -116,8 +116,11 @@ function rdf_entity_update_8004() {
       foreach ($extensions as $extension_name) {
         $extension_path = drupal_get_path($extension_type, $extension_name);
         foreach (['install', 'optional'] as $sub_path) {
-          foreach ($file_system->scanDirectory("$extension_path/config/$sub_path", $file_pattern) as $path => $file) {
-            $new_config_candidates[$path] = $file->name;
+          $config_files_path = "$extension_path/config/$sub_path";
+          if (is_dir($config_files_path)) {
+            foreach ($file_system->scanDirectory($config_files_path, $file_pattern) as $path => $file) {
+              $new_config_candidates[$path] = $file->name;
+            }
           }
         }
       }
